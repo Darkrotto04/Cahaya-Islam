@@ -256,6 +256,21 @@ input,select{font:inherit;font-size:16px}
 .stp{display:grid;gap:8px}.stp div{display:flex;gap:10px;align-items:center;background:#f4f9ff;border-radius:14px;padding:8px 12px;font-weight:700}
 .stp span{width:30px;height:30px;border-radius:50%;background:#3fcf9a;color:#fff;display:grid;place-items:center;flex:none;font-weight:800}
 .ord .wch{font-size:16px}
+.fgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 6px;margin:10px 0 18px}
+.fitem{display:grid;justify-items:center;gap:6px;font-size:12.5px;font-weight:600;text-align:center;line-height:1.25}
+.fic{width:60px;height:60px;border-radius:50%;display:grid;place-items:center}
+.jdiv{margin:8px 16px;padding:9px 12px;border-radius:12px;background:#5cc48a26;color:#6fd69a;font-weight:700;font-size:14px;display:flex;gap:8px;align-items:center}
+.jend{margin:10px 16px 4px;padding:12px;border:2px dashed #5cc48a80;border-radius:14px;text-align:center;font-weight:700;color:#8fd3ab;font-size:14px}
+.reader.sepia .jdiv,.reader.light .jdiv{color:#1f7a4c}.reader.sepia .jend,.reader.light .jend{color:#1f7a4c}
+.shead{text-align:center;padding:22px 16px 8px;margin-top:10px;border-top:6px solid #5cc48a40}
+.scard{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #ffffff1a;color:#fff;width:100%;text-align:left;min-height:72px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal div{min-height:52px;border-radius:12px;background:#1d3d3d;padding:4px 5px;font-size:15px;font-weight:700;position:relative}
+.cal small{display:block;font-size:11px;color:#9fb8b2;font-weight:600}
+.cal .ev{background:#8a5426}.cal .td{outline:2px solid #5cc48a}
+.cal .pz::after{content:"";position:absolute;right:5px;top:6px;width:7px;height:7px;border-radius:50%;background:#5cc48a}
+.cal .hd{background:none;min-height:auto;color:#9fb8b2;font-size:12px;text-align:center}.cal .em{background:none}
+details summary::marker{color:#5cc48a}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -452,6 +467,7 @@ const STICK=['🌙','⭐','🕌','🐫','🌴','📖','🦉','🌈','🎈','🍉
 /* ============ STATE ============ */
 const KEY='cahaya-proto-v1';
 const DEF={mode:'adult',tab:'today',dayOff:0,qtab:'baca',qsub:'surat',city:'madinah',loc:null,accent:'US',rate:0.85,sound:true,lastRead:1,lastAy:1,prayed:{},adzan:{},tasbih:0,tasIdx:0,kv:'map',vcat:'animals',
+ ptab:'wajib',amal:{},amalOff:0,journal:[],sedekah:[],khatam:null,calOff:0,card:'fitri',
  q:{font:30,face:'Amiri Quran',tr:true,theme:'dark',prog:true,marks:[],hafal:{},readMax:{}},
  kid:{profile:null,name:'',xp:0,stars:{},streak:0,lastDay:'',badges:[],chests:0,stickers:[],sx:{}}};
 let S;
@@ -488,7 +504,7 @@ const dkey=d=>d.toISOString().slice(0,10);
 const timesFor=d=>ptimes(d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate(),C());
 const epochOf=(d,min)=>Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())-C().tz*36e5+min*6e4;
 function nextPrayer(){const d=dayDate(0),t=timesFor(d),now=Date.now();for(const p of P5){const e=epochOf(d,t[p]);if(e>now)return{p,min:t[p],at:e}}const d2=dayDate(1),t2=timesFor(d2);return{p:'fajr',min:t2.fajr,at:epochOf(d2,t2.fajr)}}
-function hijri(d){try{const parts=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).formatToParts(d);const g=k=>(parts.find(p=>p.type===k)||{}).value||'';return `${g('day')} ${g('month')} ${g('year').replace(/\s*AH/,'')} H`}catch(e){return''}}
+function hijri(d){const hp=hparts(d);if(hp)return `${hp.d} ${HMONTH[hp.m-1]} ${hp.y} H`;try{const parts=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).formatToParts(d);const g=k=>(parts.find(p=>p.type===k)||{}).value||'';return `${g('day')} ${g('month')} ${g('year').replace(/\s*AH/,'')} H`}catch(e){return''}}
 const gdate=d=>d.toLocaleDateString('id-ID',{day:'numeric',month:'long',timeZone:'UTC'});
 const prayedOn=k=>S.prayed[k]||(S.prayed[k]={});
 
@@ -529,14 +545,14 @@ function A(){
 function Today(){
   const np=nextPrayer(),d=dayDate(0),k=dkey(d),pr=prayedOn(k),cnt=P5.filter(p=>pr[p]).length,last=SLAT[S.lastRead-1],kd=S.kid;
   const doa=DOA[d.getUTCDate()%DOA.length];
-  const q=[['kiblat','compass','Kiblat'],['tasbih','beads','Tasbih'],['doa','hands','Doa-doa'],['asma','spark','Asmaul Husna'],['zakat','calc','Zakat'],['settings','sliders','Pengaturan']];
+  const q=[['all','map','Lainnya'],['kiblat','compass','Kiblat'],['psunnah','spark','Sholat sunnah'],['doa','hands','Doa-doa'],['tasbih','beads','Tasbih'],['amal','sun','Ibadah harian'],['kalender','cal','Kalender'],['khatam','book','Khatam']];
   return `<section class="hero">
    <div class="hrow" style="align-items:flex-start"><h1>Assalamualaikum</h1><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Pengaturan">${ic('sliders',24)}</button></div><div></div>
    <div class="hrow"><div><b style="font-size:18px">${PN[np.p]}</b><div class="big">${hm(np.min)}</div><div class="cd">−<span data-cd="${np.at}">${cdf(np.at-Date.now())}</span></div></div>
    <div style="text-align:right"><div style="font-size:15px">${hijri(d)}</div><b style="font-size:20px;display:inline-flex;gap:6px;align-items:center">${C().n} ${ic('pin',18)}</b></div></div></section>
   <div class="duo"><button class="pill" style="background:linear-gradient(120deg,#e0703e,#c9465a)" data-a="surah" data-v="${S.lastRead}"><small>Lanjutkan membaca</small><b>${esc(last.n)}</b></button>
   <button class="pill" style="background:linear-gradient(120deg,#7b5cf0,#3d2a8a)" data-a="kids"><small>Mode belajar</small><b>Buka Mode Anak</b></button></div>
-  <div class="quick">${q.map(([v,i,l])=>`<button data-a="sheet" data-v="${v}"><span class="qi">${ic(i,26)}</span>${l}</button>`).join('')}</div>
+  <div class="quick">${q.map(([v,i,l])=>`<button data-a="${v==='psunnah'?'psunnah':'sheet'}" data-v="${v}"><span class="qi">${ic(i,26)}</span>${l}</button>`).join('')}</div>
   <section class="card"><h3>Pelacak sholat hari ini</h3><div class="pchk">${P5.map(p=>`<button data-a="pray" data-v="${k}|${p}" class="${pr[p]?'on':''}" aria-pressed="${!!pr[p]}"><span class="circ">${pr[p]?ic('check',16):''}</span>${PN[p]}</button>`).join('')}</div>
   <p class="mute" style="margin:10px 0 0">${cnt}/5 sholat terpantau hari ini${cnt===5?' · MasyaAllah, lengkap!':''}</p></section>
   <section class="card"><h3>Progres belajar anak</h3>${kd.profile?`<div style="display:flex;gap:12px;align-items:center">${nuri('idle',56)}<div style="flex:1"><b>${esc(kd.name||(kd.profile==='adik'?'Adik':'Kakak'))}</b> · Level ${Math.floor(kd.xp/100)+1}<div class="mute">${kd.xp} XP · ${totalStars()} bintang · ${kd.streak} hari beruntun · ${kd.badges.length} lencana</div></div></div>`:'<p class="mute" style="margin:0 0 10px">Belum ada profil anak. Aktifkan Mode Anak untuk mulai belajar sambil bermain.</p>'}
@@ -558,7 +574,7 @@ function Prayer(){
   const wk=`<div class="week"><span></span>${days.map(x=>`<span style="text-align:center">${'MSSRKJS'[x.getUTCDay()]}</span>`).join('')}${P5.map(p=>`<span>${PN[p].toUpperCase()}</span>${days.map(x=>`<i class="${(S.prayed[dkey(x)]||{})[p]?'on':''}"></i>`).join('')}`).join('')}</div>`;
   return `<div class="ptop"><div class="hrow" style="align-items:center"><div><h1>Sholat</h1><div style="font-size:14px;opacity:.95">${C().n} • ${METH[C().m].n}</div></div><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Ganti lokasi">${ic('pin',24)}</button></div>
   <div class="dnav"><button class="ibtn" data-a="day" data-v="-1" aria-label="Hari sebelumnya">${ic('left',28)}</button><div><b>${label}${gdate(d)}</b><span style="font-size:15px">${hijri(d)}</span></div><button class="ibtn" data-a="day" data-v="1" aria-label="Hari berikutnya">${ic('right',28)}</button></div></div>
-  <div class="plist">${rows}<div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px">${wk}</div><p style="color:#fff;opacity:.85;font-size:12px;margin:10px 2px 0">Waktu dihitung di perangkat (${METH[C().m].n}); bisa selisih 1–2 menit dari jadwal resmi.</p></div></div>`;
+  <div class="plist"><div style="padding:12px 16px 4px"><div class="seg" style="background:#ffffff26">${[['wajib','Sholat wajib'],['sunnah','Sholat sunnah']].map(([k,l])=>`<button class="${S.ptab===k?'on':''}" data-a="ptab" data-v="${k}">${l}</button>`).join('')}</div></div>${S.ptab==='sunnah'?SunnahList(timesFor(dayDate(0))):rows+`<div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px">${wk}</div><p style="color:#fff;opacity:.85;font-size:12px;margin:10px 2px 0">Waktu dihitung di perangkat (${METH[C().m].n}); bisa selisih 1–2 menit dari jadwal resmi.</p></div>`}</div>`;
 }
 function importCard(st){
   return `<div class="imp"><b style="font-size:17px;display:flex;gap:8px;align-items:center">${ic('upload',22)} Lengkapi 30 juz (offline)</b>
@@ -578,7 +594,7 @@ function Quran(){
   let body='';
   if(S.qtab==='baca'){
     const list=S.qsub==='surat'?SLAT.map(s=>`<button class="lrow" data-a="surah" data-v="${s.no}"><span class="no">${s.no}</span><span class="t"><b>${esc(s.n)}${!QDATA&&getSurah(s.no)?'<span class="tag">teks</span>':''}</b><small>${s.a} · ${s.c} ayat${S.q.readMax[s.no]?` · dibaca ${Math.min(S.q.readMax[s.no],s.c)}/${s.c}`:''}</small></span><span class="r"><span class="ar">${s.ar}</span></span></button>`).join('')
-     :JUZ.map(([s,a],i)=>`<button class="lrow" data-a="ayah" data-v="${s}:${a}"><span class="no">${i+1}</span><span class="t"><b>Juz ${i+1}</b><small>Mulai ${esc(SLAT[s-1].n)} ayat ${a} · halaman ${i===0?1:2+i*20}</small></span>${ic('right',20)}</button>`).join('');
+     :JUZ.map(([s,a],i)=>`<button class="lrow" data-a="juz" data-v="${i+1}"><span class="no">${i+1}</span><span class="t"><b>Juz ${i+1}</b><small>${(()=>{const g=juzSegments(i+1),l=g[g.length-1];return `${esc(SLAT[s-1].n)} ${s}:${a} – ${esc(SLAT[l[0]-1].n)} ${l[0]}:${l[2]}`})()}</small></span>${ic('right',20)}</button>`).join('');
     body=`<button class="lrow" data-a="ayah" data-v="${S.lastRead}:${S.lastAy}">${ic('book',26)}<span class="t"><b>${esc(lr.n)} ${S.lastRead}:${S.lastAy}</b><small>Juz ${juzOf(S.lastRead,S.lastAy)}</small></span><span class="link">Lanjutkan membaca</span></button>
     ${S.q.prog?`<div class="lrow" style="display:block"><b style="font-family:Amiri,serif;font-size:20px;font-weight:400">Kemajuan khatam</b><small class="mute" style="display:block">${read.toLocaleString('id-ID')} / ${TOTAL_AYAT.toLocaleString('id-ID')} ayat · ${pct}% · target 30 hari = ±208 ayat per hari</small><div class="kbar"><i style="width:${pct}%"></i></div></div>`:''}
     ${full?'':importCard(st)}
@@ -601,14 +617,7 @@ function Quran(){
 function qibla(c){const K=[21.4225,39.8262];return{b:fixA(at2(sn(K[1]-c.lng)*cs(K[0]),cs(c.lat)*sn(K[0])-sn(c.lat)*cs(K[0])*cs(K[1]-c.lng))),dist:Math.round(6371*acs(Math.min(1,sn(c.lat)*sn(K[0])+cs(c.lat)*cs(K[0])*cs(K[1]-c.lng)))*D2R)}}
 function Sheet(){
   const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
-  if(sheet.startsWith('surah:')){const no=+sheet.split(':')[1],s=SLAT[no-1],tx=getSurah(no),q=S.q;
-    const tools=`<button class="ibtn" data-a="qfont" data-v="-2" aria-label="Perkecil huruf">${ic('minus',20)}</button><button class="ibtn" data-a="qfont" data-v="2" aria-label="Perbesar huruf">${ic('plus',20)}</button><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan baca">${ic('sliders',22)}</button>`;
-    const rows=tx?tx.map((v,i)=>{if(!v||!v[0])return '';const k=no+':'+(i+1),mk=q.marks.includes(k),hf=q.hafal[k]||0;
-      return `<div class="ayah ${jumpAy===i+1?'hl':''}" id="ay-${i+1}"><div class="ar" style="font-size:${q.font}px;line-height:2.1;text-align:right">${esc(v[0])} <span style="font-size:${Math.round(q.font*.75)}px;color:#5cc48a">﴿${arNum(i+1)}﴾</span></div>${q.tr&&v[1]?`<p><b>${i+1}.</b> ${esc(v[1])}</p>`:''}
-      <div class="aact"><button class="${mk?'on':''}" data-a="mark" data-v="${k}" aria-label="Penanda" aria-pressed="${mk}">${ic('bookmark',20,mk)}</button><button class="${hf?'h'+hf:''}" data-a="hafal" data-v="${k}" aria-label="Status hafalan">${ic('brain',20)}</button><button data-a="readto" data-v="${k}" aria-label="Tandai dibaca sampai ayat ini">${ic('check',20)}</button></div></div>`}).join(''):'';
-    return `<div class="sheet reader ${q.theme}" style="--qf:'${q.face}'">${hdr(esc(s.n),tools)}<div class="scr" id="rscr"><div style="text-align:center;padding:18px"><div class="ar" style="font-size:40px">${s.ar}</div><div class="mute">${s.a} · ${s.c} ayat · Juz ${juzOf(no,1)}</div>${no!==1&&no!==9&&tx?'<div class="ar" style="font-size:28px;margin-top:10px">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>':''}</div>
-    ${tx?rows:`<div class="card" style="text-align:center"><p>Teks surat ini belum tersimpan di HP.</p>${importCard(QDATA?qStats(QDATA):null)}</div>`}
-    <div class="duo" style="padding:16px 14px 24px">${no>1?`<button class="btn" style="background:#24403f" data-a="surah" data-v="${no-1}">${ic('left',18)} ${esc(SLAT[no-2].n)}</button>`:'<span></span>'}${no<114?`<button class="btn" data-a="surah" data-v="${no+1}">${esc(SLAT[no].n)} ${ic('right',18)}</button>`:''}</div></div></div>`}
+  const _x=Sheet2();if(_x)return _x;
   if(sheet==='qset'){const q=S.q,st=QDATA?qStats(QDATA):null,tg=(k,l,sub)=>`<button class="tgl" data-a="qtog" data-v="${k}"><span>${l}${sub?`<small>${sub}</small>`:''}</span><span class="sw2 ${q[k]?'on':''}"></span></button>`;
     return `<div class="sheet">${hdr('Pengaturan Al-Qur\'an')}<div class="scr pad">
     <h3 style="margin:4px 0">Membaca</h3>
@@ -653,6 +662,219 @@ function Sheet(){
     <p class="mute" style="margin-top:16px">Cahaya · prototipe. Mode Anak dikunci dengan soal hitungan sederhana supaya anak tidak keluar sendiri.</p></div></div>`}
   return '';
 }
+
+/* ============ v3 DATA: SHOLAT SUNNAH ============ */
+const CARA2=["Niat dalam hati (lafaz niat boleh diucapkan pelan)","Takbiratul ihram","Doa iftitah, Al-Fatihah, lalu surah pendek","Rukuk, i'tidal, sujud, duduk di antara dua sujud, sujud kedua","Berdiri ke rakaat kedua: Al-Fatihah dan surah pendek","Rukuk, i'tidal, dua kali sujud, lalu duduk tasyahud akhir","Salam ke kanan dan ke kiri"];
+const SHALAWAT=["Shalawat Ibrahimiyah","اَللّٰهُمَّ صَلِّ عَلٰى مُحَمَّدٍ وَعَلٰى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلٰى إِبْرَاهِيْمَ وَعَلٰى آلِ إِبْرَاهِيْمَ، وَبَارِكْ عَلٰى مُحَمَّدٍ وَعَلٰى آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلٰى إِبْرَاهِيْمَ وَعَلٰى آلِ إِبْرَاهِيْمَ، إِنَّكَ حَمِيْدٌ مَجِيْدٌ","Allâhumma shalli 'alâ Muhammad wa 'alâ âli Muhammad, kamâ shallaita 'alâ Ibrâhîm wa 'alâ âli Ibrâhîm, wa bârik 'alâ Muhammad wa 'alâ âli Muhammad, kamâ bârakta 'alâ Ibrâhîm wa 'alâ âli Ibrâhîm, innaka hamîdun majîd","Ya Allah, limpahkan shalawat kepada Muhammad dan keluarganya sebagaimana Engkau limpahkan kepada Ibrahim dan keluarganya; berkahilah Muhammad dan keluarganya sebagaimana Engkau berkahi Ibrahim dan keluarganya. Sungguh Engkau Maha Terpuji lagi Maha Mulia."];
+const SUNNAH=[
+{id:"dhuha",n:"Sholat Dhuha",rk:"2–12 rakaat (salam tiap 2 rakaat)",hk:"Sunnah",wk:"dhuha",
+ niat:["أُصَلِّيْ سُنَّةَ الضُّحٰى رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatadh-dhuhâ rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Dhuha dua rakaat karena Allah Ta'ala."],
+ cara:CARA2.concat(["Banyak yang membaca Asy-Syams/Ad-Duha di rakaat pertama dan Al-Lail/Al-Ikhlas di rakaat kedua (tidak wajib)","Ulangi untuk rakaat berikutnya, lalu berdoa"]),
+ baca:[["Doa setelah sholat Dhuha","اَللّٰهُمَّ إِنَّ الضُّحَاءَ ضُحَاؤُكَ، وَالْبَهَاءَ بَهَاؤُكَ، وَالْجَمَالَ جَمَالُكَ، وَالْقُوَّةَ قُوَّتُكَ، وَالْقُدْرَةَ قُدْرَتُكَ، وَالْعِصْمَةَ عِصْمَتُكَ. اَللّٰهُمَّ إِنْ كَانَ رِزْقِيْ فِي السَّمَاءِ فَأَنْزِلْهُ، وَإِنْ كَانَ فِي الْأَرْضِ فَأَخْرِجْهُ، وَإِنْ كَانَ مُعْسَرًا فَيَسِّرْهُ، وَإِنْ كَانَ حَرَامًا فَطَهِّرْهُ، وَإِنْ كَانَ بَعِيْدًا فَقَرِّبْهُ، بِحَقِّ ضُحَائِكَ وَبَهَائِكَ وَجَمَالِكَ وَقُوَّتِكَ وَقُدْرَتِكَ، آتِنِيْ مَا آتَيْتَ عِبَادَكَ الصَّالِحِيْنَ","Allâhumma innadh-dhuhâ'a dhuhâ'uka, wal-bahâ'a bahâ'uka, wal-jamâla jamâluka, wal-quwwata quwwatuka, wal-qudrata qudratuka, wal-'ishmata 'ishmatuka. Allâhumma in kâna rizqî fis-samâ'i fa anzilhu, wa in kâna fil-ardhi fa akhrijhu, wa in kâna mu'saran fa yassirhu, wa in kâna harâman fa thahhirhu, wa in kâna ba'îdan fa qarribhu, bi haqqi dhuhâ'ika wa bahâ'ika wa jamâlika wa quwwatika wa qudratika, âtinî mâ âtaita 'ibâdakash-shâlihîn","Ya Allah, waktu dhuha adalah waktu-Mu, keagungan adalah keagungan-Mu, keindahan adalah keindahan-Mu, kekuatan adalah kekuatan-Mu, kekuasaan adalah kekuasaan-Mu, perlindungan adalah perlindungan-Mu. Ya Allah, jika rezekiku di langit turunkanlah, jika di bumi keluarkanlah, jika sulit mudahkanlah, jika haram sucikanlah, jika jauh dekatkanlah. Berikanlah kepadaku apa yang Engkau berikan kepada hamba-hamba-Mu yang saleh."]],
+ ket:"Dilakukan saat matahari sudah naik sampai sebelum masuk waktu zuhur. Pahalanya disebut setara sedekah bagi setiap persendian tubuh."},
+{id:"tahajud",n:"Sholat Tahajud",rk:"Minimal 2 rakaat, tidak dibatasi (salam tiap 2), ditutup witir",hk:"Sunnah muakkad",wk:"tahajud",
+ niat:["أُصَلِّيْ سُنَّةَ التَّهَجُّدِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatat-tahajjudi rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Tahajud dua rakaat karena Allah Ta'ala."],
+ cara:["Tidur dulu setelah Isya, lalu bangun di malam hari"].concat(CARA2,["Lanjutkan 2 rakaat berikutnya sesuai kemampuan","Tutup dengan sholat witir, lalu berdoa dan beristighfar"]),
+ baca:[["Doa sholat Tahajud (HR. Bukhari)","اَللّٰهُمَّ لَكَ الْحَمْدُ أَنْتَ قَيِّمُ السَّمٰوَاتِ وَالْأَرْضِ وَمَنْ فِيْهِنَّ، وَلَكَ الْحَمْدُ أَنْتَ نُوْرُ السَّمٰوَاتِ وَالْأَرْضِ وَمَنْ فِيْهِنَّ، وَلَكَ الْحَمْدُ أَنْتَ الْحَقُّ، وَوَعْدُكَ الْحَقُّ، وَلِقَاؤُكَ حَقٌّ، وَقَوْلُكَ حَقٌّ، وَالْجَنَّةُ حَقٌّ، وَالنَّارُ حَقٌّ، وَالنَّبِيُّوْنَ حَقٌّ، وَمُحَمَّدٌ حَقٌّ، وَالسَّاعَةُ حَقٌّ. اَللّٰهُمَّ لَكَ أَسْلَمْتُ، وَبِكَ آمَنْتُ، وَعَلَيْكَ تَوَكَّلْتُ، وَإِلَيْكَ أَنَبْتُ، وَبِكَ خَاصَمْتُ، وَإِلَيْكَ حَاكَمْتُ، فَاغْفِرْ لِيْ مَا قَدَّمْتُ وَمَا أَخَّرْتُ، وَمَا أَسْرَرْتُ وَمَا أَعْلَنْتُ، أَنْتَ الْمُقَدِّمُ وَأَنْتَ الْمُؤَخِّرُ، لَا إِلٰهَ إِلَّا أَنْتَ","Allâhumma lakal-hamdu anta qayyimus-samâwâti wal-ardhi wa man fîhinna, wa lakal-hamdu anta nûrus-samâwâti wal-ardhi wa man fîhinna, wa lakal-hamdu antal-haqq, wa wa'dukal-haqq, wa liqâ'uka haqq, wa qauluka haqq, wal-jannatu haqq, wan-nâru haqq, wan-nabiyyûna haqq, wa Muhammadun haqq, was-sâ'atu haqq. Allâhumma laka aslamtu, wa bika âmantu, wa 'alaika tawakkaltu, wa ilaika anabtu, wa bika khâshamtu, wa ilaika hâkamtu, faghfir lî mâ qaddamtu wa mâ akhkhartu, wa mâ asrartu wa mâ a'lantu, antal-muqaddimu wa antal-mu'akhkhiru, lâ ilâha illâ anta","Ya Allah, segala puji bagi-Mu, Engkaulah penegak langit, bumi, dan isinya; Engkaulah cahaya langit, bumi, dan isinya. Engkaulah Yang Haq, janji-Mu benar, pertemuan dengan-Mu benar, firman-Mu benar, surga benar, neraka benar, para nabi benar, Muhammad benar, dan hari kiamat benar. Ya Allah, kepada-Mu aku berserah, kepada-Mu aku beriman, kepada-Mu aku bertawakal, kepada-Mu aku kembali. Ampunilah dosaku yang lalu dan yang akan datang, yang tersembunyi dan yang tampak. Engkaulah Yang Mendahulukan dan Yang Mengakhirkan. Tiada tuhan selain Engkau."]],
+ ket:"Waktu terbaik sepertiga malam terakhir. Termasuk qiyamul lail yang sangat dianjurkan."},
+{id:"witir",n:"Sholat Witir",rk:"Ganjil: 1, 3, 5 … 11 rakaat",hk:"Sunnah muakkad",wk:"witir",
+ niat:["أُصَلِّيْ سُنَّةَ الْوِتْرِ رَكْعَةً لِلّٰهِ تَعَالٰى","Ushallî sunnatal-witri rak'atan lillâhi ta'âlâ","Aku niat sholat sunnah Witir satu rakaat karena Allah Ta'ala. (Untuk 2 rakaat: rak'ataini; 3 rakaat: tsalâtsa raka'âtin)"],
+ cara:["Untuk 3 rakaat: kerjakan 2 rakaat lalu salam, kemudian 1 rakaat lalu salam; atau 3 rakaat sekaligus dengan satu tasyahud akhir","Surah yang sering dibaca: Al-A'la (rakaat 1), Al-Kafirun (rakaat 2), Al-Ikhlas, Al-Falaq, An-Nas (rakaat 3)","Pada separuh akhir Ramadan, sebagian mazhab membaca qunut di rakaat terakhir","Jadikan witir sebagai penutup sholat malam"],
+ baca:[["Dzikir setelah witir (dibaca 3×)","سُبْحَانَ الْمَلِكِ الْقُدُّوْسِ","Subhânal-malikil-quddûs","Mahasuci Raja Yang Mahasuci."]],
+ ket:"Waktunya setelah Isya sampai sebelum Subuh."},
+{id:"rawatib",n:"Sholat Rawatib",rk:"2 rakaat (zuhur dan asar boleh 4)",hk:"Muakkad & ghairu muakkad",wk:"rawatib",
+ niat:["أُصَلِّيْ سُنَّةَ الصُّبْحِ رَكْعَتَيْنِ قَبْلِيَّةً لِلّٰهِ تَعَالٰى","Ushallî sunnatash-shubhi rak'ataini qabliyyatan lillâhi ta'âlâ","Aku niat sholat sunnah sebelum Subuh dua rakaat karena Allah Ta'ala. Ganti nama waktunya (azh-zhuhri, al-'ashri, al-maghribi, al-'isyâ'i) dan qabliyyatan (sebelum) / ba'diyyatan (sesudah)."],
+ cara:["Muakkad (sangat dianjurkan): 2 sebelum Subuh, 2 atau 4 sebelum Zuhur, 2 sesudah Zuhur, 2 sesudah Magrib, 2 sesudah Isya","Ghairu muakkad: 2 atau 4 sebelum Asar, 2 sebelum Magrib, 2 sebelum Isya","Tidak ada rawatib sesudah Subuh dan sesudah Asar","Tata cara sama seperti sholat 2 rakaat biasa"],
+ baca:[],ket:"Dua rakaat sebelum Subuh disebut lebih baik daripada dunia dan isinya (HR. Muslim)."},
+{id:"taubat",n:"Sholat Taubat",rk:"2 rakaat",hk:"Sunnah",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةَ التَّوْبَةِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatat-taubati rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Taubat dua rakaat karena Allah Ta'ala."],
+ cara:CARA2.concat(["Setelah salam, perbanyak istighfar dan baca Sayyidul Istighfar","Syarat taubat: menyesal, berhenti dari dosa, bertekad tidak mengulang, dan mengembalikan hak orang lain bila terkait sesama"]),
+ baca:[["Sayyidul Istighfar","اَللّٰهُمَّ أَنْتَ رَبِّيْ لَا إِلٰهَ إِلَّا أَنْتَ، خَلَقْتَنِيْ وَأَنَا عَبْدُكَ، وَأَنَا عَلٰى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوْذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوْءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوْءُ بِذَنْبِيْ فَاغْفِرْ لِيْ، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوْبَ إِلَّا أَنْتَ","Allâhumma anta rabbî lâ ilâha illâ anta, khalaqtanî wa ana 'abduka, wa ana 'alâ 'ahdika wa wa'dika mastatha'tu, a'ûdzu bika min syarri mâ shana'tu, abû'u laka bini'matika 'alayya, wa abû'u bidzanbî faghfir lî, fa innahû lâ yaghfirudz-dzunûba illâ anta","Ya Allah, Engkau Tuhanku, tiada tuhan selain Engkau. Engkau menciptakanku dan aku hamba-Mu. Aku berada di atas janji-Mu semampuku. Aku berlindung kepada-Mu dari keburukan perbuatanku. Aku mengakui nikmat-Mu kepadaku dan mengakui dosaku, maka ampunilah aku, karena tidak ada yang mengampuni dosa selain Engkau."]],
+ ket:"Dikerjakan kapan saja setelah berbuat dosa, di luar waktu terlarang sholat."},
+{id:"hajat",n:"Sholat Hajat",rk:"2–12 rakaat (salam tiap 2)",hk:"Sunnah",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةَ الْحَاجَةِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-hâjati rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Hajat dua rakaat karena Allah Ta'ala."],
+ cara:CARA2.concat(["Setelah salam, memuji Allah, bershalawat, lalu membaca doa hajat dan menyebut keperluan"]),
+ baca:[["Doa sholat Hajat (HR. Tirmidzi)","لَا إِلٰهَ إِلَّا اللّٰهُ الْحَلِيْمُ الْكَرِيْمُ، سُبْحَانَ اللّٰهِ رَبِّ الْعَرْشِ الْعَظِيْمِ، اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِيْنَ، أَسْأَلُكَ مُوْجِبَاتِ رَحْمَتِكَ، وَعَزَائِمَ مَغْفِرَتِكَ، وَالْغَنِيْمَةَ مِنْ كُلِّ بِرٍّ، وَالسَّلَامَةَ مِنْ كُلِّ إِثْمٍ، لَا تَدَعْ لِيْ ذَنْبًا إِلَّا غَفَرْتَهُ، وَلَا هَمًّا إِلَّا فَرَّجْتَهُ، وَلَا حَاجَةً هِيَ لَكَ رِضًا إِلَّا قَضَيْتَهَا يَا أَرْحَمَ الرَّاحِمِيْنَ","Lâ ilâha illallâhul-halîmul-karîm, subhânallâhi rabbil-'arsyil-'azhîm, al-hamdu lillâhi rabbil-'âlamîn, as'aluka mûjibâti rahmatik, wa 'azâ'ima maghfiratik, wal-ghanîmata min kulli birr, was-salâmata min kulli itsm, lâ tada' lî dzanban illâ ghafartah, wa lâ hamman illâ farrajtah, wa lâ hâjatan hiya laka ridhan illâ qadhaitahâ yâ arhamar-râhimîn","Tiada tuhan selain Allah Yang Maha Penyantun lagi Maha Mulia. Mahasuci Allah, Tuhan Arsy yang agung. Segala puji bagi Allah, Tuhan semesta alam. Aku memohon hal-hal yang mendatangkan rahmat-Mu, ampunan-Mu, keuntungan dari setiap kebaikan, dan keselamatan dari setiap dosa. Jangan biarkan satu dosa pun kecuali Engkau ampuni, satu kesedihan kecuali Engkau lapangkan, dan satu hajat yang Engkau ridai kecuali Engkau penuhi, wahai Yang Maha Penyayang."]],
+ ket:"Dikerjakan ketika memiliki keperluan penting, di luar waktu terlarang. Sebagian ulama menilai hadisnya lemah tetapi boleh diamalkan untuk keutamaan."},
+{id:"istikharah",n:"Sholat Istikharah",rk:"2 rakaat",hk:"Sunnah",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةَ الْاِسْتِخَارَةِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-istikhârati rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Istikharah dua rakaat karena Allah Ta'ala."],
+ cara:CARA2.concat(["Setelah salam, baca doa istikharah. Saat sampai \"hâdzal-amra\", sebutkan urusan yang sedang dipilih","Lalu jalani pilihan yang paling dimantapkan hati dan dimudahkan jalannya"]),
+ baca:[["Doa Istikharah (HR. Bukhari)","اَللّٰهُمَّ إِنِّيْ أَسْتَخِيْرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيْمِ، فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ، وَتَعْلَمُ وَلَا أَعْلَمُ، وَأَنْتَ عَلَّامُ الْغُيُوْبِ. اَللّٰهُمَّ إِنْ كُنْتَ تَعْلَمُ أَنَّ هٰذَا الْأَمْرَ خَيْرٌ لِيْ فِيْ دِيْنِيْ وَمَعَاشِيْ وَعَاقِبَةِ أَمْرِيْ فَاقْدُرْهُ لِيْ وَيَسِّرْهُ لِيْ ثُمَّ بَارِكْ لِيْ فِيْهِ، وَإِنْ كُنْتَ تَعْلَمُ أَنَّ هٰذَا الْأَمْرَ شَرٌّ لِيْ فِيْ دِيْنِيْ وَمَعَاشِيْ وَعَاقِبَةِ أَمْرِيْ فَاصْرِفْهُ عَنِّيْ وَاصْرِفْنِيْ عَنْهُ، وَاقْدُرْ لِيَ الْخَيْرَ حَيْثُ كَانَ ثُمَّ أَرْضِنِيْ بِهِ","Allâhumma innî astakhîruka bi 'ilmik, wa astaqdiruka bi qudratik, wa as'aluka min fadhlikal-'azhîm, fa innaka taqdiru wa lâ aqdir, wa ta'lamu wa lâ a'lam, wa anta 'allâmul-ghuyûb. Allâhumma in kunta ta'lamu anna hâdzal-amra khairun lî fî dînî wa ma'âsyî wa 'âqibati amrî faqdurhu lî wa yassirhu lî tsumma bârik lî fîh, wa in kunta ta'lamu anna hâdzal-amra syarrun lî fî dînî wa ma'âsyî wa 'âqibati amrî fashrifhu 'annî washrifnî 'anhu, waqdur liyal-khaira haitsu kâna tsumma ardhinî bih","Ya Allah, aku memohon pilihan kepada-Mu dengan ilmu-Mu, memohon kemampuan dengan kuasa-Mu, dan memohon karunia-Mu yang agung. Engkau Mahakuasa sedang aku tidak, Engkau Maha Mengetahui sedang aku tidak, Engkau Maha Mengetahui yang gaib. Ya Allah, jika urusan ini baik bagi agamaku, kehidupanku, dan akhir urusanku, takdirkanlah, mudahkanlah, lalu berkahilah. Jika urusan ini buruk bagiku, jauhkanlah ia dariku dan jauhkan aku darinya, takdirkan kebaikan di mana pun berada, lalu jadikan aku rida dengannya."]],
+ ket:"Untuk memohon petunjuk dalam memilih perkara yang mubah (boleh), misalnya pekerjaan, jodoh, atau keputusan penting."},
+{id:"jenazah",n:"Sholat Jenazah",rk:"4 takbir, tanpa rukuk dan sujud",hk:"Fardhu kifayah",wk:"jenazah",
+ niat:["أُصَلِّيْ عَلٰى هٰذَا الْمَيِّتِ أَرْبَعَ تَكْبِيْرَاتٍ فَرْضَ كِفَايَةٍ لِلّٰهِ تَعَالٰى","Ushallî 'alâ hâdzal-mayyiti arba'a takbîrâtin fardha kifâyatin lillâhi ta'âlâ","Aku niat sholat atas jenazah ini empat takbir, fardhu kifayah karena Allah Ta'ala. (Jenazah perempuan: 'alâ hâdzihil-mayyitati)"],
+ cara:["Dikerjakan sambil berdiri, menghadap kiblat, jenazah di depan","Takbir 1: membaca Al-Fatihah","Takbir 2: membaca shalawat Ibrahimiyah","Takbir 3: mendoakan jenazah","Takbir 4: berdoa untuk jenazah dan yang ditinggalkan","Salam"],
+ baca:[SHALAWAT,["Doa setelah takbir ketiga","اَللّٰهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ","Allâhummaghfir lahû warhamhû wa 'âfihî wa'fu 'anhu (perempuan: lahâ, warhamhâ, wa 'âfihâ, wa'fu 'anhâ)","Ya Allah, ampunilah dia, rahmatilah dia, selamatkanlah dia, dan maafkanlah dia."],
+  ["Doa setelah takbir keempat","اَللّٰهُمَّ لَا تَحْرِمْنَا أَجْرَهُ وَلَا تَفْتِنَّا بَعْدَهُ وَاغْفِرْ لَنَا وَلَهُ","Allâhumma lâ tahrimnâ ajrahû wa lâ taftinnâ ba'dahû waghfir lanâ wa lahû (perempuan: ajrahâ, ba'dahâ, wa lahâ)","Ya Allah, jangan halangi kami dari pahalanya, jangan beri kami fitnah sepeninggalnya, dan ampunilah kami dan dia."]],
+ ket:"Wajib dikerjakan oleh sebagian kaum muslimin untuk setiap muslim yang wafat; bila sudah ada yang mengerjakan, gugur kewajiban yang lain."},
+{id:"mutlak",n:"Sholat Sunnah Mutlak",rk:"Bebas, salam tiap 2 rakaat",hk:"Sunnah",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةً رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatan rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah dua rakaat karena Allah Ta'ala."],
+ cara:CARA2,baca:[],ket:"Sholat sunnah tanpa sebab dan waktu khusus. Boleh kapan saja selain waktu terlarang."},
+{id:"tahiyat",n:"Tahiyatul Masjid",rk:"2 rakaat",hk:"Sunnah",wk:"masjid",
+ niat:["أُصَلِّيْ سُنَّةَ تَحِيَّةِ الْمَسْجِدِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnata tahiyyatil-masjidi rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Tahiyatul Masjid dua rakaat karena Allah Ta'ala."],
+ cara:["Masuk masjid dengan kaki kanan sambil berdoa","Kerjakan 2 rakaat sebelum duduk"].concat(CARA2.slice(1)),
+ baca:[["Doa masuk masjid","اَللّٰهُمَّ افْتَحْ لِيْ أَبْوَابَ رَحْمَتِكَ","Allâhummaftah lî abwâba rahmatik","Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu."]],ket:"Penghormatan untuk masjid, dikerjakan setiap masuk masjid sebelum duduk."},
+{id:"wudhu",n:"Sholat Syukrul Wudhu",rk:"2 rakaat",hk:"Sunnah",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةَ الْوُضُوْءِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-wudhû'i rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Wudhu dua rakaat karena Allah Ta'ala."],
+ cara:["Selesai wudhu, baca doa setelah wudhu"].concat(CARA2),
+ baca:[["Doa setelah wudhu","أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُوْلُهُ","Asyhadu an lâ ilâha illallâhu wahdahû lâ syarîka lah, wa asyhadu anna Muhammadan 'abduhû wa rasûluh","Aku bersaksi tiada tuhan selain Allah semata, tiada sekutu bagi-Nya, dan aku bersaksi Muhammad adalah hamba dan rasul-Nya."]],ket:"Dikerjakan setelah berwudhu."},
+{id:"tarawih",n:"Sholat Tarawih",rk:"8 atau 20 rakaat (salam tiap 2), lalu witir",hk:"Sunnah muakkad",wk:"tarawih",
+ niat:["أُصَلِّيْ سُنَّةَ التَّرَاوِيْحِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatat-tarâwîhi rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Tarawih dua rakaat karena Allah Ta'ala. (Berjamaah: tambah ma'mûman / imâman)"],
+ cara:CARA2.concat(["Ulangi tiap 2 rakaat sampai 8 atau 20 rakaat","Tutup dengan witir 3 rakaat"]),baca:[],ket:"Hanya di malam bulan Ramadan, setelah sholat Isya. Boleh sendiri atau berjamaah."},
+{id:"ied",n:"Sholat Idul Fitri & Idul Adha",rk:"2 rakaat + takbir tambahan",hk:"Sunnah muakkad",wk:"ied",
+ niat:["أُصَلِّيْ سُنَّةً لِعِيْدِ الْفِطْرِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatan li 'îdil-fithri rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Idul Fitri dua rakaat karena Allah Ta'ala. (Idul Adha: li 'îdil-adh-hâ)"],
+ cara:["Niat dan takbiratul ihram, lalu doa iftitah","Rakaat 1: takbir tambahan 7 kali, lalu Al-Fatihah dan surah (sering Al-A'la)","Rakaat 2: takbir tambahan 5 kali saat berdiri, lalu Al-Fatihah dan surah (sering Al-Gasyiyah)","Di antara takbir tambahan membaca tasbih di bawah","Selesaikan seperti sholat biasa sampai salam, lalu mendengarkan khutbah"],
+ baca:[["Bacaan di antara takbir tambahan","سُبْحَانَ اللّٰهِ وَالْحَمْدُ لِلّٰهِ وَلَا إِلٰهَ إِلَّا اللّٰهُ وَاللّٰهُ أَكْبَرُ","Subhânallâh, wal-hamdu lillâh, wa lâ ilâha illallâh, wallâhu akbar","Mahasuci Allah, segala puji bagi Allah, tiada tuhan selain Allah, Allah Mahabesar."],
+  ["Takbir hari raya","اَللّٰهُ أَكْبَرُ اَللّٰهُ أَكْبَرُ اَللّٰهُ أَكْبَرُ، لَا إِلٰهَ إِلَّا اللّٰهُ وَاللّٰهُ أَكْبَرُ، اَللّٰهُ أَكْبَرُ وَلِلّٰهِ الْحَمْدُ","Allâhu akbar, Allâhu akbar, Allâhu akbar, lâ ilâha illallâhu wallâhu akbar, Allâhu akbar wa lillâhil-hamd","Allah Mahabesar (3×), tiada tuhan selain Allah, Allah Mahabesar, Allah Mahabesar dan segala puji bagi Allah."]],
+ ket:"Waktunya setelah matahari naik sampai sebelum tergelincir pada 1 Syawal dan 10 Zulhijah. Disunnahkan berjamaah di lapangan atau masjid."},
+{id:"gerhana",n:"Sholat Gerhana (Kusuf & Khusuf)",rk:"2 rakaat, tiap rakaat 2 kali berdiri dan 2 kali rukuk",hk:"Sunnah muakkad",wk:"gerhana",
+ niat:["أُصَلِّيْ سُنَّةَ الْكُسُوْفِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-kusûfi rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah gerhana matahari dua rakaat karena Allah Ta'ala. (Gerhana bulan: sunnatal-khusûfi)"],
+ cara:["Niat, takbiratul ihram, Al-Fatihah dan surah panjang","Rukuk panjang, lalu bangkit (i'tidal) dan membaca Al-Fatihah serta surah lagi","Rukuk kedua, i'tidal, lalu dua kali sujud","Rakaat kedua sama seperti rakaat pertama, lalu tasyahud dan salam","Dilanjutkan khutbah, perbanyak dzikir, doa, istighfar, dan sedekah"],
+ baca:[],ket:"Dikerjakan saat gerhana berlangsung sampai selesai. Kusuf = gerhana matahari, khusuf = gerhana bulan."},
+{id:"istisqa",n:"Sholat Istisqa (Minta Hujan)",rk:"2 rakaat seperti sholat Id",hk:"Sunnah muakkad",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةَ الْاِسْتِسْقَاءِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-istisqâ'i rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Istisqa dua rakaat karena Allah Ta'ala."],
+ cara:["Dikerjakan berjamaah di tanah lapang saat kemarau panjang","2 rakaat dengan takbir tambahan seperti sholat Id","Setelah sholat ada khutbah, istighfar, dan doa memohon hujan"],
+ baca:[["Doa meminta hujan (HR. Abu Dawud)","اَللّٰهُمَّ اسْقِنَا غَيْثًا مُغِيْثًا مَرِيْئًا مَرِيْعًا نَافِعًا غَيْرَ ضَارٍّ عَاجِلًا غَيْرَ آجِلٍ","Allâhummasqinâ ghaitsan mughîtsan marî'an marî'an nâfi'an ghaira dhârrin 'âjilan ghaira âjil","Ya Allah, turunkanlah kepada kami hujan yang menolong, menyegarkan, menyuburkan, bermanfaat, tidak membahayakan, segera dan tidak ditunda."]],ket:"Dianjurkan didahului taubat, puasa, dan sedekah."},
+{id:"tasbih",n:"Sholat Tasbih",rk:"4 rakaat (300 kali tasbih)",hk:"Sunnah (diperselisihkan)",wk:"bebas",
+ niat:["أُصَلِّيْ سُنَّةَ التَّسْبِيْحِ أَرْبَعَ رَكَعَاتٍ لِلّٰهِ تَعَالٰى","Ushallî sunnatat-tasbîhi arba'a raka'âtin lillâhi ta'âlâ","Aku niat sholat sunnah Tasbih empat rakaat karena Allah Ta'ala."],
+ cara:["Setiap rakaat membaca tasbih di bawah sebanyak 75 kali:","15× setelah surah (sebelum rukuk)","10× saat rukuk, 10× saat i'tidal, 10× sujud pertama","10× duduk di antara dua sujud, 10× sujud kedua","10× duduk istirahat sebelum berdiri (atau sebelum tasyahud)","Boleh 4 rakaat sekali salam atau 2 rakaat dua kali salam"],
+ baca:[["Bacaan tasbih","سُبْحَانَ اللّٰهِ وَالْحَمْدُ لِلّٰهِ وَلَا إِلٰهَ إِلَّا اللّٰهُ وَاللّٰهُ أَكْبَرُ","Subhânallâh, wal-hamdu lillâh, wa lâ ilâha illallâh, wallâhu akbar","Mahasuci Allah, segala puji bagi Allah, tiada tuhan selain Allah, Allah Mahabesar."]],
+ ket:"Dianjurkan sekali seumur hidup sampai setiap hari menurut kemampuan. Sebagian ulama menilai hadisnya lemah."}];
+
+/* ============ v3 DATA: KALENDER, HAJI, HALAL ============ */
+const HMONTH=['Muharram','Safar','Rabiul Awal','Rabiul Akhir','Jumadil Awal','Jumadil Akhir','Rajab',"Sya'ban",'Ramadan','Syawal','Zulkaidah','Zulhijah'];
+const HEVENT={'1-1':'Tahun Baru Islam','1-10':'Hari Asyura (puasa sunnah)','3-12':'Maulid Nabi Muhammad ﷺ','7-27':"Isra Mi'raj",'8-15':"Nisfu Sya'ban",'9-1':'Awal Ramadan','9-17':"Nuzulul Qur'an",'10-1':'Idul Fitri','12-8':'Hari Tarwiyah','12-9':'Hari Arafah (puasa sunnah)','12-10':'Idul Adha','12-11':'Hari Tasyrik','12-12':'Hari Tasyrik','12-13':'Hari Tasyrik'};
+const AMAL=[['dhuha','Sholat Dhuha'],['tahajud','Tahajud / qiyamul lail'],['rawatib','Sholat rawatib'],['witir','Witir'],['tilawah',"Membaca Al-Qur'an"],['pagi','Dzikir pagi'],['petang','Dzikir petang'],['sedekah','Sedekah'],['puasa','Puasa sunnah'],['ortu','Berbakti / doakan orang tua']];
+const HAJI={
+umrah:{n:'Rukun Umrah',s:['Ihram (niat dari miqat)','Tawaf 7 putaran','Sa\'i antara Shafa dan Marwah 7 kali','Tahallul (mencukur/memotong rambut)','Tertib (berurutan)']},
+rukun:{n:'Rukun Haji',s:['Ihram (niat)','Wukuf di Arafah (9 Zulhijah)','Tawaf ifadah','Sa\'i','Tahallul','Tertib']},
+wajib:{n:'Wajib Haji',s:['Ihram dari miqat','Mabit (bermalam) di Muzdalifah','Mabit di Mina pada hari tasyrik','Melempar jumrah','Tawaf wada\' (perpisahan)','Menjauhi larangan ihram']},
+alur:{n:'Alur Haji (ringkas)',s:['8 Zulhijah: ihram, menuju Mina (tarwiyah)','9 Zulhijah: wukuf di Arafah, malamnya mabit di Muzdalifah','10 Zulhijah: lempar jumrah aqabah, kurban, tahallul awal, tawaf ifadah & sa\'i','11–13 Zulhijah: mabit di Mina, lempar tiga jumrah tiap hari','Sebelum pulang: tawaf wada\'']},
+larangan:{n:'Larangan Ihram',s:['Memakai wangi-wangian','Memotong rambut dan kuku','Berburu binatang darat','Menikah atau menikahkan','Berhubungan suami istri','Laki-laki: memakai pakaian berjahit & menutup kepala','Perempuan: menutup wajah dan memakai sarung tangan']}};
+const TALBIYAH=['Talbiyah','لَبَّيْكَ اللّٰهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيْكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيْكَ لَكَ','Labbaik Allâhumma labbaik, labbaika lâ syarîka laka labbaik, innal-hamda wan-ni\'mata laka wal-mulk, lâ syarîka lak','Aku penuhi panggilan-Mu ya Allah, aku penuhi panggilan-Mu. Tiada sekutu bagi-Mu. Sungguh segala puji, nikmat, dan kerajaan milik-Mu. Tiada sekutu bagi-Mu.'];
+const SYAHADAT=['Dua Kalimat Syahadat','أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللّٰهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُوْلُ اللّٰهِ','Asyhadu an lâ ilâha illallâh, wa asyhadu anna Muhammadar-rasûlullâh','Aku bersaksi bahwa tiada tuhan selain Allah, dan aku bersaksi bahwa Muhammad adalah utusan Allah.'];
+const CARDS={fitri:['Selamat Hari Raya Idul Fitri','Taqabbalallahu minna wa minkum. Mohon maaf lahir dan batin.'],adha:['Selamat Hari Raya Idul Adha','Semoga kurban dan ibadah kita diterima Allah.'],ramadan:['Marhaban ya Ramadan','Selamat menunaikan ibadah puasa. Semoga penuh berkah.'],jumat:['Jumat Berkah','Perbanyak shalawat dan doa di hari yang mulia ini.'],hijri:['Selamat Tahun Baru Islam','Semoga tahun ini membawa hijrah menuju kebaikan.']};
+
+/* ============ v3 VIEWS ============ */
+let hlKey='',cardURL='',sheetStack=[];
+const HF=(()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{day:'numeric',month:'numeric',year:'numeric',timeZone:'UTC'})}catch(e){return null}})();
+const hparts=d=>{if(!HF)return null;try{const p=HF.formatToParts(d),g=k=>parseInt((p.find(x=>x.type===k)||{}).value,10);const r={d:g('day'),m:g('month'),y:g('year')};return r.m>=1&&r.m<=12?r:null}catch(e){return null}};
+const bacaCard=([t,ar,l,a])=>`<div class="card" style="margin:12px 0"><h3>${esc(t)}</h3><div class="ar" style="font-size:24px;line-height:2.1;text-align:right">${ar}</div><p style="margin:8px 0 0;color:#cfe3dd"><i>${esc(l)}</i></p><p style="margin:6px 0 0;color:#c4d5d1">${esc(a)}</p></div>`;
+const stepList=arr=>`<ol style="margin:6px 0 0;padding-left:22px;line-height:1.6">${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
+function ayahRow(no,i,v){const q=S.q,k=no+':'+(i+1),mk=q.marks.includes(k),hf=q.hafal[k]||0,id=no+'-'+(i+1),jz=JUZ.findIndex(([s,a])=>s===no&&a===i+1);
+  return `${jz>0?`<div class="jdiv">${ic('book',16)} Juz ${jz+1} dimulai</div>`:''}<div class="ayah ${hlKey===id?'hl':''}" id="ay-${id}"><div class="ar" style="font-size:${q.font}px;line-height:2.1;text-align:right">${esc(v[0])} <span style="font-size:${Math.round(q.font*.75)}px;color:#5cc48a">﴿${arNum(i+1)}﴾</span></div>${q.tr&&v[1]?`<p><b>${i+1}.</b> ${esc(v[1])}</p>`:''}
+  <div class="aact"><button class="${mk?'on':''}" data-a="mark" data-v="${k}" aria-label="Penanda" aria-pressed="${mk}">${ic('bookmark',20,mk)}</button><button class="${hf?'h'+hf:''}" data-a="hafal" data-v="${k}" aria-label="Status hafalan">${ic('brain',20)}</button><button data-a="readto" data-v="${k}" aria-label="Tandai dibaca sampai ayat ini">${ic('check',20)}</button></div></div>`}
+const BISM='<div class="ar" style="font-size:28px;margin-top:10px">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>';
+function juzSegments(n){const[s0,a0]=JUZ[n-1],nx=JUZ[n],seg=[];for(let s=s0;s<=114;s++){if(nx&&s>nx[0])break;const from=s===s0?a0:1,to=nx&&s===nx[0]?nx[1]-1:SLAT[s-1].c;if(to>=from)seg.push([s,from,to])}return seg}
+function wkText(k,t){
+  if(k==='dhuha')return `Hari ini ${hm(t.sunrise+15)} – ${hm(t.dhuhr-10)}`;
+  if(k==='tahajud'){const night=t.fajr+1440-t.maghrib;return `Sepertiga malam terakhir ±${hm(t.fajr+1440-Math.round(night/3))} – ${hm(t.fajr)}`}
+  if(k==='witir')return `Setelah Isya ${hm(t.isha)} sampai Subuh ${hm(t.fajr)}`;
+  return {rawatib:'Sebelum/sesudah sholat wajib',bebas:'Kapan saja di luar waktu terlarang',masjid:'Saat masuk masjid, sebelum duduk',jenazah:'Saat ada muslim yang wafat',tarawih:'Malam bulan Ramadan setelah Isya',ied:'Pagi 1 Syawal dan 10 Zulhijah',gerhana:'Saat gerhana berlangsung'}[k]||''}
+function SunnahList(t){
+  return `${SUNNAH.map(x=>`<button class="scard" data-a="sheet" data-v="sunnah:${x.id}"><span style="flex:1"><b style="font-size:18px">${x.n}</b><small style="display:block;opacity:.92">${esc(wkText(x.wk,t))}</small><small style="display:block;opacity:.75">${esc(x.rk)} · ${x.hk}</small></span>${ic('right',22)}</button>`).join('')}
+  <div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px;color:#fff"><b>Waktu terlarang sholat sunnah hari ini</b>${stepList([`Setelah Subuh sampai matahari naik: ${hm(t.fajr)} – ${hm(t.sunrise+15)}`,`Saat matahari tepat di atas: ±${hm(t.dhuhr-5)} – ${hm(t.dhuhr)}`,`Setelah Asar sampai terbenam: ${hm(t.asr)} – ${hm(t.maghrib)}`])}
+  <p style="margin:8px 0 0;font-size:13px;opacity:.85">Sholat yang punya sebab (tahiyatul masjid, jenazah, gerhana) tetap boleh menurut mazhab Syafi'i. Lafaz niat cukup di hati; melafalkannya adalah kebiasaan sebagian ulama.</p></div></div>`}
+function firstUnread(){for(const s of SLAT){const m=S.q.readMax[s.no]||0;if(m<s.c)return[s.no,m+1]}return null}
+const FEAT=[
+['Agama','#d8efe6','#0f2a2b',[['Waktu sholat','moon','tab','prayer'],['Sholat sunnah','spark','psunnah',''],["Al-Qur'an",'book','tab','quran'],['Khatam','check','sheet','khatam'],['Hafalan','brain','qhafal',''],['Tasbih','beads','sheet','tasbih'],['Kiblat','compass','sheet','kiblat'],['Doa-doa','hands','sheet','doa'],['Ibadah harian','sun','sheet','amal'],['Masjid terdekat','pin','masjid',''],['Asmaul Husna','spark','sheet','asma'],['Syahadat','user','sheet','syahadat']]],
+['Kegunaan','#c6d6dd','#24414f',[['Kalender Hijriah','cal','sheet','kalender'],['Pelacak sholat','check','tab','prayer'],['Zakat','calc','sheet','zakat'],['Panduan halal','check','sheet','halal']]],
+['Catatan & berbagi','#e6defc','#4a3aa8',[['Jurnal','book','sheet','jurnal'],['Sedekah','gift','sheet','sedekah'],['Kartu ucapan','chat','sheet','kartu'],['Inspirasi','spark','sheet','inspirasi']]],
+['Haji','#fbf0c4','#4a3b00',[['Haji & Umroh','map','sheet','haji']]],
+['Keluarga','#ffe0e6','#9b2c45',[['Mode Anak','smile','kids','']]],
+['Pengaturan','#e6e6e6','#333',[['Pengaturan','sliders','sheet','settings'],['Bantuan','user','sheet','bantuan']]]];
+function Sheet2(){
+  const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  const wrap=(t,body,extra)=>`<div class="sheet">${hdr(t,extra)}<div class="scr pad" id="rscr">${body}</div></div>`;
+  const q=S.q,rtools=`<button class="ibtn" data-a="qfont" data-v="-2" aria-label="Perkecil huruf">${ic('minus',20)}</button><button class="ibtn" data-a="qfont" data-v="2" aria-label="Perbesar huruf">${ic('plus',20)}</button><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan baca">${ic('sliders',22)}</button>`;
+  if(sheet.startsWith('surah:')){const no=+sheet.split(':')[1],s=SLAT[no-1],tx=getSurah(no);
+    return `<div class="sheet reader ${q.theme}" style="--qf:'${q.face}'">${hdr(esc(s.n),rtools)}<div class="scr" id="rscr"><div style="text-align:center;padding:18px"><div class="ar" style="font-size:40px">${s.ar}</div><div class="mute">${s.a} · ${s.c} ayat · Juz ${juzOf(no,1)}${juzOf(no,s.c)!==juzOf(no,1)?'–'+juzOf(no,s.c):''}</div>${no!==1&&no!==9&&tx?BISM:''}</div>
+    ${tx?tx.map((v,i)=>v&&v[0]?ayahRow(no,i,v):'').join('')+`<div class="jend">Akhir Surah ${esc(s.n)} · ${s.c} ayat</div>`:`<div class="card" style="text-align:center"><p>Teks surat ini belum tersimpan di HP.</p>${importCard(QDATA?qStats(QDATA):null)}</div>`}
+    <div class="duo" style="padding:8px 14px 24px">${no>1?`<button class="btn" style="background:#24403f" data-a="surah" data-v="${no-1}">${ic('left',18)} ${esc(SLAT[no-2].n)}</button>`:'<span></span>'}${no<114?`<button class="btn" data-a="surah" data-v="${no+1}">${esc(SLAT[no].n)} ${ic('right',18)}</button>`:''}</div></div></div>`}
+  if(sheet.startsWith('juz:')){const n=+sheet.split(':')[1],seg=juzSegments(n),missing=seg.some(([s])=>!getSurah(s));
+    const body=seg.map(([s,f,t])=>{const S1=SLAT[s-1],tx=getSurah(s);
+      return `<div class="shead"><div class="ar" style="font-size:34px">${S1.ar}</div><b>${s}. ${esc(S1.n)}</b><div class="mute">${f===1?`${S1.c} ayat`:`lanjutan · ayat ${f}–${t} dari ${S1.c}`}${f===1&&t<S1.c?` · di juz ini ayat 1–${t}`:''}</div>${f===1&&s!==1&&s!==9&&tx?BISM:''}</div>
+      ${tx?tx.slice(f-1,t).map((v,k)=>v&&v[0]?ayahRow(s,f-1+k,v):'').join(''):'<p class="mute" style="text-align:center">Teks surah ini belum tersimpan.</p>'}
+      <div class="jend">${t===S1.c?`Akhir Surah ${esc(S1.n)}`:`Surah ${esc(S1.n)} berlanjut di Juz ${n+1} (ayat ${t+1})`}</div>`}).join('');
+    return `<div class="sheet reader ${q.theme}" style="--qf:'${q.face}'">${hdr('Juz '+n,rtools)}<div class="scr" id="rscr">
+    <div class="jdiv" style="margin-top:14px">${ic('book',16)} Juz ${n}: ${esc(SLAT[seg[0][0]-1].n)} ${seg[0][0]}:${seg[0][1]} – ${esc(SLAT[seg[seg.length-1][0]-1].n)} ${seg[seg.length-1][0]}:${seg[seg.length-1][2]}</div>
+    ${missing?`<div class="pad">${importCard(QDATA?qStats(QDATA):null)}</div>`:''}${body}
+    <div class="card" style="text-align:center;margin:16px"><b style="font-size:18px">Akhir Juz ${n}</b><p class="mute" style="margin:4px 0 12px">Batas juz ini sampai ${esc(SLAT[seg[seg.length-1][0]-1].n)} ayat ${seg[seg.length-1][2]}.</p>
+    <button class="btn" style="width:100%;margin-bottom:8px" data-a="juzdone" data-v="${n}">${ic('check',18)} Tandai Juz ${n} selesai dibaca</button>
+    <div class="duo" style="padding:0">${n>1?`<button class="btn" style="background:#24403f" data-a="juz" data-v="${n-1}">${ic('left',18)} Juz ${n-1}</button>`:'<span></span>'}${n<30?`<button class="btn" data-a="juz" data-v="${n+1}">Juz ${n+1} ${ic('right',18)}</button>`:''}</div></div></div></div>`}
+  if(sheet.startsWith('sunnah:')){const x=SUNNAH.find(z=>z.id===sheet.split(':')[1]);if(!x)return '';const t=timesFor(dayDate(0));
+    return wrap(x.n,`<div class="card" style="margin:0"><div class="mute">Waktu</div><b>${esc(wkText(x.wk,t))}</b><div class="mute" style="margin-top:8px">Jumlah rakaat</div><b>${esc(x.rk)}</b><div class="mute" style="margin-top:8px">Hukum</div><b>${x.hk}</b></div>
+    ${bacaCard(['Niat'].concat(x.niat))}<div class="card" style="margin:12px 0"><h3>Tata cara</h3>${stepList(x.cara)}</div>${x.baca.map(bacaCard).join('')}
+    <div class="card" style="margin:12px 0"><h3>Keterangan</h3><p style="margin:0;color:#c4d5d1">${esc(x.ket)}</p></div>
+    <p class="mute">Ringkasan ini mengikuti praktik umum mazhab Syafi'i di Indonesia. Untuk perbedaan pendapat, tanyakan kepada ustadz setempat.</p>`)}
+  if(sheet==='all'){const c=C();return wrap('Semua fitur',FEAT.map(([n,bg,fg,items])=>`<h3 style="margin:14px 0 4px">${n}</h3><div class="fgrid">${items.map(([l,i,a,v])=>a==='masjid'?`<a class="fitem" style="color:inherit;text-decoration:none" href="https://www.google.com/maps/search/masjid/@${c.lat},${c.lng},15z" target="_blank" rel="noopener"><span class="fic" style="background:${bg};color:${fg}">${ic(i,30)}</span>${l}</a>`:`<button class="fitem" data-a="${a}" data-v="${v}"><span class="fic" style="background:${bg};color:${fg}">${ic(i,30)}</span>${l}</button>`).join('')}</div>`).join('')+'<p class="mute">Masjid terdekat dibuka di Google Maps dan butuh internet.</p>')}
+  if(sheet==='khatam'){const read=Object.entries(q.readMax).reduce((a,[s,m])=>a+Math.min(m,SLAT[s-1].c),0),remain=TOTAL_AYAT-read,pct=Math.round(read/TOTAL_AYAT*1000)/10,kh=S.khatam,fu=firstUnread();
+    let body=`<div class="card" style="margin:0"><b style="font-size:22px">${pct}% khatam</b><div class="kbar"><i style="width:${pct}%"></i></div><p class="mute" style="margin:8px 0 0">${read.toLocaleString('id-ID')} dari ${TOTAL_AYAT.toLocaleString('id-ID')} ayat · sisa ${remain.toLocaleString('id-ID')} ayat</p></div>`;
+    if(kh){const passed=Math.floor((Date.now()-kh.start)/864e5),left=Math.max(1,kh.days-passed),per=Math.ceil(remain/left);
+      body+=`<div class="card" style="margin:12px 0"><h3>Target ${kh.days} hari</h3><p style="margin:0">Sisa <b>${left} hari</b>. Hari ini baca <b>±${per} ayat</b> (sekitar ${(per/208).toFixed(1)} juz).</p>
+      ${fu?`<button class="btn" style="width:100%;margin-top:12px" data-a="ayah" data-v="${fu[0]}:${fu[1]}">${ic('book',18)} Lanjut: ${esc(SLAT[fu[0]-1].n)} ${fu[0]}:${fu[1]}</button>`:'<p><b>MasyaAllah, khatam!</b></p>'}</div>`}
+    body+=`<h3 style="margin:16px 0 6px">${kh?'Ganti target':'Pilih target khatam'}</h3><div class="chips">${[7,15,30,60,90,120].map(d=>`<button class="${kh&&kh.days===d?'on':''}" data-a="khset" data-v="${d}">${d} hari</button>`).join('')}</div>
+    <p class="mute">Progres dihitung dari tanda centang "dibaca sampai ayat ini" dan tombol "Tandai juz selesai". Target 30 hari = 1 juz per hari.</p>
+    <button class="btn" style="width:100%;background:#5b2a33;margin-top:8px" data-a="khreset">${resetArm?'Ketuk lagi untuk mengulang dari awal':'Mulai khatam baru (reset progres baca)'}</button>`;
+    return wrap('Khatam',body)}
+  if(sheet==='amal'){const d=dayDate(S.amalOff||0),k=dkey(d),a=S.amal[k]||{},pr=S.prayed[k]||{},wj=P5.filter(p=>pr[p]).length,done=AMAL.filter(([x])=>a[x]).length;
+    const days=[...Array(7)].map((_,i)=>dayDate(i-6));
+    return wrap('Ibadah harian',`<div class="dnav" style="margin:0 0 10px"><button class="ibtn" data-a="amalday" data-v="-1" aria-label="Sebelumnya">${ic('left',26)}</button><b>${(S.amalOff||0)===0?'Hari ini, ':''}${gdate(d)}</b><button class="ibtn" data-a="amalday" data-v="1" aria-label="Berikutnya" ${(S.amalOff||0)>=0?'disabled':''}>${ic('right',26)}</button></div>
+    <div class="card" style="margin:0 0 12px"><b>Sholat wajib: ${wj}/5</b> · <b>Amalan: ${done}/${AMAL.length}</b><div class="kbar"><i style="width:${Math.round((wj+done)/(5+AMAL.length)*100)}%"></i></div></div>
+    ${AMAL.map(([x,l])=>`<button class="tgl" data-a="amal" data-v="${x}"><span>${l}</span><span class="sw2 ${a[x]?'on':''}"></span></button>`).join('')}
+    <h3 style="margin:18px 0 8px">7 hari terakhir</h3><div class="week" style="grid-template-columns:repeat(7,1fr)">${days.map(x=>{const n=AMAL.filter(([y])=>(S.amal[dkey(x)]||{})[y]).length+P5.filter(p=>(S.prayed[dkey(x)]||{})[p]).length;return `<div style="text-align:center"><div style="height:70px;background:#24403f;border-radius:10px;display:flex;align-items:flex-end;overflow:hidden"><i style="display:block;width:100%;height:${n/15*100}%;background:#5cc48a"></i></div><small>${'MSSRKJS'[x.getUTCDay()]}</small></div>`}).join('')}</div>`)}
+  if(sheet==='kalender'){const now=cityNow(),base=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()+(S.calOff||0),1,12)),y=base.getUTCFullYear(),m=base.getUTCMonth(),nd=new Date(Date.UTC(y,m+1,0)).getUTCDate(),lead=(base.getUTCDay()+6)%7,today=dkey(dayDate(0));
+    let cells='',evs=[],hm1=null,hm2=null;
+    for(let i=0;i<lead;i++)cells+='<div class="em"></div>';
+    for(let dd=1;dd<=nd;dd++){const dt=new Date(Date.UTC(y,m,dd,12)),h=hparts(dt),ev=h?HEVENT[h.m+'-'+h.d]:null,wd=dt.getUTCDay(),bidh=h&&h.d>=13&&h.d<=15&&!(h.m===12&&h.d===13),pz=wd===1||wd===4||bidh;
+      if(h){hm1=hm1||h;hm2=h}if(ev)evs.push(`${dd} ${dt.toLocaleDateString('id-ID',{month:'short',timeZone:'UTC'})} · ${h.d} ${HMONTH[h.m-1]}: ${ev}`);
+      cells+=`<div class="${ev?'ev':''} ${dkey(dt)===today?'td':''} ${pz&&!ev?'pz':''}">${dd}<small>${h?h.d:''}</small></div>`}
+    const title=base.toLocaleDateString('id-ID',{month:'long',year:'numeric',timeZone:'UTC'});
+    return wrap('Kalender Hijriah',`<div class="dnav" style="margin:0 0 10px"><button class="ibtn" data-a="calm" data-v="-1" aria-label="Bulan sebelumnya">${ic('left',26)}</button><div><b>${title}</b><span class="mute">${hm1?`${HMONTH[hm1.m-1]}${hm2&&hm2.m!==hm1.m?' – '+HMONTH[hm2.m-1]:''} ${hm2?hm2.y:''} H`:''}</span></div><button class="ibtn" data-a="calm" data-v="1" aria-label="Bulan berikutnya">${ic('right',26)}</button></div>
+    <div class="cal">${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(x=>`<div class="hd">${x}</div>`).join('')}${cells}</div>
+    <p class="mute" style="margin:10px 0">Angka kecil = tanggal Hijriah. Titik hijau = puasa sunnah (Senin, Kamis, Ayyamul Bidh 13–15). Kotak cokelat = hari besar Islam.</p>
+    ${evs.length?`<div class="card" style="margin:0"><h3>Hari penting bulan ini</h3>${stepList(evs)}</div>`:''}
+    <p class="mute">Kalender dihitung dengan Umm al-Qura. Penetapan resmi (rukyat/sidang isbat) bisa berbeda 1 hari.</p>`)}
+  if(sheet==='jurnal')return wrap('Jurnal ibadah',`<textarea id="jt" class="kin" rows="4" style="background:#24403f;color:#fff;border-color:#3a5a58;font-family:inherit;font-size:16px;font-weight:500" placeholder="Apa yang kamu syukuri dan pelajari hari ini?"></textarea>
+    <button class="btn" style="width:100%;margin:10px 0 16px" data-a="jsave">${ic('check',18)} Simpan catatan</button>
+    ${S.journal.length?S.journal.slice().reverse().map(j=>`<div class="card" style="margin:0 0 10px"><div class="mute">${new Date(j.t).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'})}</div><p style="margin:6px 0;white-space:pre-wrap">${esc(j.x)}</p><button class="link" data-a="jdel" data-v="${j.t}">Hapus</button></div>`).join(''):'<p class="mute">Belum ada catatan. Semua catatan hanya tersimpan di HP ini.</p>'}`);
+  if(sheet==='sedekah'){const now=cityNow(),mk=now.toISOString().slice(0,7),f=n=>'Rp '+Math.round(n).toLocaleString('id-ID'),tot=S.sedekah.reduce((a,x)=>a+x.a,0),mon=S.sedekah.filter(x=>new Date(x.t).toISOString().slice(0,7)===mk).reduce((a,x)=>a+x.a,0);
+    return wrap('Catatan sedekah',`<div class="duo" style="padding:0 0 12px"><div class="card" style="margin:0"><div class="mute">Bulan ini</div><b style="font-size:20px">${f(mon)}</b></div><div class="card" style="margin:0"><div class="mute">Total</div><b style="font-size:20px">${f(tot)}</b></div></div>
+    <label class="fld">Jumlah (Rp)<input id="sdA" inputmode="numeric" placeholder="contoh: 50000"></label><label class="fld">Untuk / catatan<input id="sdN" maxlength="80" placeholder="contoh: kotak amal masjid"></label>
+    <button class="btn" style="width:100%;margin-bottom:16px" data-a="sdsave">${ic('gift',18)} Catat sedekah</button>
+    ${S.sedekah.slice().reverse().map(x=>`<div class="lrow"><span class="t"><b style="font-size:17px;font-family:inherit;font-weight:700">${f(x.a)}</b><small>${esc(x.n||'Sedekah')} · ${new Date(x.t).toLocaleDateString('id-ID')}</small></span><button class="link" data-a="sddel" data-v="${x.t}">Hapus</button></div>`).join('')}
+    <p class="mute">Catatan pribadi untuk menjaga semangat berbagi; hanya tersimpan di HP ini.</p>`)}
+  if(sheet==='kartu')return wrap('Kartu ucapan',`<div class="chips">${Object.entries(CARDS).map(([k,v])=>`<button class="${S.card===k?'on':''}" data-a="cardt" data-v="${k}">${v[0].replace('Selamat ','').replace('Hari Raya ','')}</button>`).join('')}</div>
+    <label class="fld" style="margin-top:14px">Pesan (boleh diubah)<input id="cdMsg" maxlength="140" value="${esc(CARDS[S.card][1])}"></label><label class="fld">Dari<input id="cdName" maxlength="40" placeholder="nama keluarga / kamu"></label>
+    <button class="btn" style="width:100%" data-a="cardmk">${ic('spark',18)} Buat kartu</button>
+    ${cardURL?`<img src="${cardURL}" alt="Pratinjau kartu ucapan" style="width:100%;border-radius:18px;margin:14px 0"><div class="duo" style="padding:0"><button class="btn" data-a="cardshare">Bagikan</button><a class="btn" style="text-decoration:none;background:#24403f" href="${cardURL}" download="kartu-cahaya.png">Simpan</a></div>`:''}`);
+  if(sheet==='syahadat')return wrap('Syahadat',bacaCard(SYAHADAT)+`<div class="card" style="margin:12px 0"><h3>Makna</h3>${stepList(['Syahadat tauhid: mengakui tiada yang berhak disembah selain Allah','Syahadat rasul: mengakui Nabi Muhammad ﷺ sebagai utusan Allah','Syahadat adalah rukun Islam yang pertama'])}</div>`);
+  if(sheet==='halal')return wrap('Panduan halal',`<div class="card" style="margin:0 0 12px"><h3>Cara cepat mengecek</h3>${stepList(['Cari label Halal Indonesia resmi pada kemasan','Cek nomor sertifikat di situs atau aplikasi resmi BPJPH (Kementerian Agama)','Perhatikan bahan yang bisa berasal dari hewan, lalu cek sumbernya'])}</div>
+    <div class="card" style="margin:0 0 12px"><h3>Bahan yang perlu dicek sumbernya</h3>${stepList(['Gelatin (E441): bisa dari sapi, ikan, atau babi','Mono- dan digliserida (E471): bisa nabati atau hewani','Karmin (E120) dan shellac (E904): dari serangga, ada perbedaan pendapat','Shortening, lemak, enzim, rennet keju: bisa hewani','Rum, wine, mirin, angciu sebagai perasa: mengandung khamr'])}</div>
+    <p class="mute">Panduan umum, bukan pengganti sertifikasi. Daftar produk halal butuh data resmi dan koneksi internet.</p>`);
+  if(sheet==='haji')return wrap('Haji & Umroh',bacaCard(['Niat umrah','لَبَّيْكَ اللّٰهُمَّ عُمْرَةً','Labbaika Allâhumma \'umratan','Aku penuhi panggilan-Mu ya Allah untuk berumrah. (Haji: Labbaika Allâhumma hajjan)'])+bacaCard(TALBIYAH)+Object.values(HAJI).map(h=>`<div class="card" style="margin:12px 0"><h3>${h.n}</h3>${stepList(h.s)}</div>`).join('')+'<p class="mute">Ringkasan manasik. Ikuti bimbingan pembimbing dan ketentuan resmi penyelenggara haji.</p>');
+  if(sheet==='inspirasi'){const pool=[];for(const k in QT)QT[k].forEach((v,i)=>pool.push({s:+k,a:i+1,ar:v[0],tr:v[1]}));let y=pick(pool);if(QDATA){for(let t=0;t<20;t++){const[s,a]=ayahAt(Math.random()*TOTAL_AYAT|0),v=(QDATA[s-1]||[])[a-1];if(v&&v[0]&&v[1]){y={s,a,ar:v[0],tr:v[1]};break}}}const as=pick(ASMA),d=pick(DOA);
+    return wrap('Inspirasi',`<div class="card" style="margin:0 0 12px"><h3>Ayat · ${esc(SLAT[y.s-1].n)} ${y.s}:${y.a}</h3><div class="ar" style="font-size:24px;line-height:2;text-align:right">${esc(y.ar)}</div><p style="color:#c4d5d1">${esc(y.tr)}</p><button class="link" data-a="ayah" data-v="${y.s}:${y.a}">Buka di Al-Qur'an</button></div>
+    <div class="card" style="margin:0 0 12px"><h3>Asmaul Husna</h3><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>${esc(as.l)}</b><p style="margin:2px 0 0;color:#c4d5d1">${as.t}</p></div><div class="ar" style="font-size:30px;font-family:Amiri,serif">${as.ar}</div></div></div>
+    ${bacaCard([d.n,d.ar,d.l,d.t])}<button class="btn" style="width:100%" data-a="sheet" data-v="inspirasi">${ic('redo',18)} Acak lagi</button>`)}
+  if(sheet==='bantuan')return wrap('Bantuan',[["Bagaimana melengkapi Al-Qur'an 30 juz?","Buka Al-Qur'an, ketuk \"Unduh otomatis (sekali)\" saat ada internet. Setelah selesai, semua surat bisa dibaca offline. Bisa juga memilih file JSON/Tanzil sendiri."],['Waktu sholat kurang tepat?','Buka Pengaturan, ketuk "Gunakan lokasi GPS HP" dan izinkan lokasi. Metode dipilih otomatis sesuai negara. Selisih 1–2 menit dengan jadwal resmi masih wajar.'],['Kompas kiblat tidak bergerak?','Ketuk "Aktifkan kompas", pegang HP mendatar, jauhkan dari magnet, lalu gerakkan HP membentuk angka 8.'],['Bagaimana membaca per juz?','Al-Qur\'an, pilih tab Juz. Setiap juz menampilkan batas awal dan akhir, judul tiap surah, serta tanda saat surah berlanjut ke juz berikutnya.'],['Apakah data saya dikirim ke internet?','Tidak. Progres anak, catatan, hafalan, dan data Al-Qur\'an hanya disimpan di HP ini.'],['Cara keluar dari Mode Anak?','Ketuk ikon gembok di kanan atas, lalu jawab soal perkalian.']].map(([a,b])=>`<details class="card" style="margin:0 0 10px"><summary style="font-weight:700;cursor:pointer;min-height:28px">${esc(a)}</summary><p style="margin:8px 0 0;color:#c4d5d1">${esc(b)}</p></details>`).join(''));
+  return '';
+}
+async function makeCard(){
+  const [title]=CARDS[S.card],msg=(($('#cdMsg')||{}).value||CARDS[S.card][1]).trim(),from=(($('#cdName')||{}).value||'').trim();
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  try{await document.fonts.load('800 60px "Plus Jakarta Sans"');await document.fonts.load('48px Amiri')}catch(e){}
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#ea8a35');g.addColorStop(.45,'#b9566a');g.addColorStop(1,'#0f2a2b');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle='#ffe278';x.beginPath();x.arc(W/2,330,150,0,Math.PI*2);x.fill();x.fillStyle='#d26f55';x.beginPath();x.arc(W/2+70,295,135,0,Math.PI*2);x.fill();
+  x.fillStyle='#fff';for(const [sx,sy,r] of [[220,180,5],[860,140,6],[930,420,4],[140,470,4],[760,560,5]]){x.beginPath();x.arc(sx,sy,r,0,Math.PI*2);x.fill()}
+  const wrapT=(t,y,font,lh,max)=>{x.font=font;const ws=t.split(' ');let line='',yy=y;for(const w of ws){const tt=line?line+' '+w:w;if(x.measureText(tt).width>max&&line){x.fillText(line,W/2,yy);line=w;yy+=lh}else line=tt}if(line)x.fillText(line,W/2,yy);return yy+lh};
+  x.textAlign='center';x.fillStyle='#fff';let y=wrapT(title,640,'800 76px "Plus Jakarta Sans",sans-serif',90,880);
+  if(S.card==='fitri'||S.card==='adha'){x.font='64px Amiri, serif';x.fillText('تَقَبَّلَ اللّٰهُ مِنَّا وَمِنْكُمْ',W/2,y+30);y+=110}
+  y=wrapT(msg,y+30,'500 46px "Plus Jakarta Sans",sans-serif',64,860);
+  if(from){x.font='700 44px "Plus Jakarta Sans",sans-serif';x.fillText('— '+from,W/2,y+50)}
+  x.font='600 30px "Plus Jakarta Sans",sans-serif';x.fillStyle='#ffffffaa';x.fillText('Cahaya · Ibadah & Belajar',W/2,H-60);
+  cardURL=c.toDataURL('image/png');render(true)}
+async function shareCard(){try{const b=await (await fetch(cardURL)).blob(),f=new File([b],'kartu-cahaya.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:CARDS[S.card][0]})}else toast('Berbagi tidak didukung di sini. Pakai tombol Simpan.')}catch(e){toast('Berbagi dibatalkan atau tidak didukung di sini')}}
 
 /* ============ KIDS VIEWS ============ */
 const totalStars=()=>Object.values(S.kid.stars).reduce((a,b)=>a+b,0);
@@ -854,7 +1076,7 @@ function checkBadges(){const kd=S.kid,st=kd.stars,has=[];
   const nw=has.filter(b=>!kd.badges.includes(b));if(nw.length){kd.badges.push(...nw);setTimeout(()=>toast('Lencana baru: '+nw.map(b=>BADGES.find(x=>x.id===b).n).join(', ')+'!'),400)}}
 
 /* ============ RENDER & EVENTS ============ */
-let prevSheet=null,resetR=false;
+let resetR=false;
 function render(keepScroll){const sc=$('#scr'),top=sc?sc.scrollTop:0,rs=$('#rscr'),rtop=rs?rs.scrollTop:0,app=$('#app');
   app.className='phone '+(S.mode==='kids'?'kids':'adult');app.innerHTML=S.mode==='kids'?K():A();
   if(keepScroll){const s2=$('#scr');if(s2)s2.scrollTop=top;const r2=$('#rscr');if(r2&&!resetR&&!jumpAy)r2.scrollTop=rtop}
@@ -897,14 +1119,24 @@ async function importQuran(file){
     toast(`Tersimpan: ${st.ar} ayat Arab, ${st.tr} terjemahan`);render(true)}
   catch(e){toast('Gagal membaca file: '+(e.message||'format salah'))}}
 const ACT={
- tab:v=>{S.tab=v;sheet=null;S.dayOff=0;save();render()},
- sheet:v=>{if(v==='qset'&&sheet&&sheet.startsWith('surah:'))prevSheet=sheet;sheet=v;resetArm=false;render(true)},
- close:()=>{if(sheet==='qset'&&prevSheet){sheet=prevSheet;prevSheet=null}else sheet=null;render(true)},
+ tab:v=>{S.tab=v;sheet=null;sheetStack=[];S.dayOff=0;save();render()},
+ ptab:v=>{S.ptab=v;save();render(true)},psunnah:()=>{S.tab='prayer';S.ptab='sunnah';sheet=null;sheetStack=[];save();render()},qhafal:()=>{S.tab='quran';S.qtab='hafalan';sheet=null;sheetStack=[];save();render()},
+ sheet:v=>{if(sheet&&sheet!==v)sheetStack.push(sheet);if(sheet!==v)resetR=true;sheet=v;resetArm=false;render(true)},
+ close:()=>{sheet=sheetStack.pop()||null;resetArm=false;resetR=true;render(true)},
  day:v=>{S.dayOff=Math.max(-30,Math.min(30,S.dayOff+ +v));render(true)},
  pray:v=>{const[k,p]=v.split('|'),o=prayedOn(k);o[p]=!o[p];if(o[p])sfx('tap');save();render(true)},
  adzan:v=>{S.adzan[v]=S.adzan[v]===false;toast(`Pengingat azan ${PN[v]} ${S.adzan[v]?'nyala':'mati'}`);save();render(true)},
- surah:v=>{S.lastRead=+v;S.lastAy=1;sheet='surah:'+v;resetR=true;save();render(true)},
- ayah:v=>{const[s,a]=v.split(':').map(Number);S.lastRead=s;S.lastAy=a;jumpAy=a;sheet='surah:'+s;save();render(true)},
+ surah:v=>{if(sheet&&!/^(surah|juz):/.test(sheet))sheetStack.push(sheet);S.lastRead=+v;S.lastAy=1;hlKey='';sheet='surah:'+v;resetR=true;save();render(true)},
+ juz:v=>{if(sheet&&!/^(surah|juz):/.test(sheet))sheetStack.push(sheet);const[s,a]=JUZ[+v-1];S.lastRead=s;S.lastAy=a;hlKey='';sheet='juz:'+v;resetR=true;save();render(true)},
+ juzdone:v=>{juzSegments(+v).forEach(([s,f,t])=>{S.q.readMax[s]=Math.max(S.q.readMax[s]||0,t)});save();toast(`Juz ${v} ditandai selesai`);render(true)},
+ ayah:v=>{if(sheet&&!/^(surah|juz):/.test(sheet))sheetStack.push(sheet);const[s,a]=v.split(':').map(Number);S.lastRead=s;S.lastAy=a;jumpAy=hlKey=s+'-'+a;sheet='surah:'+s;save();render(true)},
+ khset:v=>{S.khatam={days:+v,start:Date.now()};save();toast(`Target khatam ${v} hari`);render(true)},
+ khreset:()=>{if(!resetArm){resetArm=true;render(true);return}resetArm=false;S.q.readMax={};S.khatam=null;save();toast('Progres baca direset');render(true)},
+ amal:v=>{const k=dkey(dayDate(S.amalOff||0)),o=S.amal[k]||(S.amal[k]={});o[v]=!o[v];if(o[v])sfx('tap');save();render(true)},amalday:v=>{S.amalOff=Math.max(-60,Math.min(0,(S.amalOff||0)+ +v));render(true)},
+ calm:v=>{S.calOff=(S.calOff||0)+ +v;render(true)},
+ jsave:()=>{const t=($('#jt')||{}).value||'';if(!t.trim()){toast('Tulis catatan dulu');return}S.journal.push({t:Date.now(),x:t.trim().slice(0,2000)});save();toast('Catatan disimpan');render(true)},jdel:v=>{S.journal=S.journal.filter(j=>j.t!==+v);save();render(true)},
+ sdsave:()=>{const a=+((($('#sdA')||{}).value||'').replace(/\D/g,''));if(!a){toast('Isi jumlah sedekah');return}S.sedekah.push({t:Date.now(),a,n:(($('#sdN')||{}).value||'').slice(0,80)});save();toast('Alhamdulillah, tercatat');render(true)},sddel:v=>{S.sedekah=S.sedekah.filter(x=>x.t!==+v);save();render(true)},
+ cardt:v=>{S.card=v;cardURL='';save();render(true)},cardmk:()=>{makeCard()},cardshare:()=>{shareCard()},
  mark:v=>{const m=S.q.marks,i=m.indexOf(v);if(i>=0)m.splice(i,1);else{m.push(v);toast('Penanda disimpan')}save();render(true)},
  hafal:v=>{const h=S.q.hafal,n=((h[v]||0)+1)%3;if(n)h[v]=n;else delete h[v];toast(n===2?'Ditandai sudah hafal':n===1?'Ditandai perlu latihan':'Status hafalan dihapus');save();render(true)},
  readto:v=>{const[s,a]=v.split(':').map(Number);S.q.readMax[s]=Math.max(S.q.readMax[s]||0,a);S.lastRead=s;S.lastAy=a;save();toast(`Dibaca sampai ${SLAT[s-1].n} ${s}:${a}`);render(true)},
