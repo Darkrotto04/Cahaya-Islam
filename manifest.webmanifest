@@ -1,0 +1,19 @@
+{
+  "name": "Cahaya: Ibadah & Belajar",
+  "short_name": "Cahaya",
+  "description": "Jadwal sholat, Al-Qur'an, kiblat, dan Mode Anak untuk belajar sambil bermain.",
+  "lang": "id",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f2a2b",
+  "theme_color": "#0f2a2b",
+  "categories": ["education", "lifestyle", "books"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

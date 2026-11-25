@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cahaya: Ibadah & Belajar</title>
+<meta name="theme-color" content="#0f2a2b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap">
+<style>
+/* VOICE: warm, devotional for parents; bright, bouncy, encouraging for kids.
+   IDEA: a prayer companion that turns into a children's adventure book when "Mode Anak" is switched on.
+   PICTURE: dusk-gradient prayer card (adult) / island adventure map with a moon mascot, Nuri (kids).
+   COLOUR and TYPE: deep teal night + dusk orange-rose + prayer green; kids: sky, sunshine, coral, mint. Plus Jakarta Sans / Baloo 2 / Amiri.
+   LAYOUT: phone app, 400x844 framed on desktop, full screen on phones and tablets. */
+:root{color-scheme:light dark;--bg:light-dark(#dfe9e7,#0a1716);--ink:light-dark(#10302e,#e8f1ef)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;display:grid;place-items:center;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffcf3f;outline-offset:2px}
+input,select{font:inherit;font-size:16px}
+.phone{position:relative;width:100vw;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+@media (min-width:520px) and (pointer:fine){.phone{width:400px;height:min(844px,calc(100dvh - 32px));border-radius:40px;box-shadow:0 30px 80px -20px #0008,0 0 0 10px #111,0 0 0 11px #333}}
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;position:relative}
+.scr::-webkit-scrollbar{display:none}
+.ic{flex:none;display:block}
+.ar{font-family:"Amiri Quran","Amiri",serif;direction:rtl}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.nav button{display:grid;justify-items:center;gap:2px;font-size:12px;font-weight:600;min-height:52px;padding-top:6px}
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);background:#14211f;color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;z-index:90;max-width:86%;text-align:center;box-shadow:0 8px 24px #0006;animation:pop .25s}
+@keyframes pop{from{opacity:0;transform:translate(-50%,10px)}}
+.conf{position:fixed;pointer-events:none;z-index:100}
+
+/* ADULT */
+.adult{background:#0f2a2b;color:#eef4f2}
+.adult .nav{background:#0b2223;border-top:1px solid #1f3c3c}
+.adult .nav button{color:#cfdad7}.adult .nav button.on{color:#5cc48a}
+.hero{margin:14px 14px 0;border-radius:26px;padding:20px;background:linear-gradient(170deg,#ea8a35,#c8664c 55%,#a24d68);color:#fff;min-height:200px;display:grid;grid-template-rows:auto 1fr auto}
+.hero h1{font-size:20px;margin:0;font-weight:800}
+.hero .big{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px}
+.hrow{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.cd{font-variant-numeric:tabular-nums;font-weight:600;opacity:.92}
+.ibtn{width:44px;height:44px;display:grid;place-items:center;border-radius:50%}
+.pad{padding:14px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px 0}
+.pill{border-radius:22px;padding:12px 16px;text-align:left;min-height:64px;color:#fff}
+.pill small{display:block;font-size:12px;opacity:.9}.pill b{font-size:16px}
+.quick{display:flex;gap:14px;overflow-x:auto;padding:16px 14px 4px;scrollbar-width:none}
+.quick button{display:grid;justify-items:center;gap:6px;font-size:13px;font-weight:600;flex:none;width:68px}
+.quick .qi{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#d8efe6;color:#0f2a2b}
+.card{background:#1d3d3d;border-radius:22px;padding:16px;margin:12px 14px 0}
+.card h3{margin:0 0 10px;font-size:17px}
+.mute{color:#9fb8b2;font-size:13px}
+.pchk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.pchk button{display:grid;justify-items:center;gap:4px;font-size:12px;font-weight:600;padding:8px 0;border-radius:14px;background:#244747}
+.pchk button.on{background:#3f9e6c}
+.circ{width:30px;height:30px;border-radius:50%;border:2px solid #7d9a95;display:grid;place-items:center}
+.on .circ{border-color:#fff;background:#fff2;color:#fff}
+.ptop{background:linear-gradient(180deg,#e58836,#d7773f);padding:18px 16px 10px;color:#fff}
+.ptop h1{margin:0;font-size:28px;font-family:Amiri,serif;font-weight:700}
+.dnav{display:flex;align-items:center;justify-content:space-between;margin-top:8px;text-align:center}
+.dnav b{font-size:18px;display:block}
+.plist{background:linear-gradient(180deg,#d7773f,#a64e5f 85%)}
+.prow{display:flex;align-items:center;gap:12px;padding:0 16px;min-height:86px;color:#fff;border-bottom:1px solid #ffffff14}
+.prow.next{background:#5fd38a}
+.prow .nm{flex:1;font-size:19px;font-weight:600}.prow .nm small{display:block;font-size:13px;font-weight:500;opacity:.92}
+.prow .tm{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.chk{width:44px;height:44px;display:grid;place-items:center}
+.chk span{width:32px;height:32px;border-radius:50%;border:2px solid #ffffff90;display:grid;place-items:center}
+.chk.on span{background:#fff;color:#3f9e6c;border-color:#fff}
+.week{display:grid;grid-template-columns:64px repeat(7,1fr);gap:6px 4px;align-items:center;font-size:11px;font-weight:700}
+.week i{height:10px;border-radius:6px;background:#ffffff26;display:block}.week i.on{background:#5fd38a}
+.seg{display:flex;background:#25403f;border-radius:30px;padding:5px;gap:4px}
+.seg button{flex:1;padding:10px 6px;border-radius:24px;font-weight:700;font-size:14px;min-height:44px}
+.seg button.on{background:#4fa36c;color:#fff}
+.seg2{display:flex;gap:8px;margin:14px 0 4px}
+.seg2 button{padding:10px 22px;border-radius:24px;font-weight:600;min-height:44px}
+.seg2 button.on{background:#fff;color:#0f2a2b}
+.lrow{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #ffffff10;width:100%;text-align:left}
+.lrow .no{width:34px;font-family:Amiri,serif;font-size:24px;color:#6f8d88;text-align:center}
+.lrow .t{flex:1}.lrow .t b{font-family:Amiri,serif;font-size:20px;font-weight:400;display:block}
+.lrow .t small{color:#9fb8b2;font-size:13px}
+.lrow .r{text-align:right}.lrow .r .ar{font-size:22px;display:block}
+.tag{display:inline-block;font-size:10px;font-weight:700;background:#3f9e6c;color:#fff;border-radius:8px;padding:1px 6px;margin-left:6px;vertical-align:2px;font-family:"Plus Jakarta Sans"}
+.link{color:#5cc48a;font-weight:600;font-size:14px}
+.sheet{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;background:#0f2a2b;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.shd{display:flex;align-items:center;gap:6px;padding:10px 8px;border-bottom:1px solid #ffffff12}
+.shd h2{font-size:18px;margin:0;flex:1}
+.ayah{padding:18px 16px;border-bottom:1px solid #ffffff10}
+.ayah .ar{font-size:28px;line-height:2.1;text-align:right}
+.ayah p{margin:8px 0 0;color:#c4d5d1;font-size:15px}
+.anum{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1.5px solid #5cc48a;font-size:12px;font-weight:700;color:#5cc48a}
+.compass{width:240px;height:240px;margin:20px auto;position:relative}
+.big-tas{width:220px;height:220px;border-radius:50%;margin:24px auto;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#6fd69a,#2f8a5a);box-shadow:0 14px 0 #1f6643,0 24px 40px #0008;color:#fff;font-size:64px;font-weight:800;font-variant-numeric:tabular-nums}
+.big-tas:active{transform:translateY(8px);box-shadow:0 6px 0 #1f6643}
+.fld{display:grid;gap:6px;margin-bottom:14px;font-size:14px;font-weight:600}
+.fld input,.fld select{background:#24403f;border:1px solid #3a5a58;color:#fff;border-radius:14px;padding:12px 14px;min-height:48px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:16px;font-weight:700;background:#4fa36c;color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{padding:10px 14px;border-radius:14px;background:#24403f;font-weight:600;font-size:14px;min-height:44px}
+.chips button.on{background:#4fa36c;color:#fff}
+
+/* KIDS */
+.kids{background:#e8f5ff;color:#24314a;font-family:"Baloo 2",system-ui,sans-serif}
+.kids .nav{grid-template-columns:repeat(3,1fr);background:#fff;border-top:3px solid #d6ecff}
+.kids .nav button{color:#7d8aa5;font-size:14px;font-weight:700}.kids .nav button.on{color:#ff6f7d}
+.khead{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border-bottom:3px solid #d6ecff}
+.khead .who{flex:1;text-align:left;display:flex;gap:10px;align-items:center}
+.khead .who b{font-size:18px;line-height:1.1;display:block}
+.xpbar{height:10px;background:#e3eefb;border-radius:8px;overflow:hidden;width:110px;margin-top:3px}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#ffcf3f,#ff9f43);border-radius:8px}
+.stat{display:flex;align-items:center;gap:3px;font-weight:800;font-size:17px;padding:4px 10px;border-radius:14px;background:#fff6dc;color:#e09b00}
+.stat.fl{background:#ffe8e3;color:#ff6a3d}
+.kbtn{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#eef5ff;color:#5b6b8a}
+.map{position:relative;background:radial-gradient(circle at 20% 10%,#bfe6ff 0 30%,transparent 31%),linear-gradient(180deg,#a8dcff,#7cc7f5 60%,#62b5ea);min-height:100%;padding-bottom:40px}
+.map svg.path{position:absolute;inset:0;width:100%;pointer-events:none}
+.isl{position:absolute;width:150px;transform:translateX(-50%);display:grid;justify-items:center;text-align:center}
+.isl .disc{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;color:#fff;box-shadow:0 8px 0 #0002,inset 0 -8px 0 #0002,0 0 0 6px #fff;position:relative}
+.isl .disc::after{content:"";position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:130px;height:26px;border-radius:50%;background:#f6dd9e;z-index:-1;box-shadow:0 4px 0 #e0bf6f}
+.isl .lbl{margin-top:18px;background:#fff;border-radius:14px;padding:4px 10px;font-weight:800;font-size:15px;line-height:1.2;box-shadow:0 4px 0 #0001}
+.isl .lbl small{display:block;font-weight:600;color:#7d8aa5;font-size:12px}
+.isl.lock .disc{filter:grayscale(.85) brightness(1.05)}
+.isl .lk{position:absolute;top:-6px;right:20px;background:#24314a;color:#fff;border-radius:50%;width:32px;height:32px;display:grid;place-items:center}
+.bubble{background:#fff;border-radius:20px;padding:12px 14px;font-size:16px;line-height:1.35;position:relative;box-shadow:0 4px 0 #d6ecff;font-weight:600}
+.mas{display:flex;gap:10px;align-items:flex-end;padding:14px}
+.mas svg{flex:none}
+.bounce{animation:bnc .7s ease-in-out infinite alternate}
+@keyframes bnc{to{transform:translateY(-8px) rotate(-4deg)}}
+.ktitle{font-size:26px;font-weight:800;margin:0;line-height:1.1}
+.kcard{background:#fff;border-radius:24px;padding:14px;margin:0 14px 12px;box-shadow:0 5px 0 #d6ecff}
+.topic{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:20px;padding:12px 14px;margin-bottom:10px;box-shadow:0 5px 0 #d6ecff;min-height:64px}
+.topic .dot{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex:none}
+.topic .t{flex:1;font-weight:700;font-size:17px;line-height:1.2}
+.topic .t small{display:block;font-weight:600;color:#7d8aa5;font-size:13px}
+.topic.lock{opacity:.55}
+.stars{display:flex;gap:1px;color:#e3e9f2}.stars .on{color:#ffc21a}
+.grp{font-weight:800;color:#5b6b8a;margin:12px 4px 8px;font-size:15px}
+.fx{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.fx span{padding:6px 12px;border-radius:12px;font-weight:800;color:#fff;font-size:16px}
+.fx .s{background:#59b8ff}.fx .x{background:#9b7bff}.fx .v{background:#ff6f7d}.fx .o{background:#3fcf9a}.fx .e{background:#ffb020}
+.fx em{font-style:normal;font-weight:800;color:#9aa7bf}
+.exr{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:2px dashed #e3eefb}
+.exr .sg{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:22px;color:#fff;flex:none}
+.exr p{margin:0;flex:1;font-weight:600;font-size:17px;line-height:1.3}
+.spk{width:44px;height:44px;border-radius:14px;background:#e7f4ff;color:#2f8fd8;display:grid;place-items:center;flex:none}
+.tchips{display:flex;flex-wrap:wrap;gap:6px}
+.tchips span{background:#fff6dc;color:#9a6b00;border-radius:12px;padding:4px 10px;font-weight:700;font-size:14px}
+.kgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kgrid button{background:#f4f9ff;border-radius:16px;padding:10px;text-align:left;min-height:64px}
+.kgrid b{display:block;font-size:15px}.kgrid small{color:#5b6b8a;font-size:14px;font-weight:600}
+.vt{width:100%;border-collapse:collapse;font-size:15px}
+.vt td,.vt th{padding:6px 4px;text-align:left;border-bottom:2px solid #eef5ff}
+.vt th{color:#7d8aa5;font-size:13px}
+.kbig{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 28px);margin:6px 14px 18px;min-height:60px;border-radius:20px;background:#ff6f7d;color:#fff;font-weight:800;font-size:21px;box-shadow:0 6px 0 #d9485a}
+.kbig:active{transform:translateY(4px);box-shadow:0 2px 0 #d9485a}
+.kbig.gr{background:#3fcf9a;box-shadow:0 6px 0 #22a374}.kbig.bl{background:#59b8ff;box-shadow:0 6px 0 #2f8fd8}
+.kbig[disabled]{background:#c9d3e2;box-shadow:0 6px 0 #aab6c8;cursor:default}
+.back{display:flex;align-items:center;gap:6px;padding:10px 12px 0}
+.back button{display:flex;align-items:center;gap:4px;font-weight:800;color:#5b6b8a;min-height:44px;padding-right:8px}
+/* game */
+.gtop{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.prog{flex:1;height:16px;background:#d6ecff;border-radius:10px;overflow:hidden}
+.prog i{display:block;height:100%;background:#3fcf9a;border-radius:10px;transition:width .3s}
+.hearts{display:flex;gap:2px;color:#ff5a6e}.hearts .off{color:#d0d8e4}
+.garea{padding:4px 16px 16px}
+.slot{min-height:120px;border-bottom:3px dashed #c3d8ee;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:10px 0 14px;margin-bottom:18px}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.wch{padding:10px 14px;background:#fff;border-radius:14px;font-weight:700;font-size:18px;box-shadow:0 4px 0 #c9dcf0;min-height:48px}
+.wch.used{visibility:hidden}
+.wch.sel{background:#ffe7ea;box-shadow:0 4px 0 #ff9aa6;color:#d2364b}
+.wch.good{background:#dcf8ec;box-shadow:0 4px 0 #7fdcb6}
+.sent{font-size:22px;font-weight:700;line-height:1.5;background:#fff;border-radius:20px;padding:16px;box-shadow:0 5px 0 #d6ecff;margin-bottom:18px}
+.sent u{text-decoration:none;display:inline-block;min-width:70px;border-bottom:3px solid #59b8ff;color:#2f8fd8;text-align:center}
+.opts{display:grid;gap:10px}
+.opt{background:#fff;border-radius:18px;padding:14px 16px;font-weight:700;font-size:18px;box-shadow:0 5px 0 #d6ecff;text-align:left;min-height:56px;border:3px solid transparent}
+.opt.sel{border-color:#59b8ff;background:#eef7ff}
+.opt.right{border-color:#3fcf9a;background:#e4fbf1}.opt.wrong{border-color:#ff6f7d;background:#ffecee}
+.opts.pics{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opts.pics .opt{text-align:center;font-size:48px;padding:12px 4px;min-height:96px;display:grid;place-items:center}
+.sw{width:56px;height:56px;border-radius:16px}
+.bigplay{width:120px;height:120px;border-radius:50%;margin:8px auto 22px;display:grid;place-items:center;background:#59b8ff;color:#fff;box-shadow:0 8px 0 #2f8fd8}
+.bigq{font-size:96px;text-align:center;line-height:1.3;margin:0 0 14px}
+.fb{padding:14px 16px 18px;border-radius:24px 24px 0 0;animation:up .2s}
+.fb.ok{background:#d5f7e8;color:#167a52}.fb.no{background:#ffe3e6;color:#b42a3d}
+.fb h4{margin:0;font-size:22px;display:flex;align-items:center;gap:8px}
+.fb p{margin:4px 0 12px;font-weight:600;font-size:16px;color:#3d4a63}
+.fb .kbig{width:100%;margin:0}
+.endv{text-align:center;padding:24px 18px}
+.bigstars{display:flex;justify-content:center;gap:8px;margin:12px 0}
+.bigstars svg{animation:pop2 .45s backwards}
+@keyframes pop2{from{transform:scale(0) rotate(-40deg)}}
+.hg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hg button{background:#fff;border-radius:16px;box-shadow:0 4px 0 #d6ecff;padding:6px 2px;min-height:84px}
+.hg .ar{font-size:36px;line-height:1.4;display:block;font-family:Amiri,serif}
+.hg small{font-weight:700;color:#5b6b8a}
+.hg button.on{background:#fff4d1}
+.vg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.vg button{background:#fff;border-radius:18px;box-shadow:0 4px 0 #d6ecff;padding:10px 4px;display:grid;justify-items:center;gap:4px;font-weight:800;font-size:16px}
+.vg .pic{font-size:44px;line-height:1.1;height:56px;display:grid;place-items:center}
+.vg .dig{font-size:40px;font-weight:800;color:#59b8ff}
+.ktabs{display:flex;gap:8px;overflow-x:auto;padding:0 14px 12px;scrollbar-width:none}
+.ktabs button{flex:none;padding:8px 16px;border-radius:16px;background:#fff;font-weight:800;box-shadow:0 4px 0 #d6ecff;min-height:44px}
+.ktabs button.on{background:#24314a;color:#fff;box-shadow:0 4px 0 #0b1426}
+.doa .ar{font-size:26px;line-height:2;text-align:right;font-family:Amiri,serif}
+.doa i{display:block;color:#2f8fd8;font-weight:600;font-size:15px}
+.doa p{margin:4px 0 0;font-weight:600;color:#5b6b8a;font-size:15px}
+.sh{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.sh button{background:#fff;border-radius:20px;box-shadow:0 5px 0 #d6ecff;padding:10px 2px;display:grid;justify-items:center;gap:2px;font-weight:800}
+.sh button small{font-weight:600;color:#7d8aa5;font-size:13px}
+.sh button.on{background:#fff4d1;box-shadow:0 5px 0 #ffd66b}
+.sh .st{color:#e3e9f2}.sh .on .st{color:#ffc21a}
+.bdg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.bdg div{text-align:center;font-weight:700;font-size:13px;line-height:1.2}
+.bdg div.off{opacity:.35;filter:grayscale(1)}
+.prof{display:grid;gap:14px;padding:0 16px}
+.prof button{display:flex;align-items:center;gap:14px;background:#fff;border-radius:26px;padding:16px;text-align:left;box-shadow:0 6px 0 #d6ecff;border:4px solid transparent}
+.prof button.on{border-color:#ff6f7d}
+.prof b{font-size:24px;display:block;line-height:1.1}.prof small{font-size:15px;color:#5b6b8a;font-weight:600}
+.kin{width:100%;border:3px solid #d6ecff;border-radius:18px;padding:12px 14px;font-family:inherit;font-size:18px;font-weight:700;background:#fff;color:#24314a;min-height:52px}
+.gate{position:absolute;inset:0;background:#24314acc;z-index:60;display:grid;place-items:center;padding:20px}
+.gate>div{background:#fff;border-radius:28px;padding:22px;width:100%;max-width:340px;text-align:center}
+.chest{display:flex;align-items:center;gap:12px;margin:0 14px 12px;padding:14px;border-radius:24px;background:linear-gradient(135deg,#ffcf3f,#ff9f43);color:#5a3500;font-weight:800;width:calc(100% - 28px);text-align:left;box-shadow:0 6px 0 #d9841f}
+.chest.off{background:#fff;color:#7d8aa5;box-shadow:0 6px 0 #d6ecff}
+.shake{animation:shk .5s 3}
+@keyframes shk{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+/* v2: quran reader, compass, search */
+.qsearch{display:flex;align-items:center;gap:10px;background:#25403f;border-radius:30px;padding:0 16px;margin:0 0 12px;min-height:50px}
+.qsearch input{flex:1;background:none;border:0;color:#fff;min-height:48px;outline:none}
+.qsearch input::placeholder{color:#8fa9a3}
+.kbar{height:8px;border-radius:6px;background:#25403f;overflow:hidden;margin-top:6px}.kbar i{display:block;height:100%;background:#5cc48a}
+.imp{background:linear-gradient(135deg,#2c5d4c,#1d3d3d);border:1px dashed #5cc48a;border-radius:20px;padding:16px;margin:12px 0}
+.imp input[type=file]{display:none}
+.hcards{display:grid;gap:10px;margin-top:12px}
+.hcards div{border-radius:20px;padding:18px;text-align:center;background:#24403f}.hcards b{font-family:Amiri,serif;font-size:26px;font-weight:400;display:block}
+.reader.sepia{background:#f5ecd9;color:#2b2116}.reader.sepia .shd{border-color:#0001}.reader.sepia .ayah{border-color:#0000000f}.reader.sepia .ayah p{color:#5a4a36}
+.reader.light{background:#fff;color:#111}.reader.light .ayah p{color:#444}.reader.light .ayah{border-color:#0000000d}
+.reader .ar{font-family:var(--qf,"Amiri Quran"),"Amiri",serif}
+.aact{display:flex;gap:4px;margin-top:8px}
+.aact button{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#7d9a95}
+.aact button.on{color:#ffc857}.aact button.h1{color:#ff9f43}.aact button.h2{color:#5cc48a}
+.ayah.hl{background:#5cc48a1f}
+.tgl{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #ffffff12;gap:12px;width:100%;text-align:left}
+.tgl small{display:block;color:#9fb8b2;font-size:13px}
+.sw2{width:50px;height:30px;border-radius:20px;background:#3a5a58;position:relative;flex:none}.sw2::after{content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#cfdad7;transition:left .2s}
+.sw2.on{background:#2f7d55}.sw2.on::after{left:24px;background:#5fd38a}
+.dial{transition:transform .15s linear}
+.qibla-ok{background:#1f5a3c!important}
+.coord{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.coord input{background:#24403f;border:1px solid #3a5a58;color:#fff;border-radius:14px;padding:10px 12px;min-height:48px;width:100%}
+.stp{display:grid;gap:8px}.stp div{display:flex;gap:10px;align-items:center;background:#f4f9ff;border-radius:14px;padding:8px 12px;font-weight:700}
+.stp span{width:30px;height:30px;border-radius:50%;background:#3fcf9a;color:#fff;display:grid;place-items:center;flex:none;font-weight:800}
+.ord .wch{font-size:16px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app" class="phone adult"></div>
+<script>
+{
+/* ============ ICONS ============ */
+const IC={
+vol:'<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
+volx:'<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',
+left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',
+star:'<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+compass:'<circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/>',
+gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+spark:'<path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/><path d="M19 17v4M17 19h4"/>',
+beads:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="3" r="1.6"/><circle cx="12" cy="21" r="1.6"/><circle cx="3" cy="12" r="1.6"/><circle cx="21" cy="12" r="1.6"/>',
+calc:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h4"/>',
+smile:'<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+map:'<path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/>',
+play:'<path d="m7 4 13 8-13 8z"/>',redo:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+lang:'<path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>',
+hands:'<path d="M7 11V5a2 2 0 0 1 4 0v6M11 9V4a2 2 0 0 1 4 0v7M15 9a2 2 0 0 1 4 0v5a8 8 0 0 1-8 8h-1a6 6 0 0 1-5-3l-2.6-4.4a2 2 0 0 1 3.4-2.1L7 15"/>',
+pin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+user:'<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+bookmark:'<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
+upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+gps:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/>',
+minus:'<path d="M5 12h14"/>',plus:'<path d="M5 12h14M12 5v14"/>',
+brain:'<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2ZM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2Z"/>',
+chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+abc:'<path d="M3 18 7 6l4 12M4.5 14h5M14 6h4a3 3 0 0 1 0 6h-4zM14 12h4.5a3 3 0 0 1 0 6H14z"/>',
+drop:'<path d="M12 2.7s7 7.3 7 12.3a7 7 0 1 1-14 0c0-5 7-12.3 7-12.3z"/>'
+};
+const ic=(n,s=22,fill)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill?'currentColor':'none'}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.random()*a.length|0];
+
+/* ============ DATA: CITIES & PRAYER ============ */
+const METH={uq:{n:'Umm al-Qura',fajr:18.5,ishaMin:90,iht:0},kemenag:{n:'Kemenag RI',fajr:20,isha:18,iht:2},jakim:{n:'JAKIM',fajr:20,isha:18,iht:1},mwl:{n:'Muslim World League',fajr:18,isha:17,iht:0}};
+const autoMeth=(lat,lng)=>lat>16&&lat<32.6&&lng>34.4&&lng<55.8?'uq':lat>1.2&&lat<6.9&&lng>99.6&&lng<104.6?'jakim':lat>-11.2&&lat<6.2&&lng>94.9&&lng<141.1?'kemenag':'mwl';
+const CITY={
+madinah:{n:'Madinah',lat:24.4672,lng:39.6111,tz:3,m:'uq'},makkah:{n:'Makkah',lat:21.4225,lng:39.8262,tz:3,m:'uq'},
+jakarta:{n:'Jakarta',lat:-6.2088,lng:106.8456,tz:7,m:'kemenag'},surabaya:{n:'Surabaya',lat:-7.2575,lng:112.7521,tz:7,m:'kemenag'},
+makassar:{n:'Makassar',lat:-5.1477,lng:119.4327,tz:8,m:'kemenag'},kl:{n:'Kuala Lumpur',lat:3.139,lng:101.6869,tz:8,m:'jakim'},
+bandung:{n:'Bandung',lat:-6.9175,lng:107.6191,tz:7,m:'kemenag'},yogya:{n:'Yogyakarta',lat:-7.7956,lng:110.3695,tz:7,m:'kemenag'},medan:{n:'Medan',lat:3.5952,lng:98.6722,tz:7,m:'kemenag'},
+riyadh:{n:'Riyadh',lat:24.7136,lng:46.6753,tz:3,m:'uq'},jeddah:{n:'Jeddah',lat:21.4858,lng:39.1925,tz:3,m:'uq'}};
+const P5=['fajr','dhuhr','asr','maghrib','isha'];
+const PN={fajr:'Subuh',sunrise:'Terbit',dhuhr:'Zuhur',asr:'Asar',maghrib:'Magrib',isha:'Isya'};
+const D2R=Math.PI/180,R2D=180/Math.PI;
+const sn=d=>Math.sin(d*D2R),cs=d=>Math.cos(d*D2R),tn=d=>Math.tan(d*D2R);
+const asn=x=>Math.asin(x)*R2D,acs=x=>Math.acos(x)*R2D,at2=(y,x)=>Math.atan2(y,x)*R2D;
+const fixA=a=>a-360*Math.floor(a/360),fixH=h=>h-24*Math.floor(h/24);
+function julian(y,m,d){if(m<=2){y--;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function ptimes(y,m,d,c){
+  const M=METH[c.m],lat=c.lat,jd=julian(y,m,d)-c.lng/(15*24);
+  const sp=t=>{const D=jd+t-2451545,g=fixA(357.529+.98560028*D),q=fixA(280.459+.98564736*D),L=fixA(q+1.915*sn(g)+.02*sn(2*g)),e=23.439-.00000036*D,RA=fixH(at2(cs(e)*sn(L),cs(L))/15);return{decl:asn(sn(e)*sn(L)),eqt:q/15-RA}};
+  const mid=t=>fixH(12-sp(t).eqt);
+  const angT=(a,t,ccw)=>{const de=sp(t).decl,T=acs((-sn(a)-sn(de)*sn(lat))/(cs(de)*cs(lat)))/15;return mid(t)+(ccw?-T:T)};
+  const asrT=t=>{const de=sp(t).decl,a=-R2D*Math.atan(1/(1+tn(Math.abs(lat-de))));return angT(a,t,false)};
+  const adj=h=>(h+c.tz-c.lng/15)*60;
+  const r={fajr:adj(angT(M.fajr,5/24,true))+M.iht,sunrise:adj(angT(.833,6/24,true))-M.iht,dhuhr:adj(mid(.5))+M.iht,asr:adj(asrT(13/24))+M.iht,maghrib:adj(angT(.833,18/24,false))+M.iht};
+  r.isha=M.ishaMin?r.maghrib+M.ishaMin:adj(angT(M.isha,18/24,false))+M.iht;
+  for(const k in r)r[k]=Math.round(r[k]);
+  return r;
+}
+const hm=min=>{min=((min%1440)+1440)%1440;return String(Math.floor(min/60)).padStart(2,'0')+'.'+String(min%60).padStart(2,'0')};
+const cdf=ms=>{const s=Math.max(0,Math.floor(ms/1000));return Math.floor(s/3600)+':'+String(Math.floor(s/60)%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+
+/* ============ DATA: QURAN ============ */
+const SAR='الفاتحة|البقرة|آل عمران|النساء|المائدة|الأنعام|الأعراف|الأنفال|التوبة|يونس|هود|يوسف|الرعد|إبراهيم|الحجر|النحل|الإسراء|الكهف|مريم|طه|الأنبياء|الحج|المؤمنون|النور|الفرقان|الشعراء|النمل|القصص|العنكبوت|الروم|لقمان|السجدة|الأحزاب|سبإ|فاطر|يس|الصافات|ص|الزمر|غافر|فصلت|الشورى|الزخرف|الدخان|الجاثية|الأحقاف|محمد|الفتح|الحجرات|ق|الذاريات|الطور|النجم|القمر|الرحمن|الواقعة|الحديد|المجادلة|الحشر|الممتحنة|الصف|الجمعة|المنافقون|التغابن|الطلاق|التحريم|الملك|القلم|الحاقة|المعارج|نوح|الجن|المزمل|المدثر|القيامة|الإنسان|المرسلات|النبإ|النازعات|عبس|التكوير|الانفطار|المطففين|الانشقاق|البروج|الطارق|الأعلى|الغاشية|الفجر|البلد|الشمس|الليل|الضحى|الشرح|التين|العلق|القدر|البينة|الزلزلة|العاديات|القارعة|التكاثر|العصر|الهمزة|الفيل|قريش|الماعون|الكوثر|الكافرون|النصر|المسد|الإخلاص|الفلق|الناس'.split('|');
+const SLAT=`Al-Fatihah,Pembukaan,7;Al-Baqarah,Sapi Betina,286;Ali 'Imran,Keluarga Imran,200;An-Nisa',Wanita,176;Al-Ma'idah,Hidangan,120;Al-An'am,Binatang Ternak,165;Al-A'raf,Tempat Tertinggi,206;Al-Anfal,Rampasan Perang,75;At-Taubah,Pengampunan,129;Yunus,Nabi Yunus,109;Hud,Nabi Hud,123;Yusuf,Nabi Yusuf,111;Ar-Ra'd,Guruh,43;Ibrahim,Nabi Ibrahim,52;Al-Hijr,Al-Hijr,99;An-Nahl,Lebah,128;Al-Isra',Perjalanan Malam,111;Al-Kahf,Gua,110;Maryam,Maryam,98;Taha,Taha,135;Al-Anbiya',Para Nabi,112;Al-Hajj,Haji,78;Al-Mu'minun,Orang Mukmin,118;An-Nur,Cahaya,64;Al-Furqan,Pembeda,77;Asy-Syu'ara',Para Penyair,227;An-Naml,Semut,93;Al-Qasas,Kisah-kisah,88;Al-'Ankabut,Laba-laba,69;Ar-Rum,Bangsa Romawi,60;Luqman,Luqman,34;As-Sajdah,Sujud,30;Al-Ahzab,Golongan Bersekutu,73;Saba',Kaum Saba',54;Fatir,Pencipta,45;Yasin,Yasin,83;As-Saffat,Barisan-barisan,182;Sad,Sad,88;Az-Zumar,Rombongan,75;Gafir,Yang Mengampuni,85;Fussilat,Yang Dijelaskan,54;Asy-Syura,Musyawarah,53;Az-Zukhruf,Perhiasan,89;Ad-Dukhan,Kabut,59;Al-Jasiyah,Yang Berlutut,37;Al-Ahqaf,Bukit Pasir,35;Muhammad,Nabi Muhammad,38;Al-Fath,Kemenangan,29;Al-Hujurat,Kamar-kamar,18;Qaf,Qaf,45;Az-Zariyat,Angin yang Menerbangkan,60;At-Tur,Bukit,49;An-Najm,Bintang,62;Al-Qamar,Bulan,55;Ar-Rahman,Yang Maha Pengasih,78;Al-Waqi'ah,Hari Kiamat,96;Al-Hadid,Besi,29;Al-Mujadilah,Gugatan,22;Al-Hasyr,Pengusiran,24;Al-Mumtahanah,Wanita yang Diuji,13;As-Saff,Barisan,14;Al-Jumu'ah,Hari Jumat,11;Al-Munafiqun,Orang Munafik,11;At-Tagabun,Ditampakkan Kesalahan,18;At-Talaq,Talak,12;At-Tahrim,Mengharamkan,12;Al-Mulk,Kerajaan,30;Al-Qalam,Pena,52;Al-Haqqah,Hari Kiamat,52;Al-Ma'arij,Tempat Naik,44;Nuh,Nabi Nuh,28;Al-Jinn,Jin,28;Al-Muzzammil,Orang Berselimut,20;Al-Muddassir,Orang Berkemul,56;Al-Qiyamah,Hari Kiamat,40;Al-Insan,Manusia,31;Al-Mursalat,Malaikat yang Diutus,50;An-Naba',Berita Besar,40;An-Nazi'at,Malaikat yang Mencabut,46;'Abasa,Bermuka Masam,42;At-Takwir,Menggulung,29;Al-Infitar,Terbelah,19;Al-Mutaffifin,Orang Curang,36;Al-Insyiqaq,Terbelah,25;Al-Buruj,Gugusan Bintang,22;At-Tariq,Yang Datang Malam Hari,17;Al-A'la,Yang Paling Tinggi,19;Al-Gasyiyah,Hari Pembalasan,26;Al-Fajr,Fajar,30;Al-Balad,Negeri,20;Asy-Syams,Matahari,15;Al-Lail,Malam,21;Ad-Duha,Waktu Duha,11;Asy-Syarh,Lapang,8;At-Tin,Buah Tin,8;Al-'Alaq,Segumpal Darah,19;Al-Qadr,Kemuliaan,5;Al-Bayyinah,Bukti Nyata,8;Az-Zalzalah,Guncangan,8;Al-'Adiyat,Kuda Perang,11;Al-Qari'ah,Hari Kiamat,11;At-Takasur,Bermegah-megahan,8;Al-'Asr,Masa,3;Al-Humazah,Pengumpat,9;Al-Fil,Gajah,5;Quraisy,Suku Quraisy,4;Al-Ma'un,Barang Berguna,7;Al-Kausar,Nikmat Berlimpah,3;Al-Kafirun,Orang Kafir,6;An-Nasr,Pertolongan,3;Al-Lahab,Gejolak Api,5;Al-Ikhlas,Ikhlas,4;Al-Falaq,Waktu Subuh,5;An-Nas,Manusia,6`.split(';').map((r,i)=>{const[n,a,c]=r.split(',');return{no:i+1,n,a,c:+c,ar:SAR[i]}});
+const QT={
+1:[['بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ','Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.'],['ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ','Segala puji bagi Allah, Tuhan seluruh alam,'],['ٱلرَّحْمَٰنِ ٱلرَّحِيمِ','Yang Maha Pengasih, Maha Penyayang,'],['مَٰلِكِ يَوْمِ ٱلدِّينِ','Pemilik hari pembalasan.'],['إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ','Hanya kepada-Mu kami menyembah dan hanya kepada-Mu kami mohon pertolongan.'],['ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ','Tunjukilah kami jalan yang lurus,'],['صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ','yaitu jalan orang-orang yang Engkau beri nikmat, bukan jalan mereka yang dimurkai dan bukan pula jalan mereka yang sesat.']],
+103:[['وَٱلْعَصْرِ','Demi masa,'],['إِنَّ ٱلْإِنسَٰنَ لَفِى خُسْرٍ','sungguh, manusia benar-benar dalam kerugian,'],['إِلَّا ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّٰلِحَٰتِ وَتَوَاصَوْا۟ بِٱلْحَقِّ وَتَوَاصَوْا۟ بِٱلصَّبْرِ','kecuali orang-orang yang beriman dan beramal saleh, serta saling menasihati untuk kebenaran dan untuk kesabaran.']],
+108:[['إِنَّآ أَعْطَيْنَٰكَ ٱلْكَوْثَرَ','Sungguh, Kami telah memberimu nikmat yang banyak.'],['فَصَلِّ لِرَبِّكَ وَٱنْحَرْ','Maka laksanakanlah salat karena Tuhanmu, dan berkurbanlah.'],['إِنَّ شَانِئَكَ هُوَ ٱلْأَبْتَرُ','Sungguh, orang yang membencimu, dialah yang terputus.']],
+110:[['إِذَا جَآءَ نَصْرُ ٱللَّهِ وَٱلْفَتْحُ','Apabila telah datang pertolongan Allah dan kemenangan,'],['وَرَأَيْتَ ٱلنَّاسَ يَدْخُلُونَ فِى دِينِ ٱللَّهِ أَفْوَاجًا','dan engkau melihat manusia berbondong-bondong masuk agama Allah,'],['فَسَبِّحْ بِحَمْدِ رَبِّكَ وَٱسْتَغْفِرْهُ ۚ إِنَّهُۥ كَانَ تَوَّابًۢا','maka bertasbihlah dengan memuji Tuhanmu dan mohonlah ampunan kepada-Nya. Sungguh, Dia Maha Penerima tobat.']],
+112:[['قُلْ هُوَ ٱللَّهُ أَحَدٌ','Katakanlah, "Dialah Allah, Yang Maha Esa.'],['ٱللَّهُ ٱلصَّمَدُ','Allah tempat meminta segala sesuatu.'],['لَمْ يَلِدْ وَلَمْ يُولَدْ','Dia tidak beranak dan tidak pula diperanakkan.'],['وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ','Dan tidak ada sesuatu pun yang setara dengan Dia."']],
+113:[['قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ','Katakanlah, "Aku berlindung kepada Tuhan yang menguasai subuh,'],['مِن شَرِّ مَا خَلَقَ','dari kejahatan makhluk yang Dia ciptakan,'],['وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ','dari kejahatan malam apabila telah gelap gulita,'],['وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ','dari kejahatan penyihir yang meniup pada buhul-buhul,'],['وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ','dan dari kejahatan orang yang dengki apabila ia dengki."']],
+114:[['قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ','Katakanlah, "Aku berlindung kepada Tuhannya manusia,'],['مَلِكِ ٱلنَّاسِ','Raja manusia,'],['إِلَٰهِ ٱلنَّاسِ','sembahan manusia,'],['مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ','dari kejahatan bisikan setan yang bersembunyi,'],['ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ','yang membisikkan kejahatan ke dalam dada manusia,'],['مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ','dari golongan jin dan manusia."']]
+};
+const arNum=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+/* juz start points [surah, ayah] */
+const JUZ=[[1,1],[2,142],[2,253],[3,93],[4,24],[4,148],[5,82],[6,111],[7,88],[8,41],[9,93],[11,6],[12,53],[15,1],[17,1],[18,75],[21,1],[23,1],[25,21],[27,56],[29,46],[33,31],[36,28],[39,32],[41,47],[46,1],[51,31],[58,1],[67,1],[78,1]];
+const TOTAL_AYAT=6236;
+const juzOf=(s,a)=>{let j=0;for(let i=0;i<30;i++){const[x,y]=JUZ[i];if(s>x||(s===x&&a>=y))j=i}return j+1};
+/* Asmaul Husna */
+const ASMA=`الرَّحْمٰنُ,Ar-Rahman,Maha Pengasih;الرَّحِيْمُ,Ar-Rahim,Maha Penyayang;الْمَلِكُ,Al-Malik,Maha Merajai;الْقُدُّوْسُ,Al-Quddus,Maha Suci;السَّلَامُ,As-Salam,Maha Memberi Kesejahteraan;الْمُؤْمِنُ,Al-Mu'min,Maha Memberi Keamanan;الْمُهَيْمِنُ,Al-Muhaimin,Maha Pemelihara;الْعَزِيْزُ,Al-'Aziz,Maha Perkasa;الْجَبَّارُ,Al-Jabbar,Maha Kuasa Memaksa;الْمُتَكَبِّرُ,Al-Mutakabbir,Maha Megah;الْخَالِقُ,Al-Khaliq,Maha Pencipta;الْبَارِئُ,Al-Bari',Maha Mengadakan;الْمُصَوِّرُ,Al-Musawwir,Maha Pembentuk Rupa;الْغَفَّارُ,Al-Gaffar,Maha Pengampun;الْقَهَّارُ,Al-Qahhar,Maha Penakluk;الْوَهَّابُ,Al-Wahhab,Maha Pemberi Karunia;الرَّزَّاقُ,Ar-Razzaq,Maha Pemberi Rezeki;الْفَتَّاحُ,Al-Fattah,Maha Pembuka Rahmat;الْعَلِيْمُ,Al-'Alim,Maha Mengetahui;الْقَابِضُ,Al-Qabid,Maha Menyempitkan;الْبَاسِطُ,Al-Basit,Maha Melapangkan;الْخَافِضُ,Al-Khafid,Maha Merendahkan;الرَّافِعُ,Ar-Rafi',Maha Meninggikan;الْمُعِزُّ,Al-Mu'izz,Maha Memuliakan;الْمُذِلُّ,Al-Muzill,Maha Menghinakan;السَّمِيْعُ,As-Sami',Maha Mendengar;الْبَصِيْرُ,Al-Basir,Maha Melihat;الْحَكَمُ,Al-Hakam,Maha Menetapkan Hukum;الْعَدْلُ,Al-'Adl,Maha Adil;اللَّطِيْفُ,Al-Latif,Maha Lembut;الْخَبِيْرُ,Al-Khabir,Maha Mengenal;الْحَلِيْمُ,Al-Halim,Maha Penyantun;الْعَظِيْمُ,Al-'Azim,Maha Agung;الْغَفُوْرُ,Al-Gafur,Maha Pengampun Dosa;الشَّكُوْرُ,Asy-Syakur,Maha Pembalas Kebaikan;الْعَلِيُّ,Al-'Aliyy,Maha Tinggi;الْكَبِيْرُ,Al-Kabir,Maha Besar;الْحَفِيْظُ,Al-Hafiz,Maha Penjaga;الْمُقِيْتُ,Al-Muqit,Maha Pemberi Kecukupan;الْحَسِيْبُ,Al-Hasib,Maha Membuat Perhitungan;الْجَلِيْلُ,Al-Jalil,Maha Luhur;الْكَرِيْمُ,Al-Karim,Maha Pemurah;الرَّقِيْبُ,Ar-Raqib,Maha Mengawasi;الْمُجِيْبُ,Al-Mujib,Maha Mengabulkan;الْوَاسِعُ,Al-Wasi',Maha Luas;الْحَكِيْمُ,Al-Hakim,Maha Bijaksana;الْوَدُوْدُ,Al-Wadud,Maha Mengasihi;الْمَجِيْدُ,Al-Majid,Maha Mulia;الْبَاعِثُ,Al-Ba'is,Maha Membangkitkan;الشَّهِيْدُ,Asy-Syahid,Maha Menyaksikan;الْحَقُّ,Al-Haqq,Maha Benar;الْوَكِيْلُ,Al-Wakil,Maha Tempat Berserah;الْقَوِيُّ,Al-Qawiyy,Maha Kuat;الْمَتِيْنُ,Al-Matin,Maha Kokoh;الْوَلِيُّ,Al-Waliyy,Maha Melindungi;الْحَمِيْدُ,Al-Hamid,Maha Terpuji;الْمُحْصِي,Al-Muhsi,Maha Menghitung;الْمُبْدِئُ,Al-Mubdi',Maha Memulai;الْمُعِيْدُ,Al-Mu'id,Maha Mengembalikan;الْمُحْيِي,Al-Muhyi,Maha Menghidupkan;الْمُمِيْتُ,Al-Mumit,Maha Mematikan;الْحَيُّ,Al-Hayy,Maha Hidup;الْقَيُّوْمُ,Al-Qayyum,Maha Berdiri Sendiri;الْوَاجِدُ,Al-Wajid,Maha Menemukan;الْمَاجِدُ,Al-Majid,Maha Agung Kemuliaannya;الْوَاحِدُ,Al-Wahid,Maha Tunggal;الْأَحَدُ,Al-Ahad,Maha Esa;الصَّمَدُ,As-Samad,Maha Tempat Bergantung;الْقَادِرُ,Al-Qadir,Maha Menentukan;الْمُقْتَدِرُ,Al-Muqtadir,Maha Berkuasa;الْمُقَدِّمُ,Al-Muqaddim,Maha Mendahulukan;الْمُؤَخِّرُ,Al-Mu'akhkhir,Maha Mengakhirkan;الْأَوَّلُ,Al-Awwal,Maha Awal;الْآخِرُ,Al-Akhir,Maha Akhir;الظَّاهِرُ,Az-Zahir,Maha Nyata;الْبَاطِنُ,Al-Batin,Maha Tersembunyi;الْوَالِي,Al-Wali,Maha Memerintah;الْمُتَعَالِي,Al-Muta'ali,Maha Tinggi Derajat-Nya;الْبَرُّ,Al-Barr,Maha Penderma;التَّوَّابُ,At-Tawwab,Maha Penerima Tobat;الْمُنْتَقِمُ,Al-Muntaqim,Maha Pemberi Balasan;الْعَفُوُّ,Al-'Afuww,Maha Pemaaf;الرَّءُوْفُ,Ar-Ra'uf,Maha Pengasuh;مَالِكُ الْمُلْكِ,Malikul Mulk,Pemilik Kerajaan;ذُو الْجَلَالِ وَالْإِكْرَامِ,Zul Jalali wal Ikram,Pemilik Kebesaran dan Kemuliaan;الْمُقْسِطُ,Al-Muqsit,Maha Pemberi Keadilan;الْجَامِعُ,Al-Jami',Maha Mengumpulkan;الْغَنِيُّ,Al-Ganiyy,Maha Kaya;الْمُغْنِي,Al-Mugni,Maha Pemberi Kekayaan;الْمَانِعُ,Al-Mani',Maha Mencegah;الضَّارُّ,Ad-Darr,Maha Pemberi Mudarat;النَّافِعُ,An-Nafi',Maha Pemberi Manfaat;النُّوْرُ,An-Nur,Maha Bercahaya;الْهَادِي,Al-Hadi,Maha Pemberi Petunjuk;الْبَدِيْعُ,Al-Badi',Maha Pencipta Tanpa Contoh;الْبَاقِي,Al-Baqi,Maha Kekal;الْوَارِثُ,Al-Waris,Maha Pewaris;الرَّشِيْدُ,Ar-Rasyid,Maha Pandai;الصَّبُوْرُ,As-Sabur,Maha Sabar`.split(';').map((r,i)=>{const[ar,l,t]=r.split(',');return{no:i+1,ar,l,t}});
+/* Rukun & tata cara (kids) */
+const RUKUN={
+islam:{n:'Rukun Islam',s:['Membaca dua kalimat syahadat','Mendirikan sholat','Menunaikan zakat','Puasa di bulan Ramadan','Haji bagi yang mampu']},
+iman:{n:'Rukun Iman',s:['Iman kepada Allah','Iman kepada malaikat','Iman kepada kitab-kitab Allah','Iman kepada rasul-rasul','Iman kepada hari akhir','Iman kepada qada dan qadar']},
+wudhu:{n:'Urutan Wudhu',s:['Niat','Membasuh kedua telapak tangan','Berkumur','Membersihkan hidung','Membasuh muka','Membasuh tangan sampai siku','Mengusap kepala','Membersihkan telinga','Membasuh kaki sampai mata kaki']},
+sholat:{n:'Gerakan Sholat',s:['Niat dan takbiratul ihram','Membaca Al-Fatihah','Rukuk','I\'tidal','Sujud','Duduk di antara dua sujud','Sujud kedua','Tasyahud akhir','Salam']}};
+/* Alphabet & phonics */
+const ABC='A apple 🍎|B ball ⚽|C cat 🐱|D dog 🐶|E egg 🥚|F fish 🐟|G grapes 🍇|H hat 🎩|I ice 🧊|J juice 🧃|K kite 🪁|L lion 🦁|M moon 🌙|N nose 👃|O orange 🍊|P pencil ✏️|Q queen 👑|R rabbit 🐰|S sun ☀️|T tree 🌳|U umbrella ☂️|V van 🚐|W watch ⌚|X fox 🦊|Y yo-yo 🪀|Z zebra 🦓'.split('|').map(s=>{const[l,w,e]=s.split(' ');return{l,w,e}});
+/* Daily conversation */
+const TALK=[['Hello!','Halo!'],['Good morning.','Selamat pagi.'],['How are you?','Apa kabar?'],['I am fine, thank you.','Aku baik, terima kasih.'],['What is your name?','Siapa namamu?'],['My name is Aisyah.','Namaku Aisyah.'],['How old are you?','Berapa umurmu?'],['I am eight years old.','Umurku delapan tahun.'],['Nice to meet you.','Senang bertemu denganmu.'],['Thank you very much!','Terima kasih banyak!'],['You are welcome.','Sama-sama.'],['Excuse me.','Permisi.'],['I am sorry.','Maafkan aku.'],['Can you help me?','Bisakah kamu membantuku?'],['May I borrow your pencil?','Bolehkah aku pinjam pensilmu?'],['See you tomorrow!','Sampai jumpa besok!']];
+
+/* ============ DATA: DOA, HIJAIYAH, VOCAB ============ */
+const DOA=[
+{n:'Doa sebelum makan',w:'Sebelum makan',ar:'اَللّٰهُمَّ بَارِكْ لَنَا فِيْمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ',l:"Allahumma baarik lanaa fiimaa razaqtanaa wa qinaa 'adzaaban naar",t:'Ya Allah, berkahilah rezeki yang Engkau berikan kepada kami, dan lindungilah kami dari siksa neraka.'},
+{n:'Doa sesudah makan',w:'Sesudah makan',ar:'اَلْحَمْدُ لِلّٰهِ الَّذِيْ أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِيْنَ',l:"Alhamdulillaahil ladzii ath'amanaa wa saqaanaa wa ja'alanaa muslimiin",t:'Segala puji bagi Allah yang telah memberi kami makan dan minum, dan menjadikan kami muslim.'},
+{n:'Doa sebelum tidur',w:'Sebelum tidur',ar:'بِاسْمِكَ اللّٰهُمَّ أَحْيَا وَبِاسْمِكَ أَمُوْتُ',l:'Bismikallaahumma ahyaa wa bismika amuut',t:'Dengan nama-Mu ya Allah aku hidup, dan dengan nama-Mu aku mati.'},
+{n:'Doa bangun tidur',w:'Bangun tidur',ar:'اَلْحَمْدُ لِلّٰهِ الَّذِيْ أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُوْرُ',l:"Alhamdulillaahil ladzii ahyaanaa ba'da maa amaatanaa wa ilaihin nusyuur",t:'Segala puji bagi Allah yang menghidupkan kami setelah menidurkan kami, dan kepada-Nya kami kembali.'},
+{n:'Doa untuk orang tua',w:'Mendoakan ayah & ibu',ar:'رَبِّ اغْفِرْ لِيْ وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِيْ صَغِيْرًا',l:'Rabbighfir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa',t:'Ya Tuhanku, ampunilah aku dan kedua orang tuaku, sayangilah mereka sebagaimana mereka menyayangiku di waktu kecil.'},
+{n:'Doa keluar rumah',w:'Keluar rumah',ar:'بِسْمِ اللّٰهِ تَوَكَّلْتُ عَلَى اللّٰهِ لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ',l:"Bismillaahi tawakkaltu 'alallaah, laa haula wa laa quwwata illaa billaah",t:'Dengan nama Allah, aku berserah diri kepada Allah. Tiada daya dan kekuatan kecuali dengan pertolongan Allah.'}];
+const HIJ='ا Alif|ب Ba|ت Ta|ث Tsa|ج Jim|ح Ha|خ Kho|د Dal|ذ Dzal|ر Ro|ز Zai|س Sin|ش Syin|ص Shod|ض Dhod|ط Tho|ظ Zho|ع Ain|غ Ghoin|ف Fa|ق Qof|ك Kaf|ل Lam|م Mim|ن Nun|و Wau|ه Ha\'|ي Ya'.split('|').map(s=>{const[h,n]=s.split(' ');return{h,n}});
+const VOC={
+animals:{n:'Hewan',w:[['cat','🐱'],['dog','🐶'],['bird','🐦'],['fish','🐟'],['rabbit','🐰'],['elephant','🐘']]},
+fruits:{n:'Buah',w:[['apple','🍎'],['banana','🍌'],['grapes','🍇'],['orange','🍊'],['watermelon','🍉'],['strawberry','🍓']]},
+colors:{n:'Warna',w:[['red','#ef4444',1],['blue','#3b82f6',1],['yellow','#facc15',1],['green','#22c55e',1],['purple','#a855f7',1],['pink','#f472b6',1]]},
+numbers:{n:'Angka',w:[['one','1',2],['two','2',2],['three','3',2],['four','4',2],['five','5',2],['six','6',2]]},
+family:{n:'Keluarga',w:[['mother','👩'],['father','👨'],['sister','👧'],['brother','👦'],['grandmother','👵'],['grandfather','👴']]},
+body:{n:'Tubuh',w:[['eye','👁️'],['ear','👂'],['nose','👃'],['mouth','👄'],['hand','✋'],['foot','🦶']]},
+school:{n:'Sekolah',w:[['book','📕'],['pencil','✏️'],['bag','🎒'],['ruler','📏'],['scissors','✂️'],['teacher','🧑‍🏫']]},
+weather:{n:'Cuaca',w:[['sunny','☀️'],['rainy','🌧️'],['cloudy','☁️'],['windy','🌬️'],['snowy','❄️'],['stormy','⛈️']]},
+vehicles:{n:'Kendaraan',w:[['car','🚗'],['bus','🚌'],['bicycle','🚲'],['train','🚆'],['plane','✈️'],['ship','🚢']]},
+days:{n:'Hari',w:[['Monday','Sen',2],['Tuesday','Sel',2],['Wednesday','Rab',2],['Thursday','Kam',2],['Friday','Jum',2],['Saturday','Sab',2]]}};
+const vpic=(w,cls='pic')=>w[2]===1?`<span class="sw" style="background:${w[1]}"></span>`:w[2]===2?`<span class="dig">${w[1]}</span>`:`<span class="${cls}">${w[1]}</span>`;
+
+/* ============ DATA: ENGLISH CURRICULUM ============
+   f: formula "text~role|..." role s=subject x=auxiliary v=verb o=object e=extra
+   ex: [positive, negative, question] ; fill: [sentence, answer, options] ; spot: [sentence, wrong word, fix, why] */
+const MOD={
+A:{n:'16 Tenses',c:'#59b8ff',sub:'Waktu dalam kalimat',t:[
+{id:'spr',g:'Present',n:'Simple Present',i:'Untuk kebiasaan dan fakta, seperti jadwal yang selalu diulang setiap hari. Kalau subjeknya he/she/it, kata kerjanya dapat tambahan -s/-es.',f:'S~s|V1 (+s/es)~v|O~o',ex:['She reads a book every day.','She does not read comics.','Does she read every day?'],ts:['every day','always','usually','often','sometimes'],fill:['My cat ___ milk every morning.','drinks',['drink','drinks','drinking']],spot:['He play football every Sunday.','play','plays','Subjek "he" butuh kata kerja + s: plays.']},
+{id:'prc',g:'Present',n:'Present Continuous',i:'Untuk kegiatan yang sedang terjadi sekarang, seperti video yang sedang diputar.',f:'S~s|am/is/are~x|V-ing~v|O~o',ex:['I am eating noodles now.','I am not sleeping.','Are you eating now?'],ts:['now','right now','at the moment','Look!','Listen!'],fill:['Look! The birds ___ in the sky.','are flying',['fly','are flying','flew']],spot:['She is dance right now.','dance','dancing','Setelah is/am/are, kata kerjanya pakai -ing: dancing.']},
+{id:'prp',g:'Present',n:'Present Perfect',i:'Untuk hal yang sudah selesai dan hasilnya masih terasa sekarang. Seperti PR yang sudah beres, jadi kamu bisa main.',f:'S~s|have/has~x|V3~v|O~o',ex:['I have finished my homework.','I have not finished my homework.','Have you finished your homework?'],ts:['already','just','yet','ever','never','since','for'],fill:['She has ___ her lunch.','eaten',['eat','ate','eaten']],spot:['They has visited Bali.','has','have','"They" memakai have, bukan has.']},
+{id:'ppc',g:'Present',n:'Present Perfect Continuous',i:'Untuk kegiatan yang dimulai di masa lalu dan masih terus berlangsung sampai sekarang, seperti hujan yang belum berhenti dari pagi.',f:'S~s|have/has been~x|V-ing~v|O~o',ex:['We have been playing for two hours.','We have not been playing for long.','Have you been waiting long?'],ts:['for','since','all day','how long'],fill:['It has ___ raining since morning.','been',['be','been','being']],spot:['He has been read for an hour.','read','reading','Setelah has been, pakai V-ing: reading.']},
+{id:'spa',g:'Past',n:'Simple Past',i:'Untuk kejadian yang sudah selesai di masa lalu, seperti cerita liburan kemarin. Kata kerjanya berubah ke bentuk ke-2 (V2).',f:'S~s|V2~v|O~o',ex:['I visited Grandma yesterday.','I did not visit Grandma.','Did you visit Grandma?'],ts:['yesterday','last night','last week','two days ago'],fill:['We ___ to the zoo last Sunday.','went',['go','went','gone']],spot:['She buyed a new bag yesterday.','buyed','bought','"Buy" adalah kata kerja tidak beraturan: buy, bought, bought.']},
+{id:'pac',g:'Past',n:'Past Continuous',i:'Untuk kegiatan yang sedang berlangsung pada waktu tertentu di masa lalu, seperti sedang membaca ketika telepon berdering.',f:'S~s|was/were~x|V-ing~v|O~o',ex:['I was reading when you called.','I was not reading.','Were you reading?'],ts:['when','while','at 8 last night'],fill:['They ___ playing when it rained.','were',['was','were','are']],spot:['We was watching TV at 8 p.m.','was','were','"We" memakai were, bukan was.']},
+{id:'pap',g:'Past',n:'Past Perfect',i:'Untuk kejadian yang terjadi lebih dulu sebelum kejadian lain di masa lalu. Seperti kereta yang sudah pergi sebelum kita sampai.',f:'S~s|had~x|V3~v|O~o',ex:['The train had left before we arrived.','The train had not left.','Had the train left?'],ts:['before','after','by the time','already'],fill:['When I came, Mom had ___ a cake.','baked',['bake','baked','baking']],spot:['She had eat breakfast before school.','eat','eaten','Setelah had, pakai V3: eaten.']},
+{id:'ppx',g:'Past',n:'Past Perfect Continuous',i:'Untuk kegiatan yang sudah berlangsung lama sebelum kejadian lain di masa lalu.',f:'S~s|had been~x|V-ing~v|O~o',ex:['He had been waiting for an hour before the bus came.','He had not been waiting long.','Had he been waiting long?'],ts:['for','since','before','how long'],fill:['They had been ___ all day, so they were tired.','working',['work','worked','working']],spot:['I had been study for hours.','study','studying','Setelah had been, pakai V-ing: studying.']},
+{id:'sfu',g:'Future',n:'Simple Future',i:'Untuk rencana atau janji di masa depan, seperti janji membantu teman besok.',f:'S~s|will~x|V1~v|O~o',ex:['I will help you tomorrow.','I will not be late.','Will you come to my party?'],ts:['tomorrow','next week','soon','later'],fill:['We will ___ Grandpa next week.','visit',['visit','visited','visits']],spot:['She will goes to school tomorrow.','goes','go','Setelah will, kata kerja selalu bentuk dasar: go.']},
+{id:'fuc',g:'Future',n:'Future Continuous',i:'Untuk kegiatan yang sedang berlangsung pada waktu tertentu di masa depan.',f:'S~s|will be~x|V-ing~v|O~o',ex:['This time tomorrow, I will be flying to Bali.','I will not be sleeping at nine.','Will you be studying tonight?'],ts:['this time tomorrow','at 7 tonight','all day tomorrow'],fill:['At 8 tomorrow, I will be ___ in class.','sitting',['sit','sat','sitting']],spot:['They will be play at noon.','play','playing','Setelah will be, pakai V-ing: playing.']},
+{id:'fup',g:'Future',n:'Future Perfect',i:'Untuk sesuatu yang akan sudah selesai sebelum waktu tertentu di masa depan.',f:'S~s|will have~x|V3~v|O~o',ex:['By six, I will have finished my homework.','I will not have finished it by noon.','Will you have finished by six?'],ts:['by tomorrow','by next year','by the time'],fill:['By Friday, she will have ___ the story.','written',['write','wrote','written']],spot:['By noon, we will have eat lunch.','eat','eaten','Setelah will have, pakai V3: eaten.']},
+{id:'fpc',g:'Future',n:'Future Perfect Continuous',i:'Untuk menghitung berapa lama sebuah kegiatan sudah berlangsung pada waktu tertentu di masa depan.',f:'S~s|will have been~x|V-ing~v|O~o',ex:['By June, I will have been learning English for two years.','I will not have been working here for a year by June.','Will you have been living here for a year?'],ts:['for','by','by the time'],fill:['By five, he will have been ___ for three hours.','swimming',['swim','swam','swimming']],spot:['By May, she will have been teach here for ten years.','teach','teaching','Setelah will have been, pakai V-ing: teaching.']},
+{id:'spf',g:'Past Future',n:'Simple Past Future',i:'Untuk "akan" yang dilihat dari masa lalu, sering dipakai saat menceritakan janji seseorang.',f:'S~s|would~x|V1~v|O~o',ex:['He said he would call me.','He said he would not be late.','Would he come the next day?'],ts:['the next day','the following week','later'],fill:['She promised she ___ help me.','would',['will','would','was']],spot:['He said he would came early.','came','come','Setelah would, kata kerja bentuk dasar: come.']},
+{id:'pfc',g:'Past Future',n:'Past Future Continuous',i:'Untuk kegiatan yang (menurut rencana di masa lalu) akan sedang berlangsung.',f:'S~s|would be~x|V-ing~v|O~o',ex:['She said she would be waiting at the gate.','She said she would not be working.','Would she be waiting there?'],ts:['at that time','the next day'],fill:['He said he would be ___ at eight.','sleeping',['sleep','slept','sleeping']],spot:['They said they would be travel the next day.','travel','traveling','Setelah would be, pakai V-ing: traveling.']},
+{id:'pfp',g:'Past Future',n:'Past Future Perfect',i:'Untuk sesuatu yang seharusnya sudah terjadi, tetapi tidak terjadi. Sering muncul di kalimat "kalau saja...".',f:'S~s|would have~x|V3~v|O~o',ex:['I would have helped you if I had known.','I would not have come.','Would you have helped me?'],ts:['if + had V3','by then'],fill:['If I had studied, I would have ___ the test.','passed',['pass','passed','passing']],spot:['She would have went to the party.','went','gone','Setelah would have, pakai V3: gone.']},
+{id:'pfx',g:'Past Future',n:'Past Future Perfect Continuous',i:'Untuk lamanya kegiatan yang akan sudah berlangsung, dilihat dari masa lalu.',f:'S~s|would have been~x|V-ing~v|O~o',ex:['By then, she would have been living there for ten years.','He would not have been working all day.','Would he have been working all day?'],ts:['by then','for','by that time'],fill:['He said by nine he would have been ___ for three hours.','driving',['drive','drove','driving']],spot:['They would have been wait for an hour.','wait','waiting','Setelah would have been, pakai V-ing: waiting.']}
+]},
+B:{n:'Parts of Speech',c:'#ff9f43',sub:'Kelas kata',t:[
+{id:'nou',n:'Nouns',i:'Kata benda adalah nama untuk orang, hewan, tempat, benda, atau perasaan. Ibaratnya label nama di setiap barang.',f:'Noun~o|= nama benda~e',k:[['Common','city, dog'],['Proper','Jakarta, Ali'],['Countable','apple, chair'],['Uncountable','water, sugar'],['Abstract','love, happiness'],['Concrete','table, flower'],['Collective','team, family'],['Compound','toothbrush, football']],ex:['My family lives in Jakarta.','I do not have much water.','Is your toothbrush blue?'],fill:['There is some ___ in the glass.','water',['apple','water','apples']],spot:['I have two childs.','childs','children','Child bentuk jamaknya tidak beraturan: children.']},
+{id:'pro',n:'Pronouns',i:'Kata ganti dipakai supaya kita tidak mengulang nama terus-menerus. "Rina makan, Rina minum" jadi "Rina makan, she minum".',f:'Pronoun~s|menggantikan~e|Noun~o',k:[['Personal','I, you, she, they'],['Possessive','mine, yours, hers'],['Reflexive','myself, herself'],['Demonstrative','this, that, these'],['Relative','who, which, that'],['Indefinite','someone, nobody']],ex:['She made the cake herself.','This is not mine.','Who is calling?'],fill:['This bag is ___.','mine',['me','my','mine']],spot:['Him is my best friend.','him','he','Sebagai subjek, pakai he, bukan him.']},
+{id:'vrb',n:'Verbs',i:'Kata kerja menunjukkan aksi atau keadaan. Ini mesin penggerak kalimat!',f:'S~s|Verb~v|O~o',k:[['Action','run, eat, jump'],['Linking','is, seem, become'],['Helping','do, have, will, can'],['Transitive','She kicks the ball.'],['Intransitive','The baby sleeps.'],['Regular','play, played, played'],['Irregular','go, went, gone']],vt:[['go','went','gone'],['eat','ate','eaten'],['write','wrote','written'],['see','saw','seen'],['buy','bought','bought'],['swim','swam','swum'],['run','ran','run'],['take','took','taken'],['play','played','played']],ex:['The baby sleeps.','He does not run fast.','Can you swim?'],fill:['Yesterday I ___ a lion at the zoo.','saw',['see','saw','seen']],spot:['She has went home.','went','gone','Setelah has, pakai V3: gone.']},
+{id:'adj',n:'Adjectives & Degrees',i:'Kata sifat menjelaskan benda: besar, lucu, merah. Untuk membandingkan, pakai -er/more (lebih) dan -est/most (paling).',f:'Positive~o|Comparative (-er/more)~x|Superlative (-est/most)~v',k:[['Descriptive','big, kind'],['Quantitative','some, many'],['Demonstrative','this book'],['Possessive','my bag'],['big','bigger, biggest'],['good','better, best'],['beautiful','more / most beautiful']],ex:['The elephant is bigger than the horse.','This cake is not too sweet.','Which is the tallest building?'],fill:['Ali is ___ than his brother.','taller',['tall','taller','tallest']],spot:['This is the most biggest box.','most','the biggest','Biggest sudah berarti "paling", jadi "most" tidak perlu.']},
+{id:'osa',n:'Royal Order (OSASCOMP)',i:'Kalau ada banyak kata sifat, urutannya seperti barisan upacara: Opinion, Size, Age, Shape, Color, Origin, Material, Purpose.',f:'Opinion~s|Size~x|Age~v|Shape~o|Color~e|Origin~s|Material~x|Purpose~v',k:[['Opinion','lovely'],['Size','small'],['Age','old'],['Shape','round'],['Color','red'],['Origin','Japanese'],['Material','wooden'],['Purpose','sleeping (bag)']],ex:['I have a cute small brown dog.','It is not a big red ball.','Is it a beautiful old wooden chair?'],fill:['She wears a ___ dress.','beautiful long red',['red long beautiful','beautiful long red','long red beautiful']],spot:['I bought a red big ball.','red','big red','Size (big) harus sebelum Color (red): a big red ball.']},
+{id:'adv',n:'Adverbs',i:'Kata keterangan menjelaskan bagaimana, di mana, kapan, seberapa sering, dan seberapa banyak sesuatu terjadi.',f:'S~s|Verb~v|Adverb~e',k:[['Manner','slowly, happily'],['Place','here, outside'],['Time','yesterday, now'],['Frequency','always, never'],['Degree','very, too']],ex:['The turtle walks slowly.','He does not speak loudly.','Do you always wake up early?'],fill:['The cheetah runs very ___.','quickly',['quick','quickly','quicker']],spot:['She sings beautiful.','beautiful','beautifully','Untuk menjelaskan cara bernyanyi, pakai adverb: beautifully.']},
+{id:'pre',n:'Prepositions',i:'Kata depan menunjukkan posisi dan waktu: di dalam, di atas, di bawah, pada jam berapa.',f:'Noun~o|Preposition~x|Place/Time~e',k:[['in','in the box, in May'],['on','on the table, on Monday'],['at','at school, at 7'],['under','under the bed'],['between','between two trees'],['next to','next to me']],ex:['The cat is under the table.','The book is not on the shelf.','Is the ball in the box?'],fill:['School starts ___ seven o\'clock.','at',['in','on','at']],spot:['My birthday is in May 5th.','in','on','Untuk tanggal lengkap, pakai on: on May 5th.']},
+{id:'con',n:'Conjunctions',i:'Kata sambung adalah lem yang menyatukan kata atau kalimat. Ingat FANBOYS: For, And, Nor, But, Or, Yet, So.',f:'Kalimat 1~s|Conjunction~x|Kalimat 2~o',k:[['FANBOYS','for, and, nor, but, or, yet, so'],['Subordinating','because, although, when, if']],ex:['I was hungry, so I ate rice.','I like tea, but I do not like coffee.','Do you want milk or juice?'],fill:['She stayed home ___ she was sick.','because',['but','because','or']],spot:['I was tired, but I went to bed early.','but','so','Karena capek lalu tidur, hubungannya sebab-akibat: so.']},
+{id:'int',n:'Interjections',i:'Kata seru untuk menunjukkan perasaan: kaget, senang, sakit. Biasanya diikuti tanda seru!',f:'Interjection~v|!~e|Kalimat~o',k:[['Wow!','kagum'],['Yay!','senang'],['Ouch!','sakit'],['Oops!','tidak sengaja'],['Hooray!','merayakan']],ex:['Wow! What a beautiful garden!','Oh no, I did not bring my bag!','Hey, are you okay?'],fill:['___! I hurt my finger.','Ouch',['Yay','Ouch','Hooray']],spot:['Yay! I fell down and hurt my knee.','yay','Ouch','Jatuh itu sakit, jadi pakai Ouch, bukan Yay.']}
+]},
+C:{n:'Grammar Ahli',c:'#5c6bc0',sub:'Struktur lanjutan',t:[
+{id:'ger',n:'Gerunds',i:'Gerund adalah kata kerja + ing yang berubah jadi kata benda. "Swimming" artinya kegiatan berenang.',f:'V-ing~v|= Noun~o',ex:['Swimming is my favorite sport.','I do not like waiting.','Do you enjoy reading?'],fill:['I enjoy ___ stories.','reading',['read','to read','reading']],spot:['She is good at draw.','draw','drawing','Setelah kata depan (at), pakai gerund: drawing.']},
+{id:'inf',n:'Infinitives',i:'Infinitive adalah to + kata kerja dasar. Sering dipakai untuk tujuan atau keinginan.',f:'to~x|V1~v',ex:['I want to be a doctor.','She decided not to go.','Do you want to play?'],fill:['We hope ___ you soon.','to see',['see','to see','seeing']],spot:['I want to buying a kite.','buying','buy','Setelah to, pakai kata kerja dasar: buy.']},
+{id:'par',n:'Participles',i:'Present participle (-ing) untuk yang membuat perasaan, past participle (V3) untuk yang merasakan. Filmnya boring, kamunya bored.',f:'V-ing~v|/~e|V3~x|sebagai sifat~o',k:[['Present','exciting, crying baby'],['Past','excited, broken glass']],ex:['The movie was exciting.','I am not bored.','Did you see the broken window?'],fill:['I am ___ in science.','interested',['interesting','interested','interest']],spot:['The story was very interested.','interested','interesting','Cerita yang membuat tertarik: interesting.']},
+{id:'ncl',n:'Noun Clause',i:'Anak kalimat yang berperan sebagai kata benda, biasanya dimulai dengan that, what, where, why.',f:'S~s|V~v|that/wh-~x|S + V~o',ex:['I know that she is kind.','I do not know where he lives.','Do you know what time it is?'],fill:['Tell me ___ you live.','where',['where','what','who']],spot:['I do not know where does he live.','does','where he lives','Dalam noun clause, urutannya S + V tanpa does: where he lives.']},
+{id:'acl',n:'Adjective Clause',i:'Anak kalimat yang menjelaskan kata benda, memakai who (orang), which (benda), that (keduanya).',f:'Noun~o|who/which/that~x|Clause~e',ex:['The girl who sits next to me is kind.','This is not the book that I wanted.','Is this the cat which you found?'],fill:['The man ___ lives next door is a doctor.','who',['who','which','where']],spot:['The book who I read was funny.','who','which','Untuk benda, pakai which atau that.']},
+{id:'avc',n:'Adverbial Clause',i:'Anak kalimat yang menjelaskan kapan, kenapa, atau dalam kondisi apa: when, because, although, if.',f:'When/Because/Although~x|S + V~s|,~e|Main clause~o',ex:['When it rains, I stay at home.','Although he was tired, he did not stop.','Will you call me when you arrive?'],fill:['___ she was sick, she went to school.','Although',['Because','Although','So']],spot:['Because it was raining, so we stayed home.','so','(hapus so)','Sudah ada because, jadi tidak perlu so.']},
+{id:'pph',n:'Prepositional Phrase',i:'Kelompok kata yang dimulai dengan preposition dan diakhiri kata benda: on the roof, in my bag.',f:'Preposition~x|(the)~e|Noun~o',ex:['The cat on the roof is mine.','The keys are not in my bag.','Is the book under the bed?'],fill:['We played football ___ the rain.','in',['in','at','of']],spot:['She is sitting at the chair.','at','on','Duduk di atas kursi: on the chair.']},
+{id:'cnd',n:'Conditionals',i:'Kalimat "jika". Type 0 fakta, Type 1 mungkin terjadi, Type 2 khayalan sekarang, Type 3 penyesalan masa lalu, Mixed campuran.',f:'If~x|condition~s|,~e|result~o',k:[['Type 0','If you heat ice, it melts.'],['Type 1','If it rains, I will stay home.'],['Type 2','If I were a bird, I would fly.'],['Type 3','If I had studied, I would have passed.'],['Mixed','If I had slept early, I would not be tired now.']],ex:['If it rains, I will stay home.','If you do not hurry, you will be late.','What would you do if you were rich?'],fill:['If I ___ a bird, I would fly.','were',['am','were','will be']],spot:['If I am rich, I would buy a big house.','am','were','Type 2 (khayalan) memakai were: If I were rich.']},
+{id:'pas',n:'Passive Voice',i:'Kalimat pasif fokus pada benda yang dikenai pekerjaan. Rumusnya be + V3.',f:'Object~o|be~x|V3~v|(by + pelaku)~e',k:[['Simple Present','is/are + V3'],['Simple Past','was/were + V3'],['Present Perfect','has/have been + V3'],['Simple Future','will be + V3']],ex:['The cake was made by Mom.','The room is not cleaned every day.','Was the window broken by the wind?'],fill:['English ___ spoken all over the world.','is',['is','are','does']],spot:['The letter was write by Dina.','write','written','Kalimat pasif memakai V3: written.']},
+{id:'rep',n:'Reported Speech',i:'Menceritakan ulang ucapan orang lain. Tense-nya biasanya mundur satu langkah: am jadi was.',f:'S~s|said (that)~x|S + V mundur~o',ex:['She said that she was hungry.','He said that he did not like fish.','Did she say that she was tired?'],fill:['Ali said, "I am happy." Ali said that he ___ happy.','was',['is','was','were']],spot:['She said that she is tired yesterday.','is','was','Reported speech: is mundur menjadi was.']},
+{id:'mod',n:'Modals & Semi-Modals',i:'Kata bantu yang memberi makna bisa, boleh, harus, sebaiknya: can, could, may, might, must, shall, should, will, would, ought to, used to.',f:'S~s|Modal~x|V1~v|O~o',k:[['can / could','bisa'],['may / might','boleh / mungkin'],['must','harus'],['should / ought to','sebaiknya'],['shall / will','akan'],['would','akan (lampau)'],['used to','dulu biasanya']],ex:['You should drink more water.','You must not run in the hall.','Can you help me?'],fill:['I ___ swim when I was five.','could',['can','could','must']],spot:['She can sings very well.','sings','sing','Setelah modal, kata kerja bentuk dasar: sing.']},
+{id:'sva',n:'Subject-Verb Agreement',i:'Subjek dan kata kerja harus cocok seperti pasangan sepatu: tunggal dengan tunggal, jamak dengan jamak.',f:'Singular S~s|V+s~v|/~e|Plural S~o|V1~x',ex:['My brother plays the guitar.','The dogs do not bark at night.','Does everyone have a pencil?'],fill:['Each of the students ___ a book.','has',['have','has','having']],spot:['The children is playing outside.','is','are','Children itu jamak, jadi pakai are.']},
+{id:'qtg',n:'Question Tags',i:'Pertanyaan pendek di akhir kalimat untuk memastikan, seperti "kan?". Kalimat positif, tag-nya negatif, dan sebaliknya.',f:'Kalimat +~s|,~e|tag −?~v',ex:["You are hungry, aren't you?",'She does not like milk, does she?',"He can swim, can't he?"],fill:['They went home, ___?',"didn't they",['did they',"didn't they","weren't they"]],spot:["She is your sister, isn't it?",'it','she','Tag memakai pronoun yang sesuai subjek: she.']},
+{id:'cau',n:'Causative Verbs',i:'Untuk menyuruh atau membiarkan orang lain melakukan sesuatu: have, get, make, let.',f:'S~s|have/get/make/let~x|someone~o|V1/V3~v',k:[['have','I had my hair cut.'],['get','I got my bike fixed.'],['make','Mom made me clean my room.'],['let','Dad let me play outside.']],ex:['I had my hair cut.','Mom does not let me stay up late.','Did you get your bike fixed?'],fill:['My teacher made us ___ a poem.','write',['to write','write','writing']],spot:['Dad let me to play games.','to','(hapus to)','Setelah let + orang, langsung kata kerja dasar: let me play.']}
+]}};
+const ALLT={};for(const m in MOD)for(const t of MOD[m].t){t.m=m;ALLT[t.id]=t}
+const ADIK_OK=['spr','prc','spa','sfu'];
+const BADGES=[
+{id:'first',n:'Langkah Pertama',d:'Selesaikan 1 latihan',c:'#3fcf9a'},{id:'star10',n:'Pengumpul Bintang',d:'Kumpulkan 10 bintang',c:'#ffb020'},
+{id:'tense4',n:'Penjelajah Waktu',d:'Selesaikan 4 tenses',c:'#59b8ff'},{id:'sholat5',n:'Sholat Lengkap',d:'5 sholat dalam sehari',c:'#ff9f43'},
+{id:'hija',n:'Sahabat Hijaiyah',d:'3 bintang Hijaiyah',c:'#9b7bff'},{id:'streak3',n:'Semangat 3 Hari',d:'Belajar 3 hari beruntun',c:'#ff6f7d'},
+{id:'expert',n:'Ahli Grammar',d:'Lulus 1 materi Grammar Ahli',c:'#5c6bc0'},{id:'asma',n:'Pecinta Asmaul Husna',d:'3 bintang Asmaul Husna',c:'#e0a800'},{id:'wudhu',n:'Ahli Wudhu',d:'Lulus Rukun & Wudhu',c:'#26a69a'}];
+const STICK=['🌙','⭐','🕌','🐫','🌴','📖','🦉','🌈','🎈','🍉','🐢','🚀'];
+
+/* ============ STATE ============ */
+const KEY='cahaya-proto-v1';
+const DEF={mode:'adult',tab:'today',dayOff:0,qtab:'baca',qsub:'surat',city:'madinah',loc:null,accent:'US',rate:0.85,sound:true,lastRead:1,lastAy:1,prayed:{},adzan:{},tasbih:0,tasIdx:0,kv:'map',vcat:'animals',
+ q:{font:30,face:'Amiri Quran',tr:true,theme:'dark',prog:true,marks:[],hafal:{},readMax:{}},
+ kid:{profile:null,name:'',xp:0,stars:{},streak:0,lastDay:'',badges:[],chests:0,stickers:[],sx:{}}};
+let S;
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'{}');S=Object.assign(JSON.parse(JSON.stringify(DEF)),raw);S.kid=Object.assign(JSON.parse(JSON.stringify(DEF.kid)),raw.kid||{})}catch(e){S=JSON.parse(JSON.stringify(DEF))}
+S.q=Object.assign(JSON.parse(JSON.stringify(DEF.q)),S.q||{});
+if(['surat','juz'].includes(S.qtab))S.qtab='baca';
+if(!CITY[S.city]&&!(S.city==='gps'&&S.loc))S.city='madinah';
+let sheet=null,G=null,gate=null,hsel=null,resetArm=false,qquery='',jumpAy=0,head=null,compassOn=false,alignedOnce=false;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+/* ============ QURAN DATA (offline, IndexedDB) ============ */
+let QDATA=null;
+function idb(mode,fn){return new Promise((res,rej)=>{try{const r=indexedDB.open('cahaya',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onerror=()=>rej(r.error);r.onsuccess=()=>{const tx=r.result.transaction('kv',mode),q=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error)}}catch(e){rej(e)}})}
+const isAr=s=>/[؀-ۿ]/.test(s||'');
+function parseQuran(text){
+  text=text.replace(/^﻿/,'').trim();const out=Array.from({length:114},()=>[]);
+  if(text[0]==='['||text[0]==='{'){
+    let j=JSON.parse(text);if(!Array.isArray(j))j=j.chapters||j.surahs||(j.data&&j.data.surahs)||Object.values(j);
+    j.forEach((s,i)=>{const n=(+(s.number||s.chapter||s.id)||i+1)-1;if(n<0||n>113)return;let vs=s.verses||s.ayahs||s.ayat||[];if(!Array.isArray(vs))vs=Object.values(vs);
+      vs.forEach((v,k)=>{if(typeof v==='string'){out[n][k]=[isAr(v)?v:'',isAr(v)?'':v];return}const tx=typeof v.text==='object'&&v.text?(v.text.arab||v.text.ar||''):(v.text||v.arabic||v.ar||'');const tr=typeof v.translation==='string'?v.translation:v.translation&&typeof v.translation==='object'?(v.translation.id||v.translation.text||''):(v.terjemah||v.id_translation||'');out[n][k]=[isAr(tx)?tx:'',(isAr(tx)?tr:tr||tx)||'']})});
+  }else{for(const line of text.split(/\r?\n/)){const m=line.match(/^(\d{1,3})\|(\d{1,3})\|(.*)$/);if(m){const t=m[3].trim();out[m[1]-1][m[2]-1]=isAr(t)?[t,'']:['',t]}}}
+  return out;
+}
+function mergeQuran(add){const base=QDATA?QDATA.map(s=>s.map(a=>a.slice())):Array.from({length:114},()=>[]);add.forEach((s,i)=>s.forEach((a,k)=>{if(!a)return;const b=base[i][k]||['',''];base[i][k]=[a[0]||b[0],a[1]||b[1]]}));return base}
+function qStats(d){let ar=0,tr=0,bad=0;d.forEach((s,i)=>{if(s.filter(Boolean).length!==SLAT[i].c)bad++;s.forEach(a=>{if(a&&a[0])ar++;if(a&&a[1])tr++})});return{ar,tr,bad}}
+const getSurah=no=>{if(QDATA&&QDATA[no-1]&&QDATA[no-1].some(a=>a&&a[0]))return QDATA[no-1];return QT[no]||null};
+const ayahAt=idx=>{for(const s of SLAT){if(idx<s.c)return[s.no,idx+1];idx-=s.c}return[1,1]};
+
+/* ============ TIME HELPERS ============ */
+const C=()=>S.city==='gps'&&S.loc?S.loc:CITY[S.city]||CITY.madinah;
+const cityNow=()=>new Date(Date.now()+C().tz*36e5);
+const dayDate=off=>{const n=cityNow();return new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+off,12))};
+const dkey=d=>d.toISOString().slice(0,10);
+const timesFor=d=>ptimes(d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate(),C());
+const epochOf=(d,min)=>Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())-C().tz*36e5+min*6e4;
+function nextPrayer(){const d=dayDate(0),t=timesFor(d),now=Date.now();for(const p of P5){const e=epochOf(d,t[p]);if(e>now)return{p,min:t[p],at:e}}const d2=dayDate(1),t2=timesFor(d2);return{p:'fajr',min:t2.fajr,at:epochOf(d2,t2.fajr)}}
+function hijri(d){try{const parts=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).formatToParts(d);const g=k=>(parts.find(p=>p.type===k)||{}).value||'';return `${g('day')} ${g('month')} ${g('year').replace(/\s*AH/,'')} H`}catch(e){return''}}
+const gdate=d=>d.toLocaleDateString('id-ID',{day:'numeric',month:'long',timeZone:'UTC'});
+const prayedOn=k=>S.prayed[k]||(S.prayed[k]={});
+
+/* ============ AUDIO ============ */
+let AC;
+function sfx(k){if(!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const seq={ok:[523,659,784,1047],bad:[260,200],tap:[700],win:[523,659,784,1047,1319,1568],chest:[392,523,659,784,1047,1319]}[k];const t0=AC.currentTime;seq.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=k==='bad'?'square':'triangle';o.frequency.value=f;const st=t0+i*.09;g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(k==='bad'?.06:.16,st+.02);g.gain.exponentialRampToValueAtTime(.0001,st+.26);o.connect(g).connect(AC.destination);o.start(st);o.stop(st+.3)})}catch(e){}}
+function speak(text,lang){
+  if(!('speechSynthesis' in window)){toast('Suara belum tersedia di perangkat ini');return}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const L=lang||(S.accent==='UK'?'en-GB':'en-US');u.lang=L;u.rate=S.rate;
+  const vs=speechSynthesis.getVoices();const v=vs.find(v=>v.lang.replace('_','-')===L)||vs.find(v=>v.lang.startsWith(L.slice(0,2)));if(v)u.voice=v;
+  else if(L.startsWith('ar')){toast('Suara Arab belum ada di perangkat ini');return}
+  speechSynthesis.speak(u)}catch(e){}
+}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;$('#app').appendChild(t);setTimeout(()=>t.remove(),2200)}
+function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const r=$('#app').getBoundingClientRect(),c=document.createElement('canvas');c.className='conf';Object.assign(c.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});document.body.appendChild(c);const W=c.width=r.width,H=c.height=r.height,x=c.getContext('2d'),cols=['#ffcf3f','#ff6f7d','#59b8ff','#3fcf9a','#9b7bff'];const P=Array.from({length:150},()=>({x:W/2,y:H*.35,vx:(Math.random()-.5)*13,vy:-Math.random()*13-4,r:Math.random()*7+4,c:cols[Math.random()*5|0],a:Math.random()*6}));let f=0;const step=()=>{x.clearRect(0,0,W,H);for(const p of P){p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=.2;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()}if(++f<160)requestAnimationFrame(step);else c.remove()};step()}
+
+/* ============ MASCOT NURI ============ */
+function nuri(mood='idle',s=84){
+  const eyes=mood==='happy'?'<path d="M33 50q6-7 12 0M55 50q6-7 12 0" stroke="#3a2a1f" stroke-width="4" fill="none" stroke-linecap="round"/>':mood==='sad'?'<circle cx="39" cy="52" r="5" fill="#3a2a1f"/><circle cx="61" cy="52" r="5" fill="#3a2a1f"/><path d="M31 42l12 4M69 42l-12 4" stroke="#3a2a1f" stroke-width="3" stroke-linecap="round"/>':'<circle cx="39" cy="50" r="5.5" fill="#3a2a1f"/><circle cx="61" cy="50" r="5.5" fill="#3a2a1f"/><circle cx="41" cy="48" r="1.8" fill="#fff"/><circle cx="63" cy="48" r="1.8" fill="#fff"/>';
+  const mouth=mood==='happy'?'<path d="M38 62q12 16 24 0z" fill="#8a3b2e"/><path d="M44 68q6 4 12 0" fill="#ff8a8a"/>':mood==='sad'?'<path d="M42 68q8-5 16 0" stroke="#3a2a1f" stroke-width="3.5" fill="none" stroke-linecap="round"/>':'<path d="M40 62q10 9 20 0" stroke="#3a2a1f" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+  return `<svg width="${s}" height="${s}" viewBox="0 0 100 100" class="${mood==='happy'?'bounce':''}" aria-hidden="true">
+  <ellipse cx="50" cy="94" rx="26" ry="4" fill="#0001"/>
+  <path d="M60 6a14 14 0 1 0 10 24a11 11 0 1 1-10-24z" fill="#ff9f43"/>
+  <circle cx="50" cy="56" r="34" fill="#ffd23f"/><path d="M24 44a30 30 0 0 1 22-20" stroke="#fff8" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="29" cy="62" rx="6" ry="4" fill="#ff9aa2"/><ellipse cx="71" cy="62" rx="6" ry="4" fill="#ff9aa2"/>
+  ${eyes}${mouth}
+  ${mood==='happy'?'<path d="M88 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff"/><path d="M12 30l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z" fill="#fff"/>':''}</svg>`;
+}
+const starRow=(n,s=18)=>`<span class="stars">${[0,1,2].map(i=>`<span class="${i<n?'on':''}">${ic('star',s,1)}</span>`).join('')}</span>`;
+
+/* ============ ADULT VIEWS ============ */
+function A(){
+  let body=S.tab==='prayer'?Prayer():S.tab==='quran'?Quran():Today();
+  const nav=[['today','cal','Hari ini'],['prayer','moon','Sholat'],['quran','book','Al-Qur\'an'],['kids','smile','Mode Anak']];
+  return `<div class="scr" id="scr">${body}<div style="height:20px"></div></div>
+  <nav class="nav">${nav.map(([k,i,l])=>`<button data-a="${k==='kids'?'kids':'tab'}" data-v="${k}" class="${S.tab===k?'on':''}">${ic(i,24,S.tab===k)}${l}</button>`).join('')}</nav>${sheet?Sheet():''}`;
+}
+function Today(){
+  const np=nextPrayer(),d=dayDate(0),k=dkey(d),pr=prayedOn(k),cnt=P5.filter(p=>pr[p]).length,last=SLAT[S.lastRead-1],kd=S.kid;
+  const doa=DOA[d.getUTCDate()%DOA.length];
+  const q=[['kiblat','compass','Kiblat'],['tasbih','beads','Tasbih'],['doa','hands','Doa-doa'],['asma','spark','Asmaul Husna'],['zakat','calc','Zakat'],['settings','sliders','Pengaturan']];
+  return `<section class="hero">
+   <div class="hrow" style="align-items:flex-start"><h1>Assalamualaikum</h1><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Pengaturan">${ic('sliders',24)}</button></div><div></div>
+   <div class="hrow"><div><b style="font-size:18px">${PN[np.p]}</b><div class="big">${hm(np.min)}</div><div class="cd">−<span data-cd="${np.at}">${cdf(np.at-Date.now())}</span></div></div>
+   <div style="text-align:right"><div style="font-size:15px">${hijri(d)}</div><b style="font-size:20px;display:inline-flex;gap:6px;align-items:center">${C().n} ${ic('pin',18)}</b></div></div></section>
+  <div class="duo"><button class="pill" style="background:linear-gradient(120deg,#e0703e,#c9465a)" data-a="surah" data-v="${S.lastRead}"><small>Lanjutkan membaca</small><b>${esc(last.n)}</b></button>
+  <button class="pill" style="background:linear-gradient(120deg,#7b5cf0,#3d2a8a)" data-a="kids"><small>Mode belajar</small><b>Buka Mode Anak</b></button></div>
+  <div class="quick">${q.map(([v,i,l])=>`<button data-a="sheet" data-v="${v}"><span class="qi">${ic(i,26)}</span>${l}</button>`).join('')}</div>
+  <section class="card"><h3>Pelacak sholat hari ini</h3><div class="pchk">${P5.map(p=>`<button data-a="pray" data-v="${k}|${p}" class="${pr[p]?'on':''}" aria-pressed="${!!pr[p]}"><span class="circ">${pr[p]?ic('check',16):''}</span>${PN[p]}</button>`).join('')}</div>
+  <p class="mute" style="margin:10px 0 0">${cnt}/5 sholat terpantau hari ini${cnt===5?' · MasyaAllah, lengkap!':''}</p></section>
+  <section class="card"><h3>Progres belajar anak</h3>${kd.profile?`<div style="display:flex;gap:12px;align-items:center">${nuri('idle',56)}<div style="flex:1"><b>${esc(kd.name||(kd.profile==='adik'?'Adik':'Kakak'))}</b> · Level ${Math.floor(kd.xp/100)+1}<div class="mute">${kd.xp} XP · ${totalStars()} bintang · ${kd.streak} hari beruntun · ${kd.badges.length} lencana</div></div></div>`:'<p class="mute" style="margin:0 0 10px">Belum ada profil anak. Aktifkan Mode Anak untuk mulai belajar sambil bermain.</p>'}
+  <button class="btn" style="margin-top:12px;width:100%" data-a="kids">${ic('map',20)} Buka Mode Anak</button></section>
+  ${(()=>{const y=dailyAyah();return y?`<section class="card"><h3>Ayat harian</h3><div class="ar" style="font-size:24px;line-height:2;text-align:right">${esc(y.ar)}</div><p style="margin:6px 0 10px;color:#c4d5d1;font-size:15px">${esc(y.tr)}</p><button class="link" data-a="ayah" data-v="${y.s}:${y.a}">${esc(SLAT[y.s-1].n)}, ayat ${y.a} · Buka</button></section>`:''})()}
+  <section class="card"><h3>Doa hari ini</h3><div class="mute" style="font-weight:700;margin-bottom:4px">${doa.n}</div><div class="ar" style="font-size:24px;line-height:2;text-align:right">${doa.ar}</div><p style="margin:6px 0 0;color:#c4d5d1;font-size:15px"><i>${esc(doa.l)}</i><br>${doa.t}</p></section>`;
+}
+function dailyAyah(){const d=dayDate(0),doy=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,1))/864e5);
+  if(QDATA){for(let t=0;t<20;t++){const[s,a]=ayahAt((doy*97+t*13)%TOTAL_AYAT),v=(QDATA[s-1]||[])[a-1];if(v&&v[0])return{s,a,ar:v[0],tr:v[1]||''}}}
+  const pool=[];for(const k in QT)QT[k].forEach((v,i)=>pool.push({s:+k,a:i+1,ar:v[0],tr:v[1]}));return pool[doy%pool.length]}
+function Prayer(){
+  const d=dayDate(S.dayOff),t=timesFor(d),k=dkey(d),pr=prayedOn(k),np=S.dayOff===0?nextPrayer():null;
+  const label=S.dayOff===0?'Hari ini, ':S.dayOff===1?'Besok, ':S.dayOff===-1?'Kemarin, ':'';
+  const rows=P5.map(p=>{const isN=np&&np.p===p&&dkey(dayDate(0))===k&&np.at===epochOf(d,t[p]);const on=S.adzan[p]!==false;
+   return `<div class="prow ${isN?'next':''}"><button class="ibtn" data-a="adzan" data-v="${p}" aria-label="Pengingat azan ${PN[p]}">${ic(on?'vol':'volx',24)}</button>
+   <div class="nm">${PN[p]}${isN?` <span class="cd" style="font-size:17px">−<span data-cd="${np.at}">${cdf(np.at-Date.now())}</span></span>`:''}${p==='fajr'?`<small>Matahari terbit ${hm(t.sunrise)}</small>`:''}</div>
+   <div class="tm">${hm(t[p])}</div><button class="chk ${pr[p]?'on':''}" data-a="pray" data-v="${k}|${p}" aria-label="Tandai ${PN[p]}" aria-pressed="${!!pr[p]}"><span>${ic('check',18)}</span></button></div>`}).join('');
+  const days=[...Array(7)].map((_,i)=>dayDate(i-6));
+  const wk=`<div class="week"><span></span>${days.map(x=>`<span style="text-align:center">${'MSSRKJS'[x.getUTCDay()]}</span>`).join('')}${P5.map(p=>`<span>${PN[p].toUpperCase()}</span>${days.map(x=>`<i class="${(S.prayed[dkey(x)]||{})[p]?'on':''}"></i>`).join('')}`).join('')}</div>`;
+  return `<div class="ptop"><div class="hrow" style="align-items:center"><div><h1>Sholat</h1><div style="font-size:14px;opacity:.95">${C().n} • ${METH[C().m].n}</div></div><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Ganti lokasi">${ic('pin',24)}</button></div>
+  <div class="dnav"><button class="ibtn" data-a="day" data-v="-1" aria-label="Hari sebelumnya">${ic('left',28)}</button><div><b>${label}${gdate(d)}</b><span style="font-size:15px">${hijri(d)}</span></div><button class="ibtn" data-a="day" data-v="1" aria-label="Hari berikutnya">${ic('right',28)}</button></div></div>
+  <div class="plist">${rows}<div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px">${wk}</div><p style="color:#fff;opacity:.85;font-size:12px;margin:10px 2px 0">Waktu dihitung di perangkat (${METH[C().m].n}); bisa selisih 1–2 menit dari jadwal resmi.</p></div></div>`;
+}
+function importCard(st){
+  return `<div class="imp"><b style="font-size:17px;display:flex;gap:8px;align-items:center">${ic('upload',22)} Lengkapi 30 juz (offline)</b>
+  <p class="mute" style="margin:6px 0 10px">${st?`Tersimpan: ${st.ar.toLocaleString('id-ID')} ayat Arab, ${st.tr.toLocaleString('id-ID')} terjemahan dari ${TOTAL_AYAT.toLocaleString('id-ID')}.`:'Saat ini teks lengkap baru ada untuk 7 surat pendek.'} Impor sekali file Al-Qur'an (JSON dengan terjemahan Indonesia, atau teks Tanzil). Setelah itu tersimpan di HP dan bisa dibaca tanpa internet.</p>
+  <button class="btn" style="margin:0 8px 8px 0" data-a="qdl">${ic('upload',18)} Unduh otomatis (sekali)</button><label class="btn" style="cursor:pointer;background:#24403f">Pilih file<input type="file" accept=".json,.txt,application/json,text/plain" data-in="qfile"></label></div>`}
+function qResults(q){
+  const n=q.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(!n)return '';
+  const sr=SLAT.filter(s=>String(s.no)===n||s.n.toLowerCase().replace(/[^a-z0-9 ]/g,'').includes(n)||s.a.toLowerCase().includes(n)).slice(0,12);
+  let ay=[];if(QDATA&&q.trim().length>=3){const ql=q.toLowerCase().trim();outer:for(let i=0;i<114;i++){const s=QDATA[i];for(let k=0;k<s.length;k++){const v=s[k];if(v&&v[1]&&v[1].toLowerCase().includes(ql)){ay.push([i+1,k+1,v[1]]);if(ay.length>=25)break outer}}}}
+  return `${sr.map(s=>`<button class="lrow" data-a="surah" data-v="${s.no}"><span class="no">${s.no}</span><span class="t"><b>${esc(s.n)}</b><small>${s.a} · ${s.c} ayat</small></span><span class="ar" style="font-size:22px">${s.ar}</span></button>`).join('')}
+  ${ay.length?`<p class="mute" style="margin:14px 0 4px">Ayat yang memuat "${esc(q.trim())}"</p>`+ay.map(([s,a,t])=>`<button class="lrow" data-a="ayah" data-v="${s}:${a}"><span class="t"><b style="font-size:16px;font-family:inherit;font-weight:700">${esc(SLAT[s-1].n)} ${s}:${a}</b><small>${esc(t.length>110?t.slice(0,110)+'…':t)}</small></span></button>`).join(''):''}
+  ${!sr.length&&!ay.length?`<p class="mute">Tidak ditemukan.${QDATA?'':' Pencarian isi ayat aktif setelah data Al-Qur\'an diimpor.'}</p>`:''}`}
+function Quran(){
+  const lr=SLAT[S.lastRead-1],st=QDATA?qStats(QDATA):null,full=st&&st.ar>=TOTAL_AYAT;
+  const read=Object.entries(S.q.readMax).reduce((a,[s,m])=>a+Math.min(m,SLAT[s-1].c),0),pct=Math.round(read/TOTAL_AYAT*1000)/10;
+  const hz=Object.values(S.q.hafal),h2=hz.filter(x=>x===2).length,h1=hz.filter(x=>x===1).length;
+  let body='';
+  if(S.qtab==='baca'){
+    const list=S.qsub==='surat'?SLAT.map(s=>`<button class="lrow" data-a="surah" data-v="${s.no}"><span class="no">${s.no}</span><span class="t"><b>${esc(s.n)}${!QDATA&&getSurah(s.no)?'<span class="tag">teks</span>':''}</b><small>${s.a} · ${s.c} ayat${S.q.readMax[s.no]?` · dibaca ${Math.min(S.q.readMax[s.no],s.c)}/${s.c}`:''}</small></span><span class="r"><span class="ar">${s.ar}</span></span></button>`).join('')
+     :JUZ.map(([s,a],i)=>`<button class="lrow" data-a="ayah" data-v="${s}:${a}"><span class="no">${i+1}</span><span class="t"><b>Juz ${i+1}</b><small>Mulai ${esc(SLAT[s-1].n)} ayat ${a} · halaman ${i===0?1:2+i*20}</small></span>${ic('right',20)}</button>`).join('');
+    body=`<button class="lrow" data-a="ayah" data-v="${S.lastRead}:${S.lastAy}">${ic('book',26)}<span class="t"><b>${esc(lr.n)} ${S.lastRead}:${S.lastAy}</b><small>Juz ${juzOf(S.lastRead,S.lastAy)}</small></span><span class="link">Lanjutkan membaca</span></button>
+    ${S.q.prog?`<div class="lrow" style="display:block"><b style="font-family:Amiri,serif;font-size:20px;font-weight:400">Kemajuan khatam</b><small class="mute" style="display:block">${read.toLocaleString('id-ID')} / ${TOTAL_AYAT.toLocaleString('id-ID')} ayat · ${pct}% · target 30 hari = ±208 ayat per hari</small><div class="kbar"><i style="width:${pct}%"></i></div></div>`:''}
+    ${full?'':importCard(st)}
+    <div class="seg2"><button class="${S.qsub==='surat'?'on':''}" data-a="qsub" data-v="surat">Surat</button><button class="${S.qsub==='juz'?'on':''}" data-a="qsub" data-v="juz">Juz</button></div>${list}`;
+  }else if(S.qtab==='hafalan'){
+    const keys=Object.keys(S.q.hafal).sort((a,b)=>{const[x,y]=a.split(':').map(Number),[p,q]=b.split(':').map(Number);return x-p||y-q});
+    body=`<div class="hcards"><div><b>Dihafalkan</b>${h2} ayat</div><div><b>Perlu latihan</b>${h1} ayat</div><div style="background:#2a4a49"><b>Untuk dihafalkan</b>${(TOTAL_AYAT-h2).toLocaleString('id-ID')} ayat</div></div>
+    <p class="mute">Di halaman baca, ketuk ikon ${ic('brain',14)} pada ayat: sekali = perlu latihan, dua kali = sudah hafal, tiga kali = hapus.</p>
+    ${keys.map(k=>{const[s,a]=k.split(':');return `<button class="lrow" data-a="ayah" data-v="${k}"><span class="t"><b style="font-size:18px">${esc(SLAT[s-1].n)} ${k}</b><small>${S.q.hafal[k]===2?'Sudah hafal':'Perlu latihan'}</small></span><span class="tag" style="background:${S.q.hafal[k]===2?'#3f9e6c':'#c9752f'}">${S.q.hafal[k]===2?'hafal':'latihan'}</span></button>`}).join('')}`;
+  }else{
+    const y=dailyAyah();
+    body=`${y?`<div class="card" style="margin:12px 0"><h3>Ayat harian · ${esc(SLAT[y.s-1].n)} ${y.s}:${y.a}</h3><div class="ar" style="font-size:24px;line-height:2;text-align:right">${esc(y.ar)}</div><p style="margin:6px 0 10px;color:#c4d5d1">${esc(y.tr)}</p><button class="link" data-a="ayah" data-v="${y.s}:${y.a}">Baca selengkapnya</button></div>`:''}
+    <h3 style="margin:16px 0 4px">Penanda halaman</h3>${S.q.marks.length?S.q.marks.map(k=>{const[s]=k.split(':');return `<button class="lrow" data-a="ayah" data-v="${k}">${ic('bookmark',22,1)}<span class="t"><b style="font-size:18px">${esc(SLAT[s-1].n)} ${k}</b><small>Juz ${juzOf(+s,+k.split(':')[1])}</small></span></button>`}).join(''):'<p class="mute">Belum ada. Ketuk ikon penanda pada ayat saat membaca.</p>'}`;
+  }
+  return `<div class="pad"><div class="hrow" style="align-items:center"><h1 style="font-family:Amiri,serif;font-size:30px;margin:4px 0 12px">Al-Qur'an</h1><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan Al-Qur'an">${ic('sliders',24)}</button></div>
+  <div class="seg" style="margin-bottom:12px">${[['baca','Baca'],['hafalan','Hafalan'],['saya','Untuk Saya']].map(([k,l])=>`<button class="${S.qtab===k?'on':''}" data-a="qtab" data-v="${k}">${l}</button>`).join('')}</div>
+  <label class="qsearch">${ic('search',20)}<input id="qq" data-in="qsearch" value="${esc(qquery)}" placeholder="Cari surat, nomor, atau isi terjemahan" aria-label="Cari"></label>
+  <div id="qres">${qquery?qResults(qquery):body}</div></div>`;
+}
+function qibla(c){const K=[21.4225,39.8262];return{b:fixA(at2(sn(K[1]-c.lng)*cs(K[0]),cs(c.lat)*sn(K[0])-sn(c.lat)*cs(K[0])*cs(K[1]-c.lng))),dist:Math.round(6371*acs(Math.min(1,sn(c.lat)*sn(K[0])+cs(c.lat)*cs(K[0])*cs(K[1]-c.lng)))*D2R)}}
+function Sheet(){
+  const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  if(sheet.startsWith('surah:')){const no=+sheet.split(':')[1],s=SLAT[no-1],tx=getSurah(no),q=S.q;
+    const tools=`<button class="ibtn" data-a="qfont" data-v="-2" aria-label="Perkecil huruf">${ic('minus',20)}</button><button class="ibtn" data-a="qfont" data-v="2" aria-label="Perbesar huruf">${ic('plus',20)}</button><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan baca">${ic('sliders',22)}</button>`;
+    const rows=tx?tx.map((v,i)=>{if(!v||!v[0])return '';const k=no+':'+(i+1),mk=q.marks.includes(k),hf=q.hafal[k]||0;
+      return `<div class="ayah ${jumpAy===i+1?'hl':''}" id="ay-${i+1}"><div class="ar" style="font-size:${q.font}px;line-height:2.1;text-align:right">${esc(v[0])} <span style="font-size:${Math.round(q.font*.75)}px;color:#5cc48a">﴿${arNum(i+1)}﴾</span></div>${q.tr&&v[1]?`<p><b>${i+1}.</b> ${esc(v[1])}</p>`:''}
+      <div class="aact"><button class="${mk?'on':''}" data-a="mark" data-v="${k}" aria-label="Penanda" aria-pressed="${mk}">${ic('bookmark',20,mk)}</button><button class="${hf?'h'+hf:''}" data-a="hafal" data-v="${k}" aria-label="Status hafalan">${ic('brain',20)}</button><button data-a="readto" data-v="${k}" aria-label="Tandai dibaca sampai ayat ini">${ic('check',20)}</button></div></div>`}).join(''):'';
+    return `<div class="sheet reader ${q.theme}" style="--qf:'${q.face}'">${hdr(esc(s.n),tools)}<div class="scr" id="rscr"><div style="text-align:center;padding:18px"><div class="ar" style="font-size:40px">${s.ar}</div><div class="mute">${s.a} · ${s.c} ayat · Juz ${juzOf(no,1)}</div>${no!==1&&no!==9&&tx?'<div class="ar" style="font-size:28px;margin-top:10px">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>':''}</div>
+    ${tx?rows:`<div class="card" style="text-align:center"><p>Teks surat ini belum tersimpan di HP.</p>${importCard(QDATA?qStats(QDATA):null)}</div>`}
+    <div class="duo" style="padding:16px 14px 24px">${no>1?`<button class="btn" style="background:#24403f" data-a="surah" data-v="${no-1}">${ic('left',18)} ${esc(SLAT[no-2].n)}</button>`:'<span></span>'}${no<114?`<button class="btn" data-a="surah" data-v="${no+1}">${esc(SLAT[no].n)} ${ic('right',18)}</button>`:''}</div></div></div>`}
+  if(sheet==='qset'){const q=S.q,st=QDATA?qStats(QDATA):null,tg=(k,l,sub)=>`<button class="tgl" data-a="qtog" data-v="${k}"><span>${l}${sub?`<small>${sub}</small>`:''}</span><span class="sw2 ${q[k]?'on':''}"></span></button>`;
+    return `<div class="sheet">${hdr('Pengaturan Al-Qur\'an')}<div class="scr pad">
+    <h3 style="margin:4px 0">Membaca</h3>
+    <div class="fld" style="margin-top:10px">Teks Arab<div class="chips">${['Amiri Quran','Scheherazade New'].map(f=>`<button class="${q.face===f?'on':''}" data-a="qface" data-v="${f}">${f}</button>`).join('')}</div></div>
+    <div class="fld">Ukuran huruf Arab: ${q.font}px<div class="chips"><button data-a="qfont" data-v="-2">${ic('minus',18)}</button><button data-a="qfont" data-v="2">${ic('plus',18)}</button></div><div class="ar" style="font-family:'${q.face}',Amiri,serif;font-size:${q.font}px;text-align:right">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div></div>
+    <div class="fld">Mode baca<div class="chips">${[['dark','Malam'],['sepia','Sepia'],['light','Terang']].map(([k,l])=>`<button class="${q.theme===k?'on':''}" data-a="qtheme" data-v="${k}">${l}</button>`).join('')}</div></div>
+    ${tg('tr','Terjemahan','Bahasa Indonesia (dari file yang diimpor)')}${tg('prog','Kemajuan membaca','Tampilkan progres khatam di halaman Baca')}
+    <h3 style="margin:20px 0 4px">Data Al-Qur'an offline</h3>
+    <p class="mute">${st?`${st.ar.toLocaleString('id-ID')} ayat Arab · ${st.tr.toLocaleString('id-ID')} terjemahan tersimpan${st.bad?` · ${st.bad} surat jumlah ayatnya belum cocok`:' · lengkap 114 surat'}`:'Belum ada data lengkap. Teks bawaan: 7 surat pendek.'}</p>
+    ${importCard(st)}
+    ${QDATA?`<button class="btn" style="width:100%;background:#5b2a33" data-a="qwipe">${resetArm?'Ketuk sekali lagi untuk menghapus data':'Hapus data Al-Qur\'an dari HP'}</button>`:''}
+    <p class="mute" style="margin-top:14px">Tajwid berwarna dan audio qari butuh data khusus (teks bertajwid & file audio). Keduanya disiapkan untuk versi aplikasi terpasang.</p></div></div>`}
+  if(sheet==='kiblat'){const c=C(),{b,dist}=qibla(c);
+    return `<div class="sheet">${hdr('Arah Kiblat')}<div class="scr pad" style="text-align:center">
+    <button class="lrow" data-a="gps" style="justify-content:center;border:0">${ic('gps',22)}<span class="t" style="flex:none;text-align:left"><b style="font-family:inherit;font-size:16px;font-weight:700">${esc(c.n)}</b><small>${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}${c.acc?` · akurasi ±${c.acc} m`:''}</small></span><span class="link" style="margin-left:10px">Perbarui GPS</span></button>
+    <div class="compass" id="qbox" style="border-radius:50%"><svg viewBox="0 0 240 240" width="240" height="240"><g id="dial" class="dial" style="transform-origin:120px 120px;transform:rotate(${-(head||0)}deg)"><circle cx="120" cy="120" r="112" fill="#1d3d3d" stroke="#3a5a58" stroke-width="3"/>${[...Array(36)].map((_,i)=>`<line x1="120" y1="14" x2="120" y2="${i%9===0?30:22}" stroke="#7d9a95" stroke-width="2" transform="rotate(${i*10} 120 120)"/>`).join('')}<text x="120" y="48" text-anchor="middle" fill="#ff8a6a" font-weight="800" font-size="18">U</text><text x="200" y="126" text-anchor="middle" fill="#9fb8b2" font-size="15">T</text><text x="120" y="208" text-anchor="middle" fill="#9fb8b2" font-size="15">S</text><text x="40" y="126" text-anchor="middle" fill="#9fb8b2" font-size="15">B</text>
+    <g transform="rotate(${b.toFixed(1)} 120 120)"><path d="M120 34 132 120h-24z" fill="#5fd38a"/><path d="M120 206 132 120h-24z" fill="#3a5a58"/><rect x="108" y="26" width="24" height="20" rx="3" fill="#111" stroke="#e5c060" stroke-width="2.5"/></g></g><path d="M120 2l8 12h-16z" fill="#fff"/><circle cx="120" cy="120" r="8" fill="#fff"/></svg></div>
+    <div style="font-size:40px;font-weight:800">${dist<5?'—':Math.round(b)+'°'}</div><p id="qst" style="font-weight:600;min-height:48px">${dist<5?'Anda berada di dekat Ka\'bah.':head==null?'Menunggu sensor kompas…':''}</p>
+    <p class="mute">${dist<5?'':`${Math.round(b)}° dari Utara searah jarum jam · ${dist.toLocaleString('id-ID')} km ke Ka'bah.`} Lokasi dari GPS dan arah dihitung di HP, jadi tetap jalan tanpa internet.</p>
+    <button class="btn" data-a="compass">${ic('compass',18)} Aktifkan kompas</button>
+    <p class="mute" style="margin-top:14px">Jauhkan HP dari magnet/logam. Jika jarum melenceng, gerakkan HP membentuk angka 8 untuk kalibrasi.</p></div></div>`}
+  if(sheet==='tasbih'){const Z=['Subhanallah','Alhamdulillah','Allahu Akbar'],ZA=['سُبْحَانَ اللّٰهِ','اَلْحَمْدُ لِلّٰهِ','اَللّٰهُ أَكْبَرُ'];
+    return `<div class="sheet">${hdr('Tasbih Digital')}<div class="scr pad" style="text-align:center"><div class="ar" style="font-size:36px;margin-top:10px" id="tz">${ZA[S.tasIdx]}</div><b id="tzl">${Z[S.tasIdx]}</b> <span class="mute">· target 33</span>
+    <button class="big-tas" data-a="tas" aria-label="Hitung"><span id="tc">${S.tasbih}</span></button>
+    <div class="chips" style="justify-content:center">${Z.map((z,i)=>`<button class="${S.tasIdx===i?'on':''}" data-a="tasz" data-v="${i}">${z}</button>`).join('')}</div>
+    <button class="btn" style="margin-top:18px;background:#24403f" data-a="tasreset">${ic('redo',18)} Ulang dari 0</button></div></div>`}
+  if(sheet==='doa')return `<div class="sheet">${hdr('Doa-doa Harian')}<div class="scr">${DOA.map(d=>`<div class="ayah"><b>${d.n}</b><div class="ar" style="margin-top:6px">${d.ar}</div><p><i>${esc(d.l)}</i></p><p>${d.t}</p></div>`).join('')}</div></div>`;
+  if(sheet==='asma')return `<div class="sheet">${hdr('Asmaul Husna')}<div class="scr">${ASMA.map(a=>`<div class="ayah" style="display:flex;gap:12px;align-items:center"><span class="anum">${a.no}</span><div style="flex:1"><b>${esc(a.l)}</b><p style="margin:2px 0 0">${a.t}</p></div><div class="ar" style="font-size:26px;font-family:Amiri,serif">${a.ar}</div></div>`).join('')}</div></div>`;
+  if(sheet==='zakat')return `<div class="sheet">${hdr('Kalkulator Zakat Mal')}<div class="scr pad"><label class="fld">Total tabungan & simpanan (Rp)<input inputmode="numeric" id="zs" data-in="zakat" placeholder="contoh: 150000000"></label>
+    <label class="fld">Harga emas per gram hari ini (Rp)<input inputmode="numeric" id="zg" data-in="zakat" placeholder="isi harga emas terkini"></label><div class="card" style="margin:0" id="zres"><p class="mute" style="margin:0">Isi kedua kolom untuk melihat hasil.</p></div>
+    <p class="mute">Nisab = 85 gram emas. Zakat 2,5% wajib bila harta mencapai nisab dan sudah dimiliki 1 tahun (haul). Untuk kepastian, konsultasikan dengan lembaga amil zakat.</p></div></div>`;
+  if(sheet==='settings'){const c=C();return `<div class="sheet">${hdr('Pengaturan')}<div class="scr pad">
+    <div class="fld">Lokasi<button class="btn" style="width:100%" data-a="gps">${ic('gps',20)} Gunakan lokasi GPS HP</button>
+    <span class="mute">Sekarang: ${esc(c.n)} (${c.lat.toFixed(3)}, ${c.lng.toFixed(3)}) · metode ${METH[c.m].n}. GPS bekerja tanpa internet.</span></div>
+    <div class="fld">Atau isi koordinat manual<div class="coord"><input id="mlat" inputmode="decimal" placeholder="Lintang, mis. -6.2" aria-label="Lintang"><input id="mlng" inputmode="decimal" placeholder="Bujur, mis. 106.8" aria-label="Bujur"><button class="btn" data-a="setcoord">Simpan</button></div></div>
+    <div class="fld">Kota cepat<div class="chips">${S.loc?`<button class="${S.city==='gps'?'on':''}" data-a="city" data-v="gps">${esc(S.loc.n)}</button>`:''}${Object.entries(CITY).map(([k,x])=>`<button class="${S.city===k?'on':''}" data-a="city" data-v="${k}">${x.n}</button>`).join('')}</div></div>
+    <div class="fld">Aksen suara bahasa Inggris (Mode Anak)<div class="chips"><button class="${S.accent==='US'?'on':''}" data-a="accent" data-v="US">US (Amerika)</button><button class="${S.accent==='UK'?'on':''}" data-a="accent" data-v="UK">UK (Inggris)</button></div></div>
+    <div class="fld">Kecepatan suara<div class="chips">${[[.7,'Pelan'],[.85,'Normal'],[1,'Cepat']].map(([r,l])=>`<button class="${S.rate===r?'on':''}" data-a="rate" data-v="${r}">${l}</button>`).join('')}</div></div>
+    <div class="fld">Efek suara<div class="chips"><button class="${S.sound?'on':''}" data-a="snd" data-v="1">Nyala</button><button class="${!S.sound?'on':''}" data-a="snd" data-v="0">Mati</button></div></div>
+    <button class="btn" style="width:100%;margin:4px 0 12px;background:#6d4fe0" data-a="kids">${ic('smile',20)} Aktifkan Mode Anak</button>
+    <button class="btn" style="width:100%;background:#5b2a33" data-a="reset">${resetArm?'Ketuk sekali lagi untuk menghapus':'Hapus progres belajar anak'}</button>
+    <p class="mute" style="margin-top:16px">Cahaya · prototipe. Mode Anak dikunci dengan soal hitungan sederhana supaya anak tidak keluar sendiri.</p></div></div>`}
+  return '';
+}
+
+/* ============ KIDS VIEWS ============ */
+const totalStars=()=>Object.values(S.kid.stars).reduce((a,b)=>a+b,0);
+const level=()=>Math.floor(S.kid.xp/100)+1;
+const isAdik=()=>S.kid.profile==='adik';
+const ISL=[
+{id:'sholat',n:'Pulau Sholat-ku',s:'Kumpulkan bintang sholat',c:'#ff9f43',i:'sun',v:'sholat'},
+{id:'hija',n:'Pulau Hijaiyah',s:'Kenal huruf Arab',c:'#3fcf9a',i:'book',v:'hija'},
+{id:'doa',n:'Pulau Doa Harian',s:'Doa sehari-hari',c:'#9b7bff',i:'hands',v:'doa'},
+{id:'rukun',n:'Pulau Rukun & Wudhu',s:'Rukun Islam, Iman, Wudhu',c:'#26a69a',i:'drop',v:'rukun'},
+{id:'asma',n:'Taman Asmaul Husna',s:'99 nama Allah',c:'#e0a800',i:'spark',v:'asma'},
+{id:'abc',n:'Pulau Alphabet',s:'A sampai Z',c:'#ec6fb0',i:'abc',v:'abc'},
+{id:'vocab',n:'Pulau Kosakata',s:'English words',c:'#ff6f7d',i:'smile',v:'vocab'},
+{id:'talk',n:'Pulau Percakapan',s:'Daily English',c:'#00a3c4',i:'chat',v:'talk'},
+{id:'A',n:'Pulau 16 Tenses',s:'Modul A',c:'#59b8ff',i:'clock',v:'mod:A'},
+{id:'B',n:'Pulau Kelas Kata',s:'Modul B',c:'#ff9f43',i:'lang',v:'mod:B',lock:1},
+{id:'C',n:'Gunung Grammar Ahli',s:'Modul C',c:'#5c6bc0',i:'trophy',v:'mod:C',lock:1}];
+function islProg(id){const st=S.kid.stars;
+  if(id==='sholat'){const p=prayedOn(dkey(dayDate(0)));return P5.filter(x=>p[x]).length+'/5 hari ini'}
+  if(['hija','doa','rukun','asma','abc','talk'].includes(id))return starRow(st[id]||0,14);
+  if(id==='vocab'){const n=Object.keys(VOC).reduce((a,k)=>a+(st['v-'+k]||0),0);return `${n}/${Object.keys(VOC).length*3} bintang`}
+  const ts=MOD[id].t.filter(t=>!isAdik()||ADIK_OK.includes(t.id));return `${ts.reduce((a,t)=>a+(st[t.id]||0),0)}/${ts.length*3} bintang`}
+const playBtn=(key,label,style='')=>`<button class="kbig" style="${style}" data-a="play" data-v="${key}">${ic('play',24,1)} ${label} ${starRow(S.kid.stars[key]||0,18)}</button>`;
+function Rukun(){return backBar('map','Peta')+`<div class="mas">${nuri('idle',64)}<div class="bubble">Ayo hafalkan urutannya. Nanti kita main menyusun langkah!</div></div>
+  ${Object.values(RUKUN).map(r=>`<div class="kcard"><b style="font-size:20px">${r.n} (${r.s.length})</b><div class="stp" style="margin-top:8px">${r.s.map((x,i)=>`<div><span>${i+1}</span>${x}</div>`).join('')}</div></div>`).join('')}
+  ${playBtn('rukun','Main Susun Langkah','background:#26a69a;box-shadow:0 6px 0 #1b7f75')}`}
+function Asma(){return backBar('map','Peta')+`<div class="mas">${nuri('idle',64)}<div class="bubble">Allah punya 99 nama yang indah. Yuk kenali artinya!</div></div>
+  ${playBtn('asma','Main Tebak Arti','background:#e0a800;box-shadow:0 6px 0 #b38600')}
+  <div style="padding:0 14px 8px">${ASMA.map(a=>`<div class="topic" style="cursor:default"><span class="dot" style="background:#e0a800;font-size:15px">${a.no}</span><span class="t">${esc(a.l)}<small>${a.t}</small></span><span class="ar" style="font-family:Amiri,serif;font-size:24px">${a.ar}</span></div>`).join('')}</div>`}
+function Abc(){return backBar('map','Peta')+`<div class="mas">${nuri('idle',64)}<div class="bubble">Ketuk huruf untuk mendengar bunyinya. A is for apple!</div></div>
+  <div style="padding:0 14px"><div class="vg">${ABC.map(x=>`<button data-a="say" data-v="${x.l}. ${x.l} is for ${x.w}."><span class="dig" style="color:#ec6fb0">${x.l}${x.l.toLowerCase()}</span><span style="font-size:34px;line-height:1.1">${x.e}</span>${x.w}</button>`).join('')}</div></div><div style="height:16px"></div>
+  ${playBtn('abc','Main Tebak Huruf','background:#ec6fb0;box-shadow:0 6px 0 #c94d8f')}`}
+function Talk(){return backBar('map','Peta')+`<div class="mas">${nuri('idle',64)}<div class="bubble">Kalimat sehari-hari untuk ngobrol dalam bahasa Inggris. Dengar lalu tirukan ya!</div></div>
+  <div class="kcard">${TALK.map(([e,i])=>`<div class="exr"><p>${esc(e)}<br><small style="color:#7d8aa5;font-weight:600">${esc(i)}</small></p><button class="spk" data-a="say" data-v="${esc(e)}" aria-label="Dengarkan">${ic('vol',22)}</button></div>`).join('')}</div>
+  ${playBtn('talk','Main Percakapan','background:#00a3c4;box-shadow:0 6px 0 #007f99')}`}
+function K(){
+  if(G)return Game();
+  if(!S.kid.profile||S.kv==='profile')return Profile();
+  let body;const v=S.kv;
+  if(v==='map')body=Map();else if(v.startsWith('mod:'))body=Module(v.slice(4));else if(v.startsWith('lesson:'))body=Lesson(v.slice(7));
+  else if(v==='hija')body=Hija();else if(v==='rukun')body=Rukun();else if(v==='asma')body=Asma();else if(v==='abc')body=Abc();else if(v==='talk')body=Talk();else if(v==='doa')body=KDoa();else if(v==='vocab')body=Vocab();else if(v==='sholat')body=KSholat();else if(v==='badges')body=Badges();else body=Map();
+  const tab=v==='sholat'?'sholat':v==='badges'?'badges':'map';
+  const xpIn=S.kid.xp%100;
+  return `<header class="khead"><button class="who" data-a="go" data-v="profile" aria-label="Ganti profil">${nuri('idle',48)}<span><b>Halo, ${esc(S.kid.name||(isAdik()?'Adik':'Kakak'))}!</b><small style="font-weight:700;color:#7d8aa5">Level ${level()} · ${isAdik()?'Adik':'Kakak'}</small><span class="xpbar"><i style="width:${xpIn}%"></i></span></span></button>
+  <span class="stat">${ic('star',18,1)}${totalStars()}</span><span class="stat fl">${ic('flame',18,1)}${S.kid.streak}</span><button class="kbtn" data-a="gate" aria-label="Keluar Mode Anak (orang tua)">${ic('lock',20)}</button></header>
+  <div class="scr" id="scr">${body}</div>
+  <nav class="nav">${[['map','map','Peta'],['sholat','sun','Sholat-ku'],['badges','trophy','Hadiah']].map(([k,i,l])=>`<button data-a="go" data-v="${k}" class="${tab===k?'on':''}">${ic(i,26,tab===k)}${l}</button>`).join('')}</nav>${gate?Gate():''}`;
+}
+function Profile(){const p=S.kid.profile;
+  return `<div class="scr" style="background:#e8f5ff"><div class="mas" style="padding-top:28px">${nuri('happy',96)}<div class="bubble">Assalamualaikum! Aku Nuri. Siapa yang mau belajar hari ini?</div></div>
+  <div class="prof"><button class="${p==='adik'?'on':''}" data-a="prof" data-v="adik"><span style="width:64px;height:64px;border-radius:20px;background:#ffd23f;display:grid;place-items:center;color:#7a4b00">${ic('smile',36)}</span><span><b>Adik</b><small>Usia 4–7 tahun · banyak gambar & suara, 5 nyawa</small></span></button>
+  <button class="${p==='kakak'?'on':''}" data-a="prof" data-v="kakak"><span style="width:64px;height:64px;border-radius:20px;background:#59b8ff;display:grid;place-items:center;color:#fff">${ic('trophy',34)}</span><span><b>Kakak</b><small>Usia 8–12 tahun · semua pulau & grammar ahli</small></span></button>
+  <label style="font-weight:800;font-size:17px">Nama panggilan<input class="kin" data-in="kname" value="${esc(S.kid.name)}" maxlength="16" placeholder="contoh: Aisyah"></label>
+  ${p?'<button class="kbig gr" style="width:100%;margin:0" data-a="go" data-v="map">Ayo Berpetualang!</button>':''}
+  <button class="kbig bl" style="width:100%;margin:0 0 24px;background:#7d8aa5;box-shadow:0 6px 0 #5b6b8a" data-a="gate">${ic('lock',20)} Kembali ke mode orang tua</button></div></div>${gate?Gate():''}`;
+}
+function Map(){
+  const n=ISL.length,H=n*168+200,X=i=>i%2?70:30,Y=i=>110+i*168;
+  let d=`M${X(0)} ${Y(0)}`;for(let i=1;i<n;i++)d+=` C${X(i-1)} ${Y(i-1)+90},${X(i)} ${Y(i)-90},${X(i)} ${Y(i)}`;
+  const chestReady=Math.floor(S.kid.xp/100)>S.kid.chests;
+  return `<div class="map" style="height:${H}px"><svg class="path" viewBox="0 0 100 ${H}" preserveAspectRatio="none" style="height:${H}px"><path d="${d}" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="2 14" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+  <div class="mas" style="position:relative;z-index:2;padding:14px 14px 0">${nuri('idle',64)}<div class="bubble">${isAdik()?'Pilih pulau, lalu ketuk untuk mulai!':'Jelajahi pulau satu per satu dan kumpulkan bintang!'}</div></div>
+  ${ISL.map((s,i)=>{const lk=s.lock&&isAdik();return `<button class="isl ${lk?'lock':''}" style="left:${X(i)}%;top:${Y(i)+20}px" data-a="${lk?'locked':'go'}" data-v="${s.v}"><span class="disc" style="background:${s.c}">${ic(s.i,44)}</span>${lk?`<span class="lk">${ic('lock',16)}</span>`:''}<span class="lbl">${s.n}<small>${lk?'Untuk Kakak':islProg(s.id)}</small></span></button>`}).join('')}
+  <div style="position:absolute;left:0;right:0;top:${Y(n)-10}px"><button class="chest ${chestReady?'':'off'}" data-a="chest"><span class="${chestReady?'shake':''}">${ic('gift',40)}</span><span>${chestReady?'Kotak harta karun siap dibuka!':`Kotak harta karun berikutnya: ${100-S.kid.xp%100} XP lagi`}</span></button></div></div>`;
+}
+function backBar(to,label){return `<div class="back"><button data-a="go" data-v="${to}">${ic('left',24)} ${label}</button></div>`}
+function Module(m){const M=MOD[m];let g='';
+  const rows=M.t.map(t=>{const lk=isAdik()&&!ADIK_OK.includes(t.id);const head=t.g&&t.g!==g?`<div class="grp">${(g=t.g)}</div>`:'';
+   return head+`<button class="topic ${lk?'lock':''}" data-a="${lk?'locked':'go'}" data-v="lesson:${t.id}"><span class="dot" style="background:${M.c}">${lk?ic('lock',20):t.n[0]}</span><span class="t">${t.n}<small>${lk?'Untuk Kakak':t.ex[0]}</small></span>${starRow(S.kid.stars[t.id]||0)}</button>`}).join('');
+  return backBar('map','Peta')+`<div class="mas">${nuri('idle',60)}<div><p class="ktitle">${M.n}</p><b style="color:#7d8aa5">${M.sub} · ${M.t.length} materi</b></div></div><div style="padding:0 14px 20px">${rows}</div>`;
+}
+const fxHtml=f=>`<div class="fx">${f.split('|').map((p,i)=>{const[t,r]=p.split('~');return (i?'<em>+</em>':'')+`<span class="${r}">${esc(t)}</span>`}).join('')}</div>`;
+function Lesson(id){const t=ALLT[id];if(!t)return Map();const M=MOD[t.m];
+  const sg=[['+','#3fcf9a','Positif'],['−','#ff6f7d','Negatif'],['?','#59b8ff','Tanya']];
+  return backBar('mod:'+t.m,M.n)+`<div class="mas">${nuri('happy',72)}<div class="bubble">${t.i}</div></div>
+  <div class="kcard"><p class="ktitle" style="font-size:24px;margin-bottom:10px">${t.n}</p><b style="color:#7d8aa5;font-size:14px">RUMUS AJAIB</b>${fxHtml(t.f)}</div>
+  <div class="kcard"><b style="color:#7d8aa5;font-size:14px">CONTOH KALIMAT</b>${t.ex.map((e,i)=>`<div class="exr"><span class="sg" style="background:${sg[i][1]}" title="${sg[i][2]}">${sg[i][0]}</span><p>${esc(e)}</p><button class="spk" data-a="say" data-v="${esc(e)}" aria-label="Dengarkan">${ic('vol',22)}</button></div>`).join('')}</div>
+  ${t.k?`<div class="kcard"><b style="color:#7d8aa5;font-size:14px">JENIS-JENISNYA</b><div class="kgrid" style="margin-top:8px">${t.k.map(([a,b])=>`<button data-a="say" data-v="${esc(b)}"><b>${esc(a)}</b><small>${esc(b)}</small></button>`).join('')}</div></div>`:''}
+  ${t.vt?`<div class="kcard"><b style="color:#7d8aa5;font-size:14px">KAMUS MINI V1 · V2 · V3</b><table class="vt"><tr><th>V1</th><th>V2</th><th>V3</th></tr>${t.vt.map(r=>`<tr>${r.map(w=>`<td><button data-a="say" data-v="${w}" style="font-weight:700;min-height:36px">${w}</button></td>`).join('')}</tr>`).join('')}</table></div>`:''}
+  ${t.ts?`<div class="kcard"><b style="color:#7d8aa5;font-size:14px">KATA PENANDA WAKTU</b><div class="tchips" style="margin-top:8px">${t.ts.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`:''}
+  <button class="kbig" data-a="play" data-v="${id}">${ic('play',24,1)} Ayo Main! (5 soal)</button>`;
+}
+function Hija(){const s=hsel!=null?HIJ[hsel]:null;
+  return backBar('map','Peta')+`<div class="mas">${nuri(s?'happy':'idle',64)}<div class="bubble">${s?`Ini huruf <b>${s.n}</b>! Ayo tirukan bersama.`:'Ketuk huruf untuk berkenalan. Sudah siap? Main Tebak Huruf!'}</div></div>
+  ${s?`<div class="kcard" style="text-align:center"><div class="ar" style="font-size:110px;line-height:1.3;font-family:Amiri,serif">${s.h}</div><b style="font-size:26px">${s.n}</b></div>`:''}
+  <div style="padding:0 14px"><div class="hg">${HIJ.map((h,i)=>`<button class="${hsel===i?'on':''}" data-a="hsel" data-v="${i}"><span class="ar">${h.h}</span><small>${h.n}</small></button>`).join('')}</div></div>
+  <div style="height:16px"></div><button class="kbig gr" data-a="play" data-v="hija">${ic('play',24,1)} Main Tebak Huruf ${starRow(S.kid.stars.hija||0,18)}</button>`;
+}
+function KDoa(){return backBar('map','Peta')+`<div class="mas">${nuri('idle',64)}<div class="bubble">Doa adalah cara kita bicara dengan Allah. Yuk hafalkan doa sehari-hari!</div></div>
+  ${DOA.map(d=>`<div class="kcard doa"><b style="font-size:19px">${d.n}</b><div class="ar">${d.ar}</div><i>${esc(d.l)}</i><p>${d.t}</p></div>`).join('')}
+  <button class="kbig" style="background:#9b7bff;box-shadow:0 6px 0 #7356e0" data-a="play" data-v="doa">${ic('play',24,1)} Main Kapan Doanya? ${starRow(S.kid.stars.doa||0,18)}</button>`}
+function Vocab(){const c=VOC[S.vcat];
+  return backBar('map','Peta')+`<div class="mas">${nuri('idle',64)}<div class="bubble">Ketuk gambar untuk mendengar kata dalam bahasa Inggris!</div></div>
+  <div class="ktabs">${Object.entries(VOC).map(([k,v])=>`<button class="${S.vcat===k?'on':''}" data-a="vcat" data-v="${k}">${v.n}</button>`).join('')}</div>
+  <div style="padding:0 14px"><div class="vg">${c.w.map(w=>`<button data-a="say" data-v="${w[0]}">${vpic(w)}${w[0]}</button>`).join('')}</div></div><div style="height:16px"></div>
+  <button class="kbig" data-a="play" data-v="v-${S.vcat}">${ic('play',24,1)} Main ${c.n} ${starRow(S.kid.stars['v-'+S.vcat]||0,18)}</button>`}
+function KSholat(){const d=dayDate(0),k=dkey(d),t=timesFor(d),pr=prayedOn(k),n=P5.filter(p=>pr[p]).length;
+  return `<div class="mas">${nuri(n===5?'happy':'idle',72)}<div class="bubble">${n===5?'MasyaAllah! Sholatmu lengkap hari ini!':'Sudah sholat? Ketuk bintangnya ya! Setiap sholat dapat +5 XP.'}</div></div>
+  <div class="kcard"><b style="font-size:20px">Sholat hari ini · ${n}/5</b><div class="sh" style="margin-top:10px">${P5.map(p=>`<button class="${pr[p]?'on':''}" data-a="kpray" data-v="${p}" aria-pressed="${!!pr[p]}"><span class="st">${ic('star',34,1)}</span>${PN[p]}<small>${hm(t[p])}</small></button>`).join('')}</div></div>
+  <div class="kcard"><b>Minggu ini</b><div class="sh" style="grid-template-columns:repeat(7,1fr);margin-top:8px">${[...Array(7)].map((_,i)=>{const x=dayDate(i-6),c=P5.filter(p=>(S.prayed[dkey(x)]||{})[p]).length;return `<div style="text-align:center;font-weight:800">${'MSSRKJS'[x.getUTCDay()]}<div style="height:60px;background:#eef5ff;border-radius:10px;display:flex;align-items:flex-end;overflow:hidden;margin-top:4px"><i style="display:block;width:100%;height:${c*20}%;background:#ffc21a"></i></div><small style="color:#7d8aa5">${c}</small></div>`}).join('')}</div></div>`}
+function Badges(){const kd=S.kid;
+  return `<div class="mas">${nuri('happy',72)}<div class="bubble">Ini koleksi lencana dan stikermu. Terus semangat ya!</div></div>
+  <div class="kcard"><b style="font-size:20px">Lencana</b><div class="bdg" style="margin-top:10px">${BADGES.map(b=>`<div class="${kd.badges.includes(b.id)?'':'off'}"><svg width="70" height="78" viewBox="0 0 70 78"><path d="M22 50 14 76l13-6 8 8 4-26M48 50l8 26-13-6-8 8-4-26" fill="${b.c}" opacity=".7"/><circle cx="35" cy="34" r="28" fill="${b.c}"/><circle cx="35" cy="34" r="21" fill="#fff4"/><path d="M35 19l4.6 9.4 10.4 1.5-7.5 7.3 1.8 10.3L35 42.6l-9.3 4.9 1.8-10.3-7.5-7.3 10.4-1.5z" fill="#fff"/></svg><br>${b.n}<br><small style="color:#7d8aa5;font-weight:600">${b.d}</small></div>`).join('')}</div></div>
+  <div class="kcard"><b style="font-size:20px">Stiker harta karun (${kd.stickers.length})</b><div style="font-size:40px;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${kd.stickers.length?kd.stickers.map(s=>`<span>${s}</span>`).join(''):'<span class="mute" style="font-size:15px;font-weight:600;color:#7d8aa5">Kumpulkan 100 XP untuk membuka kotak harta karun pertama.</span>'}</div></div>
+  <div class="kcard"><b>Statistik</b><p style="margin:4px 0 0;font-weight:600">${kd.xp} XP · Level ${level()} · ${totalStars()} bintang · ${kd.streak} hari beruntun</p></div>`}
+function Gate(){return `<div class="gate"><div><div style="display:flex;justify-content:center">${ic('lock',36)}</div><b style="font-size:21px;display:block;margin:6px 0">Khusus Ayah/Bunda</b><p style="margin:0 0 10px;font-weight:600">Berapa ${gate.a} × ${gate.b}?</p>
+  <input class="kin" id="gin" inputmode="numeric" data-in="gate" style="text-align:center" aria-label="Jawaban"><div style="display:flex;gap:8px;margin-top:12px"><button class="kbig bl" style="margin:0;flex:1;background:#c9d3e2;box-shadow:0 6px 0 #aab6c8;color:#24314a" data-a="gatex">Batal</button><button class="kbig gr" style="margin:0;flex:1" data-a="gateok">Masuk</button></div></div></div>`}
+
+/* ============ GAME ENGINE ============ */
+const tok=s=>s.split(' ');
+const clean=w=>w.replace(/[.,!?"]/g,'').toLowerCase();
+const GENERIC=['for','since','when','while','before','after','by','by the time','already','how long','later','soon','at that time'];
+const others=(pool,correct,n=2)=>shuffle([...new Set(pool.filter(x=>x!==correct))]).slice(0,n);
+const chunk=(arr,n)=>{if(arr.length<=n)return arr.slice();const s=Math.random()*(arr.length-n+1)|0;return arr.slice(s,s+n)};
+function buildGame(key){
+  let qs=[],title;const adik=isAdik();
+  if(ALLT[key]){const t=ALLT[key];title=t.n;const L=pick([0,1,2]),K=pick([0,1,2]),TYP=['Positif (+)','Negatif (−)','Tanya (?)'];
+    const classify={t:'pick',sent:t.ex[K],prompt:'Kalimat ini termasuk jenis apa?',o:TYP,a:TYP[K],why:'Kalimat negatif memakai "not", kalimat tanya diakhiri tanda tanya (?).'};
+    const fill={t:'fill',s:t.fill[0],a:t.fill[1],o:shuffle(t.fill[2]),why:`Ingat rumusnya: ${t.f.split('|').map(p=>p.split('~')[0]).join(' + ')}.`};
+    const spot={t:'spot',s:t.spot[0],w:tok(t.spot[0]).findIndex(x=>clean(x)===t.spot[1].toLowerCase()),fix:t.spot[2],why:t.spot[3]};
+    const listen={t:'listen',say:t.ex[L],o:shuffle(t.ex),a:t.ex[L]};
+    let tsq=null;if(t.ts&&t.m==='A'){const good=t.ts.filter(x=>!GENERIC.includes(x));if(good.length){const c=pick(good),pool=MOD.A.t.filter(o=>o.g!==t.g).flatMap(o=>o.ts).filter(x=>!GENERIC.includes(x)&&!t.ts.includes(x));tsq={t:'pick',prompt:`Kata penanda waktu yang cocok untuk ${t.n}?`,o:shuffle([c,...others(pool,c)]),a:c,why:`Penanda ${t.n}: ${t.ts.join(', ')}.`}}}
+    qs=adik?[classify,{t:'listen',say:t.ex[0],o:shuffle(t.ex),a:t.ex[0]},fill,listen]
+      :[{t:'builder',toks:tok(t.ex[0]),answer:t.ex[0]},classify,fill,spot,tsq,listen,{t:'builder',toks:tok(t.ex[2]),answer:t.ex[2]}].filter(Boolean);
+  }else if(key==='hija'){title='Tebak Huruf';qs=shuffle(HIJ).slice(0,6).map(h=>({t:'pick',big:h.h,prompt:'Huruf apa ini?',o:shuffle([h.n,...others(HIJ.map(x=>x.n),h.n)]),a:h.n,why:`Ini huruf ${h.n}.`}))}
+  else if(key==='doa'){title='Kapan Doanya?';qs=shuffle(DOA).slice(0,5).map(d=>({t:'pick',arTxt:d.ar,prompt:'Doa ini dibaca kapan?',o:shuffle([d.w,...others(DOA.map(x=>x.w),d.w)]),a:d.w,why:`Ini ${d.n.toLowerCase()}: ${d.t}`}))}
+  else if(key==='rukun'){title='Rukun & Wudhu';const R=RUKUN,ki=Math.random()*5|0,kj=Math.random()*6|0;
+    qs=[{t:'order',toks:chunk(R.wudhu.s,adik?4:6),prompt:'Urutkan langkah wudhu, mulai dari yang pertama!'},
+      {t:'pick',prompt:'Rukun Iman ada berapa?',o:['5','6','7'],a:'6',why:'Rukun Iman ada 6: Allah, malaikat, kitab, rasul, hari akhir, qada dan qadar.'},
+      {t:'order',toks:chunk(R.sholat.s,adik?4:6),prompt:'Urutkan gerakan sholat!'},
+      {t:'pick',prompt:`Rukun Islam yang ke-${ki+1} adalah…`,o:shuffle([R.islam.s[ki],...others(R.islam.s,R.islam.s[ki])]),a:R.islam.s[ki],why:`Rukun Islam ke-${ki+1}: ${R.islam.s[ki]}.`},
+      {t:'order',toks:adik?R.islam.s.slice(0,3):R.islam.s.slice(),prompt:'Urutkan Rukun Islam!'},
+      {t:'pick',prompt:`Rukun Iman yang ke-${kj+1} adalah…`,o:shuffle([R.iman.s[kj],...others(R.iman.s,R.iman.s[kj])]),a:R.iman.s[kj],why:`Rukun Iman ke-${kj+1}: ${R.iman.s[kj]}.`}]}
+  else if(key==='asma'){title='Asmaul Husna';const pool=adik?ASMA.slice(0,20):ASMA;qs=shuffle(pool).slice(0,5).map(a=>({t:'pick',arTxt:a.ar,sent:a.l,prompt:'Apa arti nama Allah ini?',o:shuffle([a.t,...others(ASMA.map(x=>x.t).filter(x=>x!==a.t),a.t)]),a:a.t,why:`${a.l} artinya ${a.t}.`}))}
+  else if(key==='abc'){title='Alphabet';const L=ABC.map(x=>x.l);qs=shuffle(ABC.filter(x=>x.l!=='X')).slice(0,6).map((x,i)=>i%2?{t:'pick',pic:[x.w,x.e],sent:'_'+x.w.slice(1),prompt:'Huruf depan kata ini apa?',o:shuffle([x.l,...others(L,x.l)]),a:x.l,say2:`${x.l} is for ${x.w}`,why:`${x.l} is for ${x.w}.`}:{t:'pick',say:x.l,prompt:'Dengarkan! Huruf apa itu?',o:shuffle([x.l,...others(L,x.l)]),a:x.l,why:`Yang kamu dengar adalah huruf ${x.l}.`})}
+  else if(key==='talk'){title='Percakapan';const E=TALK.map(x=>x[0]),I=TALK.map(x=>x[1]);
+    qs=shuffle(TALK).slice(0,5).map(([e,i],k)=>k%3===0?{t:'pick',say:e,prompt:'Dengarkan! Apa artinya?',o:shuffle([i,...others(I,i)]),a:i,why:`"${e}" artinya "${i}"`}:k%3===1||adik?{t:'pick',sent:i,prompt:'Apa bahasa Inggrisnya?',o:shuffle([e,...others(E,e)]),a:e,say2:e,why:`"${i}" dalam bahasa Inggris: "${e}"`}:{t:'builder',toks:tok(e),answer:e})}
+  else if(key.startsWith('v-')){const c=VOC[key.slice(2)];title='Kosakata '+c.n;
+    qs=shuffle(c.w).slice(0,5).map((w,i)=>{const ot=shuffle(c.w.filter(x=>x!==w)).slice(0,2);return i%2?{t:'pick',pic:w,prompt:'Apa bahasa Inggrisnya?',o:shuffle([w,...ot].map(x=>x[0])),a:w[0],say2:w[0],why:`Ini "${w[0]}".`}:{t:'listenpic',say:w[0],o:shuffle([w,...ot]),a:w[0],why:`Yang kamu dengar adalah "${w[0]}".`}})}
+  const hearts=adik?5:3;
+  G={key,title,qs,i:0,hearts,max:hearts,correct:0,sel:null,built:[],bank:null,checked:false,ok:false,done:false,earned:0,stars:0};
+  prepQ();
+}
+function prepQ(){const q=G.qs[G.i];G.sel=null;G.built=[];G.checked=false;if(q.toks){G.bank=shuffle(q.toks.map((w,i)=>({w,i})));if(G.bank.every((b,i)=>b.i===i))G.bank.reverse()}}
+function autoSpeak(){if(!G||G.done)return;const q=G.qs[G.i];if(q.say)setTimeout(()=>speak(q.say),250)}
+const INS={builder:'Susun kata menjadi kalimat yang benar!',fill:'Pilih kata yang tepat untuk mengisi titik-titik!',spot:'Detektif Grammar! Ketuk kata yang salah.',listen:'Dengarkan, lalu pilih kalimat yang kamu dengar!',listenpic:'Dengarkan, lalu ketuk gambar yang benar!',order:'Ketuk sesuai urutan yang benar!',pick:''};
+function Game(){
+  if(G.done)return End();
+  const q=G.qs[G.i],ck=G.checked,isOrd=q.t==='order';let area='';
+  const playB=q.say?`<button class="bigplay" data-a="say" data-v="${esc(q.say)}" aria-label="Putar lagi">${ic('vol',56)}</button>`:'';
+  if(q.toks){area=`<div class="slot ${isOrd?'ord':''}" ${isOrd?'style="flex-direction:column;align-items:stretch"':''}>${G.built.map((b,j)=>`<button class="wch ${ck?(G.ok?'good':'sel'):''}" data-a="gback" data-v="${j}" ${ck?'disabled':''} style="text-align:left">${isOrd?(j+1)+'. ':''}${esc(b.w)}</button>`).join('')}</div><div class="bank ${isOrd?'ord':''}">${G.bank.map((b,j)=>`<button class="wch ${G.built.includes(b)?'used':''}" data-a="gchip" data-v="${j}" ${ck?'disabled':''}>${esc(b.w)}</button>`).join('')}</div>`}
+  else if(q.t==='fill'){const fillW=G.sel!=null?q.o[G.sel]:'';area=`<div class="sent">${esc(q.s).replace('___',`<u>${esc(fillW)||'&nbsp;'}</u>`)}</div><div class="opts">${q.o.map((o,j)=>`<button class="opt ${cls(j,o===q.a)}" data-a="gpick" data-v="${j}">${esc(o)}</button>`).join('')}</div>`}
+  else if(q.t==='spot'){area=`<div class="sent" style="display:flex;flex-wrap:wrap;gap:8px">${tok(q.s).map((w,j)=>`<button class="wch ${ck&&j===q.w?'good':G.sel===j?'sel':''}" data-a="gpick" data-v="${j}" ${ck?'disabled':''}>${esc(w)}</button>`).join('')}</div>${ck?`<div class="kcard" style="margin:0"><b>Perbaikan:</b> ${esc(q.s.split(' ')[q.w])} → <b style="color:#167a52">${esc(q.fix)}</b></div>`:''}`}
+  else if(q.t==='listen'){area=`${playB}<div class="opts">${q.o.map((o,j)=>`<button class="opt ${cls(j,o===q.a)}" data-a="gpick" data-v="${j}">${esc(o)}</button>`).join('')}</div>`}
+  else if(q.t==='listenpic'){area=`${playB}<div class="opts pics">${q.o.map((o,j)=>`<button class="opt ${cls(j,o[0]===q.a)}" data-a="gpick" data-v="${j}" aria-label="Pilihan ${j+1}">${vpic(o,'')}</button>`).join('')}</div>`}
+  else if(q.t==='pick'){area=`${playB}${q.big?`<div class="bigq ar" style="font-family:Amiri,serif">${q.big}</div>`:''}${q.arTxt?`<div class="kcard ar" style="margin:0 0 12px;font-size:26px;line-height:2;text-align:right;font-family:Amiri,serif">${q.arTxt}</div>`:''}${q.pic?`<div class="bigq" style="margin:0">${vpic(q.pic,'')}</div>`:''}${q.sent?`<div class="sent" style="text-align:center">${esc(q.sent)}</div>`:''}
+    <div class="opts">${q.o.map((o,j)=>`<button class="opt ${cls(j,o===q.a)}" data-a="gpick" data-v="${j}">${esc(o)}</button>`).join('')}</div>`}
+  const ready=q.toks?G.built.length===G.bank.length:G.sel!=null;
+  return `<div class="gtop"><button class="kbtn" data-a="gquit" aria-label="Keluar">${ic('x',24)}</button><div class="prog"><i style="width:${(G.i+(ck?1:0))/G.qs.length*100}%"></i></div>
+  <span class="hearts" aria-label="${G.hearts} nyawa">${[...Array(G.max)].map((_,j)=>`<span class="${j<G.hearts?'':'off'}">${ic('heart',22,1)}</span>`).join('')}</span></div>
+  <div class="scr"><div class="mas" style="padding-top:4px">${nuri(ck?(G.ok?'happy':'sad'):'idle',64)}<div class="bubble">${q.prompt||INS[q.t]}</div></div><div class="garea">${area}</div></div>
+  ${ck?`<div class="fb ${G.ok?'ok':'no'}"><h4>${ic(G.ok?'check':'heart',26,!G.ok)}${G.ok?pick(['Hebat!','Keren sekali!','MasyaAllah, pintar!','Mantap!']):pick(['Hampir benar!','Tidak apa-apa, ayo coba lagi!','Kamu pasti bisa!'])}</h4>
+   <p>${G.ok?(q.t==='builder'||q.t==='listen'?esc(q.answer||q.a):'+10 XP'):esc(explain(q))}</p><button class="kbig ${G.ok?'gr':''}" data-a="gnext">Lanjut</button></div>`
+  :`<div style="padding:10px 0 calc(10px + env(safe-area-inset-bottom))"><button class="kbig gr" data-a="gcheck" ${ready?'':'disabled'}>Cek Jawaban</button></div>`}`;
+}
+function cls(j,right){if(!G.checked)return G.sel===j?'sel':'';if(right)return 'right';return G.sel===j?'wrong':''}
+function explain(q){if(q.t==='builder')return `Susunan yang benar: "${q.answer}".`;if(q.t==='order')return 'Urutan yang benar: '+q.toks.join(' → ');if(q.t==='spot')return q.why;if(q.t==='fill')return `Jawabannya "${q.a}". ${q.why}`;if(q.t==='listen')return `Kalimatnya: "${q.a}". Dengarkan lagi pelan-pelan ya.`;return q.why||`Jawabannya: ${q.a}`}
+function checkQ(){const q=G.qs[G.i];let ok;
+  if(q.toks)ok=G.built.map(b=>b.w).join('\u0001')===q.toks.join('\u0001');
+  else if(q.t==='spot')ok=G.sel===q.w;
+  else if(q.t==='listenpic')ok=q.o[G.sel][0]===q.a;
+  else ok=q.o[G.sel]===q.a;
+  G.checked=true;G.ok=ok;
+  if(ok){G.correct++;sfx('ok');if(q.say2)speak(q.say2)}else{G.hearts--;sfx('bad')}
+}
+function finishGame(){
+  const total=G.qs.length,miss=total-G.correct,pass=G.hearts>0;
+  G.stars=!pass?0:miss===0?3:miss===1?2:1;
+  G.earned=G.correct*10+(pass?20:0);
+  const kd=S.kid;if(G.stars>(kd.stars[G.key]||0))kd.stars[G.key]=G.stars;
+  addXP(G.earned);G.done=true;save();
+  if(G.stars){sfx('win');setTimeout(confetti,60)}
+}
+function End(){const pass=G.stars>0;
+  return `<div class="scr endv">${nuri(pass?'happy':'sad',140)}<p class="ktitle" style="margin-top:8px">${pass?(G.stars===3?'Sempurna!':'Hebat, kamu berhasil!'):'Nyawamu habis, coba lagi ya!'}</p>
+  <div class="bigstars">${[0,1,2].map(i=>`<span style="color:${i<G.stars?'#ffc21a':'#d0d8e4'};animation-delay:${i*.25}s;display:inline-block">${ic('star',64,1)}</span>`).join('')}</div>
+  <div class="kcard" style="margin:0 0 16px;display:flex;justify-content:space-around;font-weight:800;font-size:18px"><span>${G.correct}/${G.qs.length} benar</span><span style="color:#e09b00">+${G.earned} XP</span></div>
+  <p style="font-weight:600;color:#5b6b8a">${G.title}</p>
+  <button class="kbig gr" style="width:100%;margin:0 0 12px" data-a="play" data-v="${G.key}">${ic('redo',22)} Main Lagi</button>
+  <button class="kbig bl" style="width:100%;margin:0" data-a="gquit">Kembali</button></div>`}
+function addXP(n){const kd=S.kid,today=dkey(dayDate(0));
+  if(kd.lastDay!==today){kd.streak=kd.lastDay===dkey(dayDate(-1))?kd.streak+1:1;kd.lastDay=today}
+  kd.xp+=n;checkBadges()}
+function checkBadges(){const kd=S.kid,st=kd.stars,has=[];
+  if(Object.values(st).some(v=>v>0))has.push('first');if(totalStars()>=10)has.push('star10');
+  if(MOD.A.t.filter(t=>st[t.id]).length>=4)has.push('tense4');
+  if(Object.values(S.prayed).some(p=>P5.every(x=>p[x])))has.push('sholat5');
+  if((st.hija||0)>=3)has.push('hija');if((st.asma||0)>=3)has.push('asma');if(st.rukun)has.push('wudhu');if(kd.streak>=3)has.push('streak3');if(MOD.C.t.some(t=>st[t.id]))has.push('expert');
+  const nw=has.filter(b=>!kd.badges.includes(b));if(nw.length){kd.badges.push(...nw);setTimeout(()=>toast('Lencana baru: '+nw.map(b=>BADGES.find(x=>x.id===b).n).join(', ')+'!'),400)}}
+
+/* ============ RENDER & EVENTS ============ */
+let prevSheet=null,resetR=false;
+function render(keepScroll){const sc=$('#scr'),top=sc?sc.scrollTop:0,rs=$('#rscr'),rtop=rs?rs.scrollTop:0,app=$('#app');
+  app.className='phone '+(S.mode==='kids'?'kids':'adult');app.innerHTML=S.mode==='kids'?K():A();
+  if(keepScroll){const s2=$('#scr');if(s2)s2.scrollTop=top;const r2=$('#rscr');if(r2&&!resetR&&!jumpAy)r2.scrollTop=rtop}
+  resetR=false;
+  if(jumpAy){const el=document.getElementById('ay-'+jumpAy);if(el)el.scrollIntoView({block:'center'});jumpAy=0}
+  if(sheet==='kiblat'&&S.mode==='adult')startCompass();else stopCompass()}
+/* ---- compass (device sensors; works offline) ---- */
+function onOri(e){let h=null;if(e.webkitCompassHeading!=null)h=e.webkitCompassHeading;else if((e.absolute||e.type==='deviceorientationabsolute')&&e.alpha!=null)h=360-e.alpha;if(h==null)return;
+  h=fixA(h+((screen.orientation&&screen.orientation.angle)||0));head=h;const d=$('#dial');if(d)d.style.transform=`rotate(${-h}deg)`;
+  const {b,dist}=qibla(C()),st=$('#qst'),box=$('#qbox');if(!st||dist<5)return;const diff=((b-h+540)%360)-180;
+  if(Math.abs(diff)<5){st.textContent='Anda sudah menghadap kiblat';box&&box.classList.add('qibla-ok');if(!alignedOnce){alignedOnce=true;try{navigator.vibrate&&navigator.vibrate(150)}catch(_){}}}
+  else{st.textContent=`Putar ${diff>0?'ke kanan':'ke kiri'} ${Math.round(Math.abs(diff))}°`;box&&box.classList.remove('qibla-ok');alignedOnce=false}}
+function startCompass(){if(compassOn)return;compassOn=true;head=null;try{window.addEventListener('deviceorientationabsolute',onOri,true);window.addEventListener('deviceorientation',onOri,true)}catch(e){}
+  setTimeout(()=>{if(compassOn&&head==null){const st=$('#qst');if(st)st.textContent='Sensor kompas belum terbaca. Ketuk "Aktifkan kompas". Jika tetap tidak muncul, gunakan derajat di atas dengan kompas HP.'}},2500)}
+function stopCompass(){if(!compassOn)return;compassOn=false;try{window.removeEventListener('deviceorientationabsolute',onOri,true);window.removeEventListener('deviceorientation',onOri,true)}catch(e){}}
+/* ---- GPS (works without internet) ---- */
+function useGPS(silent){
+  if(!navigator.geolocation){silent||toast('GPS tidak tersedia di perangkat ini');return}
+  silent||toast('Mencari lokasi GPS…');
+  try{navigator.geolocation.getCurrentPosition(p=>{const lat=+p.coords.latitude.toFixed(4),lng=+p.coords.longitude.toFixed(4);
+    S.loc={n:'Lokasi GPS',lat,lng,tz:-new Date().getTimezoneOffset()/60,m:autoMeth(lat,lng),acc:Math.round(p.coords.accuracy||0),t:Date.now()};S.city='gps';save();render(true);silent||toast(`Lokasi diperbarui · metode ${METH[S.loc.m].n}`)},
+    err=>{silent||toast(err.code===1?'Izin lokasi ditolak/diblokir di sini. Isi koordinat manual di Pengaturan.':'Sinyal GPS belum didapat. Coba di tempat terbuka.')},{enableHighAccuracy:true,timeout:20000,maximumAge:300000})}
+  catch(e){silent||toast('Lokasi diblokir di pratinjau ini')}}
+const QURAN_URL='https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/quran_id.json';
+let qdlBusy=false;
+async function downloadQuran(){
+  if(qdlBusy)return;if(!navigator.onLine){toast('Butuh internet sekali untuk mengunduh');return}
+  qdlBusy=true;toast('Mengunduh Al-Qur\'an lengkap + terjemahan Kemenag…');
+  try{const r=await fetch(QURAN_URL);if(!r.ok)throw new Error('HTTP '+r.status);const add=parseQuran(await r.text());
+    QDATA=mergeQuran(add);const st=qStats(QDATA);
+    try{await idb('readwrite',s=>s.put(QDATA,'quran'))}catch(e){toast('Tersimpan untuk sesi ini saja')}
+    toast(`Selesai: ${st.ar.toLocaleString('id-ID')} ayat tersimpan, kini bisa dibaca offline`);render(true)}
+  catch(e){toast('Unduh otomatis diblokir di pratinjau ini. Di aplikasi terpasang ini berjalan normal, atau pakai "Pilih file".')}
+  finally{qdlBusy=false}}
+async function importQuran(file){
+  if(!file)return;toast('Membaca file…');
+  try{const add=parseQuran(await file.text()),n=add.reduce((a,s)=>a+s.filter(Boolean).length,0);if(n<100){toast('Format file tidak dikenali');return}
+    QDATA=mergeQuran(add);const st=qStats(QDATA);
+    try{await idb('readwrite',s=>s.put(QDATA,'quran'))}catch(e){toast('Tersimpan untuk sesi ini saja (penyimpanan HP diblokir)')}
+    toast(`Tersimpan: ${st.ar} ayat Arab, ${st.tr} terjemahan`);render(true)}
+  catch(e){toast('Gagal membaca file: '+(e.message||'format salah'))}}
+const ACT={
+ tab:v=>{S.tab=v;sheet=null;S.dayOff=0;save();render()},
+ sheet:v=>{if(v==='qset'&&sheet&&sheet.startsWith('surah:'))prevSheet=sheet;sheet=v;resetArm=false;render(true)},
+ close:()=>{if(sheet==='qset'&&prevSheet){sheet=prevSheet;prevSheet=null}else sheet=null;render(true)},
+ day:v=>{S.dayOff=Math.max(-30,Math.min(30,S.dayOff+ +v));render(true)},
+ pray:v=>{const[k,p]=v.split('|'),o=prayedOn(k);o[p]=!o[p];if(o[p])sfx('tap');save();render(true)},
+ adzan:v=>{S.adzan[v]=S.adzan[v]===false;toast(`Pengingat azan ${PN[v]} ${S.adzan[v]?'nyala':'mati'}`);save();render(true)},
+ surah:v=>{S.lastRead=+v;S.lastAy=1;sheet='surah:'+v;resetR=true;save();render(true)},
+ ayah:v=>{const[s,a]=v.split(':').map(Number);S.lastRead=s;S.lastAy=a;jumpAy=a;sheet='surah:'+s;save();render(true)},
+ mark:v=>{const m=S.q.marks,i=m.indexOf(v);if(i>=0)m.splice(i,1);else{m.push(v);toast('Penanda disimpan')}save();render(true)},
+ hafal:v=>{const h=S.q.hafal,n=((h[v]||0)+1)%3;if(n)h[v]=n;else delete h[v];toast(n===2?'Ditandai sudah hafal':n===1?'Ditandai perlu latihan':'Status hafalan dihapus');save();render(true)},
+ readto:v=>{const[s,a]=v.split(':').map(Number);S.q.readMax[s]=Math.max(S.q.readMax[s]||0,a);S.lastRead=s;S.lastAy=a;save();toast(`Dibaca sampai ${SLAT[s-1].n} ${s}:${a}`);render(true)},
+ qtab:v=>{S.qtab=v;qquery='';save();render(true)},qsub:v=>{S.qsub=v;save();render(true)},
+ qfont:v=>{S.q.font=Math.max(20,Math.min(48,S.q.font+ +v));save();render(true)},
+ qface:v=>{S.q.face=v;save();render(true)},qtheme:v=>{S.q.theme=v;save();render(true)},
+ qtog:v=>{S.q[v]=!S.q[v];save();render(true)},
+ qdl:()=>downloadQuran(),
+ qwipe:()=>{if(!resetArm){resetArm=true;render(true);return}resetArm=false;QDATA=null;idb('readwrite',s=>s.delete('quran')).catch(()=>{});toast('Data Al-Qur\'an dihapus');render(true)},
+ city:v=>{S.city=v;save();render(true)},accent:v=>{S.accent=v;save();render(true);speak('Hello! Let us learn English.')},
+ gps:()=>useGPS(false),
+ setcoord:()=>{const lat=parseFloat(($('#mlat')||{}).value),lng=parseFloat(($('#mlng')||{}).value);if(!(lat>=-90&&lat<=90&&lng>=-180&&lng<=180)){toast('Koordinat belum benar');return}
+   S.loc={n:'Koordinat manual',lat,lng,tz:-new Date().getTimezoneOffset()/60,m:autoMeth(lat,lng)};S.city='gps';save();toast('Lokasi disimpan');render(true)},
+ compass:()=>{try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted'){stopCompass();startCompass()}else toast('Izin sensor ditolak')}).catch(()=>toast('Sensor diblokir di pratinjau ini'))}else{stopCompass();startCompass();toast('Kompas aktif. Pegang HP mendatar.')}}catch(e){toast('Sensor tidak tersedia')}},
+ rate:v=>{S.rate=+v;save();render(true)},snd:v=>{S.sound=v==='1';save();render(true)},
+ reset:()=>{if(!resetArm){resetArm=true;render(true);return}S.kid=JSON.parse(JSON.stringify(DEF.kid));resetArm=false;save();toast('Progres anak dihapus');render(true)},
+ tas:()=>{S.tasbih++;const el=$('#tc');if(el)el.textContent=S.tasbih;if(S.tasbih%33===0){sfx('ok');try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}toast(`${S.tasbih} kali, MasyaAllah!`)}else sfx('tap');save()},
+ tasz:v=>{S.tasIdx=+v;S.tasbih=0;save();render(true)},tasreset:()=>{S.tasbih=0;save();render(true)},
+ kids:()=>{S.mode='kids';sheet=null;S.kv=S.kid.profile?'map':'profile';save();render()},
+ gate:()=>{gate={a:3+(Math.random()*7|0),b:4+(Math.random()*6|0)};render(true);setTimeout(()=>{const i=$('#gin');i&&i.focus()},50)},
+ gatex:()=>{gate=null;render(true)},
+ gateok:()=>{const i=$('#gin');if(i&&+i.value===gate.a*gate.b){gate=null;S.mode='adult';G=null;save();render()}else{toast('Jawaban belum tepat');sfx('bad')}},
+ prof:v=>{S.kid.profile=v;save();render(true)},
+ go:v=>{S.kv=v;hsel=null;save();render();const s=$('#scr');if(s)s.scrollTop=0},
+ locked:()=>{toast('Pulau ini untuk Kakak (8–12). Ketuk namamu di atas untuk ganti profil.');sfx('bad')},
+ say:v=>speak(v),
+ hsel:v=>{hsel=+v;render(true);speak(HIJ[hsel].h,'ar-SA')},
+ vcat:v=>{S.vcat=v;save();render(true)},
+ kpray:v=>{const k=dkey(dayDate(0)),o=prayedOn(k);o[v]=!o[v];if(o[v]){sfx('ok');if(!S.kid.sx[k+v]){S.kid.sx[k+v]=1;addXP(5);toast(`+5 XP · ${PN[v]} tercatat!`)}if(P5.every(p=>o[p]))setTimeout(confetti,80)}save();render(true)},
+ chest:()=>{if(Math.floor(S.kid.xp/100)<=S.kid.chests){toast('Kumpulkan XP lagi untuk membuka kotak ini!');return}S.kid.chests++;const s=pick(STICK);S.kid.stickers.push(s);save();sfx('chest');confetti();toast(`Kamu dapat stiker ${s}!`);render(true)},
+ play:v=>{buildGame(v);render();autoSpeak()},
+ gquit:()=>{G=null;render()},
+ gpick:v=>{if(G.checked)return;G.sel=+v;sfx('tap');render(true);const q=G.qs[G.i];if(q.t==='fill'||q.t==='listen')speak(q.t==='fill'?q.s.replace('___',q.o[G.sel]):q.o[G.sel])},
+ gchip:v=>{const b=G.bank[+v];if(!G.built.includes(b)){G.built.push(b);sfx('tap');render(true)}},
+ gback:v=>{G.built.splice(+v,1);render(true)},
+ gcheck:()=>{checkQ();render(true)},
+ gnext:()=>{if(G.hearts<=0||G.i>=G.qs.length-1){finishGame();render();return}G.i++;prepQ();render();autoSpeak()}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const f=ACT[el.dataset.a];if(f)f(el.dataset.v,el)});
+document.addEventListener('change',e=>{if(e.target.dataset.in==='qfile'){importQuran(e.target.files&&e.target.files[0]);e.target.value=''}});
+document.addEventListener('input',e=>{const k=e.target.dataset.in;
+  if(k==='kname'){S.kid.name=e.target.value.slice(0,16);save()}
+  if(k==='qsearch'){qquery=e.target.value;const r=$('#qres');if(qquery.trim()){if(r)r.innerHTML=qResults(qquery)}else{render(true);const i=$('#qq');if(i){i.focus()}}}
+  if(k==='zakat'){const s=+($('#zs').value.replace(/\D/g,'')),g=+($('#zg').value.replace(/\D/g,'')),r=$('#zres'),f=n=>'Rp '+Math.round(n).toLocaleString('id-ID');
+    if(!s||!g){r.innerHTML='<p class="mute" style="margin:0">Isi kedua kolom untuk melihat hasil.</p>';return}
+    const nis=85*g;r.innerHTML=s>=nis?`<b style="font-size:24px">${f(s*.025)}</b><p class="mute" style="margin:4px 0 0">Zakat yang perlu dikeluarkan (2,5%). Nisab: ${f(nis)}</p>`:`<b>Belum wajib zakat</b><p class="mute" style="margin:4px 0 0">Harta belum mencapai nisab ${f(nis)}. Tetap bisa bersedekah.</p>`}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.in==='gate')ACT.gateok();if(e.key==='Escape'){if(gate)ACT.gatex();else if(sheet)ACT.close()}});
+setInterval(()=>{let stale=false;document.querySelectorAll('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-Date.now();if(ms<=0)stale=true;else el.textContent=cdf(ms)});if(stale&&!sheet&&!G)render(true)},1000);
+if('speechSynthesis' in window){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}catch(e){}}
+render();
+idb('readonly',s=>s.get('quran')).then(d=>{if(Array.isArray(d)&&d.length===114){QDATA=d;render(true)}}).catch(()=>{});
+try{if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude|anthropic/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+try{if(S.city==='gps'&&S.loc&&S.loc.n==='Lokasi GPS'&&navigator.permissions)navigator.permissions.query({name:'geolocation'}).then(r=>{if(r.state==='granted')useGPS(true)}).catch(()=>{})}catch(e){}
+}
+</script>
+</body>
+</html>
