@@ -478,7 +478,7 @@ const STICK=['🌙','⭐','🕌','🐫','🌴','📖','🦉','🌈','🎈','🍉
 /* ============ STATE ============ */
 const KEY='cahaya-proto-v1';
 const DEF={mode:'adult',tab:'today',dayOff:0,qtab:'baca',qsub:'surat',city:'madinah',loc:null,accent:'US',rate:0.85,sound:true,lastRead:1,lastAy:1,prayed:{},adzan:{},tasbih:0,tasIdx:0,kv:'map',vcat:'animals',
- ptab:'wajib',hf:{g:'all',t:'all'},hfav:{Favorit:[]},hdl:{},htab:'matan',hfont:28,hhar:true,hlat:false,hlight:false,harb:false,kg:'all',kpage:1,amal:{},amalOff:0,journal:[],sedekah:[],khatam:null,calOff:0,card:'fitri',
+ ptab:'wajib',hf:{g:'all',t:'all'},hlang:'id',hec:{},hen:{},hfav:{Favorit:[]},hdl:{},htab:'matan',hfont:28,hhar:true,hlat:false,hlight:false,harb:false,kg:'all',kpage:1,amal:{},amalOff:0,journal:[],sedekah:[],khatam:null,calOff:0,card:'fitri',
  q:{font:30,face:'Amiri Quran',tr:true,theme:'dark',prog:true,marks:[],hafal:{},readMax:{}},
  kid:{profile:null,name:'',xp:0,stars:{},streak:0,lastDay:'',badges:[],chests:0,stickers:[],sx:{}}};
 let S;
@@ -630,6 +630,7 @@ function Quran(){
 function qibla(c){const K=[21.4225,39.8262];return{b:fixA(at2(sn(K[1]-c.lng)*cs(K[0]),cs(c.lat)*sn(K[0])-sn(c.lat)*cs(K[0])*cs(K[1]-c.lng))),dist:Math.round(6371*acs(Math.min(1,sn(c.lat)*sn(K[0])+cs(c.lat)*cs(K[0])*cs(K[1]-c.lng)))*D2R)}}
 function Sheet(){
   const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  const _w=Sheet6();if(_w)return _w;
   const _z=Sheet5();if(_z)return _z;
   const _y=Sheet3();if(_y)return _y;
   const _x=Sheet2();if(_x)return _x;
@@ -1284,7 +1285,7 @@ const HKITAB=[
 {id:'nasai',n:'Sunan An-Nasa\'i',ar:'سنن النسائي'},
 {id:'ibnmajah',n:'Sunan Ibnu Majah',ar:'سنن ابن ماجه'},
 {id:'malik',n:'Muwaththa\' Malik',ar:'موطأ مالك'},
-{id:'nawawi',n:'Teks Arab Arba\'in Nawawi',ar:'الأربعون النووية',arOnly:true}];
+{id:'nawawi',n:'Arba\'in Nawawi (Arab + English)',ar:'الأربعون النووية',arOnly:true,eng:true}];
 const HDATA_BASE='https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/';
 
 /* ============ v5 HADIS: LOGIC & VIEWS ============ */
@@ -1295,11 +1296,12 @@ const kShort={bukhari:'Bukhari',muslim:'Muslim',abudawud:'Abu Dawud',tirmidhi:'T
 function kEntry(book,row){const k=HKITAB.find(x=>x.id===book),[n,ar,idt,gr]=row;let g='none',m=[];
   if(k&&k.sahih){g='shahih';m=['Shahih: seluruh hadis bersanad dalam kitab ini disepakati keshahihannya oleh mayoritas ulama']}
   else if(gr&&gr.length){const pick=gr.find(x=>/alban/i.test(x[0]))||gr[0];g=mapGrade(pick[1]);m=gr.map(x=>`${x[0]}: ${x[1]}`)}
-  return{id:`k-${book}-${n}`,judul:`${k?k.n:book} no. ${n}`,sumber:`HR. ${kShort[book]||book} no. ${n}`,derajat:g,muhaqqiq:m,tema:[],ar,id_:idt||'',book,no:n}}
+  return{id:`k-${book}-${n}`,judul:`${k?k.n:book} no. ${n}`,sumber:`HR. ${kShort[book]||book} no. ${n}`,derajat:g,muhaqqiq:m,tema:[],ar,id_:idt||'',en:row[4]||'',ringkas:autoMatan(idt||row[4]),ringkasAuto:true,book,no:n}}
 function ensureKitab(book){if(HLIB[book])return HLIB[book];if(!hLoading[book]&&S.hdl[book]){hLoading[book]=1;idb('readonly',s=>s.get('hk-'+book)).then(d=>{if(d&&d.h){HLIB[book]=d}else{delete S.hdl[book];save()}}).catch(()=>{}).finally(()=>{delete hLoading[book];render(true)})}return null}
 function getHadis(id){
   if(id.startsWith('c-'))return HKURASI.find(x=>x.id===id)||null;
-  if(id.startsWith('a-')){const a=ARBAIN[+id.slice(2)-1];if(!a)return null;const L=ensureKitab('nawawi');const row=L&&L.h.find(r=>+r[0]===a.no);return Object.assign({},a,{ar:row?row[1]:'',id_:'',muhaqqiq:['Imam An-Nawawi (Al-Arba\'in An-Nawawiyyah)'].concat(a.catatan?[a.catatan]:[]),sumber:'Arba\'in Nawawi no. '+a.no+' · '+a.sumber})}
+  if(id.startsWith('a-')){const a=ARBAIN[+id.slice(2)-1];if(!a)return null;const L=ensureKitab('nawawi');const row=L&&L.h.find(r=>+r[0]===a.no);return Object.assign({},a,{ar:row?row[1]:'',id_:row&&row[2]||'',en:row&&row[4]||'',muhaqqiq:['Imam An-Nawawi (Al-Arba\'in An-Nawawiyyah)'].concat(a.catatan?[a.catatan]:[]),sumber:'Arba\'in Nawawi no. '+a.no+' · '+a.sumber})}
+  if(id.startsWith('e-')){const x=id.slice(2),d=HECACHE[x];if(!d){heLoad(x);return null}return d.err?{err:1}:heEntry(d)}
   if(id.startsWith('k-')){const[,book,n]=id.split('-');const L=ensureKitab(book);if(!L)return null;const row=L.h.find(r=>String(r[0])===n);return row?kEntry(book,row):null}
   return null}
 const hAll=()=>HKURASI.concat(ARBAIN);
@@ -1313,6 +1315,7 @@ function hMatch(e,q){if(!q)return true;const ql=q.toLowerCase().trim(),n=+ql;
 function hFilter(e){const f=S.hf;return(f.g==='all'||e.derajat===f.g)&&(f.t==='all'||(e.tema||[]).includes(f.t))}
 function hResults(){const q=hquery.trim();let res=hAll().filter(e=>hFilter(e)&&hMatch(e,q));
   if(q.length>=2&&S.hf.t==='all'){for(const b in HLIB){for(const row of HLIB[b].h){if(res.length>=60)break;const e=kEntry(b,row);if(hFilter(e)&&hMatch(e,q))res.push(e)}}}
+  if(q.length>=2)for(const [i,[t,g]] of Object.entries(S.hec)){if(res.length>=60)break;const d=HECACHE[i],e=d&&!d.err?heEntry(d):{id:'e-'+i,judul:t,derajat:g,sumber:'HadeethEnc',tema:[],id_:'',ar:''};if(hFilter(e)&&hMatch(e,q))res.push(e)}
   const notLoaded=Object.keys(S.hdl).filter(b=>!HLIB[b]&&b!=='nawawi');
   return `<p class="mute" style="margin:6px 0">${res.length>=60?'60+':res.length} hasil${notLoaded.length&&q?` · kitab yang belum dibuka (${notLoaded.map(b=>kShort[b]).join(', ')}) belum ikut dicari`:''}</p>${res.slice(0,60).map(hItem).join('')||'<p class="mute">Tidak ditemukan.</p>'}`}
 function dailyHadis(){const pool=hAll().filter(e=>e.derajat==='shahih'||e.derajat==='hasan'),d=dayDate(0),doy=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,1))/864e5);return pool[doy%pool.length]}
@@ -1324,7 +1327,9 @@ function Hadis(){const f=S.hf,filtering=hquery.trim()||f.g!=='all'||f.t!=='all';
     body=`${dh?`<div class="card" style="margin:6px 0 14px;border-left:5px solid ${HGRADE[dh.derajat].c}"><div class="mute">Hadis hari ini</div><b style="font-size:18px;display:block;margin:4px 0">${esc(dh.judul)}</b><p style="margin:0 0 10px;color:#c4d5d1">${esc(dh.id_||dh.ringkas)}</p><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${gBadge(dh.derajat)}<button class="link" data-a="sheet" data-v="hd:${dh.id}">Baca kajian</button></div></div>`:''}
     <h3 style="margin:16px 0 0">Kajian lengkap</h3><p class="mute" style="margin:2px 0 4px">Matan, asbabul wurud, keutamaan, fawaid, dan sanad.</p>${cur.map(hItem).join('')}
     <h3 style="margin:20px 0 0;color:#ffb4a8">Waspada: populer tapi lemah atau palsu</h3><p class="mute" style="margin:2px 0 4px">Sering beredar di media sosial. Kenali statusnya sebelum membagikan.</p>${waspada.map(hItem).join('')}
-    <h3 style="margin:20px 0 0">Arba'in Nawawi (42 hadis)</h3><p class="mute" style="margin:2px 0 4px">Ringkasan makna dan derajat. Teks Arab lengkap: unduh "Teks Arab Arba'in Nawawi" di perpustakaan.</p>${(S.harb?ARBAIN:ARBAIN.slice(0,6)).map(hItem).join('')}<button class="btn" style="width:100%;margin-top:10px;background:#24403f" data-a="harb">${S.harb?'Tampilkan lebih sedikit':'Lihat semua 42 hadis'}</button>
+    <h3 style="margin:20px 0 0">Arba'in Nawawi (42 hadis)</h3><p class="mute" style="margin:2px 0 4px">Ringkasan Indonesia dan derajat. Teks Arab + terjemahan Inggris lengkap: unduh "Arba'in Nawawi" di perpustakaan.</p>${(S.harb?ARBAIN:ARBAIN.slice(0,6)).map(hItem).join('')}<button class="btn" style="width:100%;margin-top:10px;background:#24403f" data-a="harb">${S.harb?'Tampilkan lebih sedikit':'Lihat semua 42 hadis'}</button>
+    <h3 style="margin:20px 0 0">Ensiklopedia hadis bertema</h3><p class="mute" style="margin:2px 0 6px">±2.700 hadis pilihan dengan terjemahan Indonesia, derajat, penjelasan (syarah), dan pelajaran. Sumber: HadeethEnc.</p>
+    ${HE_ROOTS.map(([i,n,c])=>`<button class="lrow" data-a="sheet" data-v="hecat:${i}"><span class="t"><b style="font-size:18px">${n}</b><small>${c} hadis</small></span>${ic('right',20)}</button>`).join('')}
     <h3 style="margin:20px 0 0">Perpustakaan kitab</h3><p class="mute" style="margin:2px 0 4px">Unduh sekali, baca offline. Derajat dari penilaian ulama yang tersedia di data.</p>
     ${HKITAB.map(k=>`<button class="lrow" data-a="sheet" data-v="kitab:${k.id}"><span class="t"><b style="font-size:18px">${k.n}</b><small>${S.hdl[k.id]?`${(+S.hdl[k.id]).toLocaleString('id-ID')} hadis tersimpan`:'Belum diunduh'}${k.arOnly?' · teks Arab saja':''}</small></span><span class="ar" style="font-size:20px;font-family:Amiri,serif">${k.ar}</span></button>`).join('')}
     <h3 style="margin:20px 0 6px">Koleksi saya</h3>${Object.entries(S.hfav).map(([n,ids])=>`<button class="lrow" data-a="sheet" data-v="hfolder:${esc(n)}">${ic('bookmark',22,1)}<span class="t"><b style="font-size:17px;font-family:inherit;font-weight:700">${esc(n)}</b><small>${ids.length} hadis</small></span>${ic('right',20)}</button>`).join('')}
@@ -1337,12 +1342,12 @@ async function dlKitab(id){const k=HKITAB.find(x=>x.id===id);if(!k)return;if(hLo
   if(!navigator.onLine){toast('Butuh internet untuk mengunduh sekali');return}
   hLoading['dl-'+id]=1;render(true);toast(`Mengunduh ${k.n}…`);
   try{const get=async ed=>{const r=await fetch(HDATA_BASE+ed+'.min.json');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()};
-    const ara=await get('ara-'+id),ind=k.arOnly?null:await get('ind-'+id),im={};
+    const ara=await get('ara-'+id),ind=k.arOnly?null:await get('ind-'+id),eng=k.eng?await get('eng-'+id).catch(()=>null):null,im={},em={};if(eng)eng.hadiths.forEach(x=>{em[x.hadithnumber]=x.text});
     if(ind)ind.hadiths.forEach(h=>{im[h.hadithnumber]=h});
-    const rows=ara.hadiths.map(h=>{const t=im[h.hadithnumber]||{},gr=(t.grades&&t.grades.length?t.grades:h.grades)||[];return[h.hadithnumber,h.text||'',t.text||'',gr.map(x=>[x.name,x.grade])]}).filter(r=>r[1]||r[2]);
+    const rows=ara.hadiths.map(h=>{const t=im[h.hadithnumber]||{},gr=(t.grades&&t.grades.length?t.grades:h.grades)||[];return[h.hadithnumber,h.text||'',t.text||'',gr.map(x=>[x.name,x.grade]),em[h.hadithnumber]||'']}).filter(r=>r[1]||r[2]);
     const meta=(ind||ara).metadata||{},sec=Object.entries(meta.section_detail||{}).map(([s,d])=>[d.hadithnumber_first,d.hadithnumber_last,(meta.section||{})[s]||'']).filter(x=>x[2]);
     const data={h:rows,sec};HLIB[id]=data;try{await idb('readwrite',s=>s.put(data,'hk-'+id))}catch(_){toast('Tersimpan untuk sesi ini saja')}
-    S.hdl[id]=rows.length;save();toast(`${k.n}: ${rows.length.toLocaleString('id-ID')} hadis tersimpan, bisa dibaca offline`)}
+    S.hdl[id]=rows.length;if(eng)S.hen[id]=1;save();toast(`${k.n}: ${rows.length.toLocaleString('id-ID')} hadis tersimpan, bisa dibaca offline`)}
   catch(err){toast('Gagal mengunduh. Pastikan ada internet. Di pratinjau Claude unduhan memang diblokir.')}
   finally{delete hLoading['dl-'+id];render(true)}}
 function kitabList(book){const L=HLIB[book],q=kquery.trim(),g=S.kg||'all';let rows=L.h,out=[];
@@ -1370,13 +1375,19 @@ function Sheet5(){
     return wrap('Derajat hadis',list.map(k=>{const G=HGRADE[k];return `<div class="card" style="margin:0 0 12px;border-left:6px solid ${G.c}"><span class="hbadge" style="background:${G.c}">${G.n}</span><p style="margin:10px 0 6px">${esc(G.d)}</p><p class="mute" style="margin:0"><b>Sikap:</b> ${esc(G.h)}</p></div>`}).join('')+(g!=='all'?'<button class="btn" style="width:100%;background:#24403f" data-a="sheet" data-v="hgrade:all">Lihat semua derajat</button>':''))}
   if(sheet.startsWith('hd:')){const id=sheet.slice(3),e=getHadis(id);
     if(!e)return wrap('Hadis',id.startsWith('k-')&&!S.hdl[id.split('-')[1]]?'<p>Kitab ini belum diunduh.</p>':'<p class="mute">Memuat…</p>');
+    if(e.err)return wrap('Hadis','<p>Hadis ini belum tersimpan dan gagal dimuat. Butuh internet sekali untuk membukanya (di pratinjau Claude diblokir).</p>');
     const G=HGRADE[e.derajat]||HGRADE.none,tab=S.htab||'matan',ar=S.hhar===false?stripHar(e.ar):e.ar,inFav=Object.values(S.hfav).some(a=>a.includes(e.id));
     const warn=e.derajat==='maudhu'?`<div class="hwarn" style="background:#d93a3a26;color:#ffb4a8;border:1px solid #d93a3a">Hadis ini palsu atau tidak ada asalnya. Jangan disandarkan kepada Nabi ﷺ.</div>`:e.derajat==='dhaif'?`<div class="hwarn" style="background:#d99a0026;color:#ffd68a;border:1px solid #d99a00">Hadis lemah: tidak dijadikan dasar akidah dan hukum.</div>`:'';
     let body='';
     if(tab==='matan')body=`<div class="chips" style="margin:4px 0 10px"><button data-a="hfont" data-v="-2" aria-label="Perkecil">${ic('minus',16)}</button><button data-a="hfont" data-v="2" aria-label="Perbesar">${ic('plus',16)}</button><button class="${S.hhar!==false?'on':''}" data-a="hhar">Harakat</button>${e.latin?`<button class="${S.hlat?'on':''}" data-a="hlat">Latin</button>`:''}<button class="${S.hlight?'on':''}" data-a="hlight">Mode terang</button></div>
-      ${e.ar?`<div class="ar" style="font-size:${S.hfont}px;line-height:2;text-align:right;font-family:Amiri,serif">${esc(ar)}</div>`:(id.startsWith('a-')?`<div class="imp" style="margin:0 0 12px">Teks Arab hadis ini tersedia setelah mengunduh "Teks Arab Arba'in Nawawi".<br><button class="btn" style="margin-top:10px" data-a="sheet" data-v="kitab:nawawi">${ic('upload',16)} Buka & unduh</button></div>`:'')}
+      ${e.ar?`<div class="ar" style="font-size:${S.hfont}px;line-height:2;text-align:right;font-family:Amiri,serif">${esc(ar)}</div>`:(id.startsWith('a-')?`<div class="imp" style="margin:0 0 12px">Teks Arab dan terjemahan lengkap tersedia setelah mengunduh "Arba'in Nawawi" di perpustakaan.<br><button class="btn" style="margin-top:10px" data-a="sheet" data-v="kitab:nawawi">${ic('upload',16)} Buka & unduh</button></div>`:'')}
       ${S.hlat&&e.latin?`<p style="font-style:italic;color:#9fd8b6;margin:12px 0 0">${esc(e.latin)}</p>`:''}
-      ${e.id_?`<p style="font-size:17px;line-height:1.6;margin:14px 0 0">${esc(e.id_)}</p>`:''}${e.ringkas?`<div class="card" style="margin:12px 0 0"><div class="mute">Ringkasan makna</div><p style="margin:4px 0 0">${esc(e.ringkas)}</p></div>`:''}
+      ${(()=>{const hI=!!e.id_,hE=!!e.en,lang=(S.hlang==='en'&&hE)||!hI?'en':'id',tr=lang==='en'?e.en:e.id_,bk=e.book||(id.startsWith('a-')?'nawawi':'');
+  return `${hI&&hE?`<div class="chips" style="margin:12px 0 0"><button class="${lang==='id'?'on':''}" data-a="hlang" data-v="id">Indonesia</button><button class="${lang==='en'?'on':''}" data-a="hlang" data-v="en">English</button></div>`:''}
+  ${tr?`<div class="mute" style="margin-top:12px">Terjemahan (${lang==='en'?'English':'Indonesia'})</div><p style="font-size:17px;line-height:1.6;margin:4px 0 0">${esc(tr)}</p>`:''}
+  ${bk&&!hE&&(S.hdl[bk])?`<div class="imp" style="margin:12px 0 0">${hI?'Mau baca juga versi bahasa Inggris?':'Terjemahan lengkap tersedia dalam bahasa Inggris.'}<br><button class="btn" style="margin-top:10px" data-a="hdleng" data-v="${bk}">${heBusy['en'+bk]?'Mengunduh…':'Unduh terjemahan Inggris (sekali)'}</button></div>`:''}
+  ${id.startsWith('a-')&&!hI?'<p class="mute" style="margin:8px 0 0">Terjemahan Indonesia lengkap Arba\'in belum tersedia di sumber data; ringkasan Indonesia ada di bawah.</p>':''}
+  ${e.ringkas?`<div class="card" style="margin:12px 0 0"><div class="mute">${e.ringkasAuto?'Inti hadis (diambil otomatis dari terjemahan, tanpa sanad)':'Ringkasan'}</div><p style="margin:4px 0 0">${esc(e.ringkas)}</p></div>`:''}`})()}
       ${e.koreksi?`<div class="card" style="margin:14px 0 0;border-left:5px solid #0f9d6e"><div class="mute">Gunakan dalil yang shahih</div>${e.koreksi.ar?`<div class="ar" style="font-size:24px;text-align:right;font-family:Amiri,serif;margin-top:6px">${esc(e.koreksi.ar)}</div>`:''}<p style="margin:6px 0">${esc(e.koreksi.teks)}</p><small class="mute">${esc(e.koreksi.sumber)}</small></div>`:''}
       ${e.book?'<p class="mute" style="margin-top:12px">Teks Arab dan terjemahan dari dataset hadith-api (terjemahan Indonesia dari sumber dataset, bukan terbitan Kemenag).</p>':''}`;
     else if(tab==='asbab'){const a=e.asbab;
@@ -1384,9 +1395,9 @@ function Sheet5(){
       :a&&a.ibtidai?'<div class="card" style="margin:0"><p style="margin:0">Hadis ini disampaikan secara langsung (ibtidai) oleh Rasulullah ﷺ sebagai pedoman umum tanpa didahului peristiwa khusus yang diketahui.</p></div>'
       :a?`<div class="card" style="margin:0 0 12px"><div class="mute">Kapan</div><b>${esc(a.waktu)}</b>${a.tempat?`<div class="mute" style="margin-top:8px">Di mana</div><b>${esc(a.tempat)}</b>`:''}</div><div class="card" style="margin:0 0 12px"><div class="mute">Mengapa (latar belakang)</div><p style="margin:4px 0 0">${esc(a.kronologi)}</p></div>${a.catatan?`<div class="card" style="margin:0;border-left:5px solid #d99a00"><div class="mute">Catatan ulama</div><p style="margin:4px 0 0">${esc(a.catatan)}</p></div>`:''}`
       :'<div class="card" style="margin:0"><p style="margin:0">Data asbabul wurud untuk hadis ini belum tersedia di aplikasi.</p><p class="mute" style="margin:8px 0 0">Banyak hadis tidak memiliki sebab khusus yang diketahui. Aplikasi ini sengaja tidak mengarang kisah sebab; rujuk kitab seperti Al-Bayan wat Ta\'rif fi Asbab Wurud Al-Hadits.</p></div>'}
-    else if(tab==='fadhilah')body=`${e.fadhilah?`<div class="card" style="margin:0 0 12px"><h3>Keutamaan</h3><p style="margin:0">${esc(e.fadhilah)}</p></div>`:''}${e.fawaid?`<div class="card" style="margin:0 0 12px"><h3>Fawaid (pelajaran)</h3>${stepList(e.fawaid)}</div>`:''}
+    else if(tab==='fadhilah')body=`${e.penjelasan?`<div class="card" style="margin:0 0 12px"><h3>Penjelasan (syarah)</h3><p style="margin:0;line-height:1.6">${esc(e.penjelasan)}</p></div>`:''}${e.fadhilah?`<div class="card" style="margin:0 0 12px"><h3>Keutamaan</h3><p style="margin:0">${esc(e.fadhilah)}</p></div>`:''}${e.fawaid?`<div class="card" style="margin:0 0 12px"><h3>Fawaid (pelajaran)</h3>${stepList(e.fawaid)}</div>`:''}
       ${e.derajat==='dhaif'||e.derajat==='maudhu'?`<div class="card" style="margin:0 0 12px;border-left:5px solid ${G.c}"><h3>Catatan hukum & kehati-hatian</h3><p style="margin:0">${esc(e.hukum||G.h)}</p></div>`:''}
-      ${!e.fadhilah&&!e.fawaid&&e.derajat!=='dhaif'&&e.derajat!=='maudhu'?'<p class="mute">Kajian keutamaan dan fawaid untuk hadis ini belum tersedia. Hadis dengan kajian lengkap ada di bagian "Kajian lengkap".</p>':''}`;
+      ${!e.fadhilah&&!e.fawaid&&!e.penjelasan&&e.derajat!=='dhaif'&&e.derajat!=='maudhu'?'<p class="mute">Kajian keutamaan dan fawaid untuk hadis ini belum tersedia. Hadis dengan kajian lengkap ada di bagian "Kajian lengkap".</p>':''}`;
     else body=`<div class="card" style="margin:0 0 12px"><h3>Penilaian ulama (tahqiq)</h3>${stepList(e.muhaqqiq&&e.muhaqqiq.length?e.muhaqqiq:['Belum ada data penilaian'])}</div>
       ${e.sanad?`<div class="card" style="margin:0 0 12px"><h3>Jalur sanad ringkas</h3><div class="sanad">${e.sanad.map(s=>`<div>${esc(s)}</div>`).join('')}</div></div>`:''}
       ${e.kelemahan?`<div class="card" style="margin:0 0 12px;border-left:5px solid ${G.c}"><h3>Letak kelemahan</h3><p style="margin:0">${esc(e.kelemahan)}</p></div>`:''}
@@ -1413,6 +1424,50 @@ function Sheet5(){
   if(sheet.startsWith('hfolder:')){const n=sheet.slice(8),ids=S.hfav[n]||[];
     return wrap(esc(n),ids.map(id=>{const e=getHadis(id);return e?hItem(e):`<button class="hitem" data-a="sheet" data-v="hd:${id}"><span class="hbar" style="background:#7d8a88"></span><span><b>${esc(id.replace(/^k-/,'').replace('-',' no. '))}</b><small class="mute" style="display:block">Ketuk untuk memuat</small></span></button>`}).join('')||'<p class="mute">Belum ada hadis di folder ini. Buka hadis lalu ketuk "Simpan".</p>'
     +(n!=='Favorit'?`<button class="btn" style="width:100%;margin-top:16px;background:#5b2a33" data-a="hfdel" data-v="${esc(n)}">${resetArm?'Ketuk lagi untuk menghapus folder':'Hapus folder'}</button>`:''))}
+  return '';
+}
+
+/* ============ v6: TERJEMAHAN LENGKAP, RINGKASAN, ENSIKLOPEDIA HADEETHENC ============ */
+const HE_BASE='https://hadeethenc.com/api/v1/';
+const HE_ROOTS=[[3,'Akidah',459],[4,'Fikih dan Ushul Fikih',1102],[5,'Keutamaan dan Adab',741],[1,"Al-Qur'an dan Ilmunya",78],[6,'Dakwah dan Hisbah',98],[7,'Sejarah dan Tarikh',204],[2,'Hadis dan Ilmu Hadis',10]];
+let HECACHE={},HECATS=null,HELIST={},heBusy={};
+function autoMatan(t){if(!t)return '';let s=String(t).replace(/\s+/g,' ').trim(),best=-1,kl=0;
+  for(const k of [' bersabda:',' bersabda,',' bersabda ',' said:',' said,',' berkata:']){const i=s.lastIndexOf(k);if(i>best){best=i;kl=k.length}}
+  if(best>30)s=s.slice(best+kl).trim();s=s.replace(/^["'“«]+/,'');return s.length>280?s.slice(0,s.lastIndexOf(' ',265))+' …':s}
+const firstSent=(t,n=2)=>{const p=String(t||'').replace(/\s+/g,' ').match(/[^.!?]+[.!?]+/g)||[t||''];return p.slice(0,n).join(' ').trim()};
+async function heGet(path){const r=await fetch(HE_BASE+path);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+function heEntry(d){const g=mapGrade(d.grade)==='none'&&/palsu|maudhu/i.test(d.grade||'')?'maudhu':mapGrade(d.grade);
+  return{id:'e-'+d.id,judul:d.title,sumber:(d.attribution||'').replace(/[\[\]]/g,'')||'HadeethEnc',derajat:g,muhaqqiq:[`Penilaian: ${d.grade||'-'}`,'Sumber: Ensiklopedia Terjemahan Hadis (HadeethEnc)'],tema:[],
+    ar:d.hadeeth_ar||'',id_:d.hadeeth||'',ringkas:firstSent(d.explanation,2),penjelasan:d.explanation||'',fawaid:(d.hints||[]).filter(Boolean),he:true}}
+function heLoad(id){if(HECACHE[id]||heBusy[id])return;heBusy[id]=1;
+  idb('readonly',s=>s.get('he-'+id)).catch(()=>null).then(async d=>{if(!d){d=await heGet(`hadeeths/one/?language=id&id=${id}`);idb('readwrite',s=>s.put(d,'he-'+id)).catch(()=>{})}
+    HECACHE[id]=d;S.hec[id]=[d.title,mapGrade(d.grade)];save()}).catch(()=>{HECACHE[id]={err:1}}).finally(()=>{delete heBusy[id];render(true)})}
+function heCats(){if(HECATS||heBusy.cats)return HECATS;heBusy.cats=1;
+  idb('readonly',s=>s.get('he-cats')).catch(()=>null).then(async d=>{if(!d){d=await heGet('categories/list/?language=id');idb('readwrite',s=>s.put(d,'he-cats')).catch(()=>{})}HECATS=d}).catch(()=>{HECATS=[]}).finally(()=>{delete heBusy.cats;render(true)});return null}
+function heList(cat){const L=HELIST[cat]||(HELIST[cat]={items:[],page:0,last:1,busy:false,err:false});
+  if(!L.items.length&&!L.busy&&!L.err)heMore(cat);return L}
+async function heMore(cat){const L=HELIST[cat];if(!L||L.busy||L.page>=L.last)return;L.busy=true;render(true);
+  try{const j=await heGet(`hadeeths/list/?language=id&category_id=${cat}&page=${L.page+1}&per_page=20`);L.items.push(...(j.data||[]));L.page=+j.meta.current_page;L.last=+j.meta.last_page}
+  catch(e){L.err=true}finally{L.busy=false;render(true)}}
+async function heDownloadCat(cat){if(heBusy['dl'+cat])return;if(!navigator.onLine){toast('Butuh internet untuk mengunduh');return}heBusy['dl'+cat]=1;toast('Mengunduh kategori untuk offline…');
+  try{let page=0,last=1,n=0;while(page<last){const j=await heGet(`hadeeths/list/?language=id&category_id=${cat}&page=${page+1}&per_page=50`);page=+j.meta.current_page;last=+j.meta.last_page;
+      for(const it of j.data||[]){if(!S.hec[it.id]){try{const d=await heGet(`hadeeths/one/?language=id&id=${it.id}`);await idb('readwrite',s=>s.put(d,'he-'+it.id));HECACHE[it.id]=d;S.hec[it.id]=[d.title,mapGrade(d.grade)]}catch(_){}}n++;if(n%25===0)toast(`${n} hadis tersimpan…`)}}
+    save();toast(`Selesai: ${n} hadis kategori ini tersimpan offline`)}
+  catch(e){toast('Gagal mengunduh. Pastikan ada internet; di pratinjau Claude unduhan diblokir.')}finally{delete heBusy['dl'+cat];render(true)}}
+async function dlKitabEng(id){const k=HKITAB.find(x=>x.id===id);if(!k||heBusy['en'+id])return;if(!navigator.onLine){toast('Butuh internet untuk mengunduh');return}heBusy['en'+id]=1;render(true);toast('Mengunduh terjemahan Inggris…');
+  try{const L=HLIB[id]||await idb('readonly',s=>s.get('hk-'+id));const r=await fetch(HDATA_BASE+'eng-'+id+'.min.json');if(!r.ok)throw 0;const j=await r.json(),m={};j.hadiths.forEach(h=>{m[h.hadithnumber]=h.text});
+    L.h.forEach(row=>{row[4]=m[row[0]]||''});L.en=true;HLIB[id]=L;await idb('readwrite',s=>s.put(L,'hk-'+id));S.hen[id]=1;save();toast('Terjemahan Inggris tersimpan')}
+  catch(e){toast('Gagal mengunduh terjemahan Inggris.')}finally{delete heBusy['en'+id];render(true)}}
+function Sheet6(){
+  const hdr=t=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2></div>`;
+  const wrap=(t,b)=>`<div class="sheet">${hdr(t)}<div class="scr pad" id="rscr">${b}</div></div>`;
+  if(sheet.startsWith('hecat:')){const id=+sheet.split(':')[1],root=HE_ROOTS.find(r=>r[0]===id),cats=heCats(),sub=(cats||[]).filter(c=>+c.parent_id===id),me=(cats||[]).find(c=>+c.id===id),L=heList(id);
+    const title=root?root[1]:me?me.title:'Kategori';
+    return wrap(esc(title),`${sub.length?`<h3 style="margin:0 0 6px">Subkategori</h3><div class="chips" style="margin-bottom:14px">${sub.map(c=>`<button data-a="sheet" data-v="hecat:${c.id}">${esc(c.title)} (${c.hadeeths_count})</button>`).join('')}</div>`:''}
+    <button class="btn" style="width:100%;margin-bottom:12px;background:#24403f" data-a="hedl" data-v="${id}">${heBusy['dl'+id]?'Mengunduh…':`${ic('upload',16)} Simpan kategori ini untuk offline`}</button>
+    ${L.items.map(it=>{const c=S.hec[it.id],G=HGRADE[c?c[1]:'none'];return `<button class="hitem" data-a="sheet" data-v="hd:e-${it.id}"><span class="hbar" style="background:${c?G.c:'#3a5a58'}"></span><span style="flex:1"><b style="display:block;font-size:16px">${esc(it.title)}</b><small class="mute">${c?G.n+' · tersimpan offline':'Ketuk untuk membaca'}</small></span></button>`}).join('')}
+    ${L.busy?'<p class="mute">Memuat…</p>':L.err?'<p class="mute">Gagal memuat daftar. Butuh internet (di pratinjau Claude diblokir). Hadis yang sudah disimpan tetap bisa dibuka dari pencarian.</p>':L.page<L.last?`<button class="btn" style="width:100%;margin-top:12px;background:#24403f" data-a="hemore" data-v="${id}">Muat lagi</button>`:''}
+    <p class="mute" style="margin-top:14px">Sumber: Ensiklopedia Terjemahan Hadis-hadis Nabi (HadeethEnc). Setiap hadis memuat terjemahan Indonesia, derajat, penjelasan, dan pelajaran.</p>`)}
   return '';
 }
 
@@ -1662,7 +1717,7 @@ const ACT={
  tab:v=>{S.tab=v;sheet=null;sheetStack=[];S.dayOff=0;save();render()},
  ptab:v=>{S.ptab=v;save();render(true)},
  hf:v=>{const[k,x]=v.split('|');S.hf[k]=x;save();render(true)},harb:()=>{S.harb=!S.harb;save();render(true)},
- htab:v=>{S.htab=v;render(true)},hfont:v=>{S.hfont=Math.max(18,Math.min(44,S.hfont+ +v));save();render(true)},
+ htab:v=>{S.htab=v;render(true)},hlang:v=>{S.hlang=v;save();render(true)},hdleng:v=>{dlKitabEng(v)},hemore:v=>{heMore(+v)},hedl:v=>{heDownloadCat(+v)},hfont:v=>{S.hfont=Math.max(18,Math.min(44,S.hfont+ +v));save();render(true)},
  hhar:()=>{S.hhar=S.hhar===false;save();render(true)},hlat:()=>{S.hlat=!S.hlat;save();render(true)},hlight:()=>{S.hlight=!S.hlight;save();render(true)},
  hdl:v=>{dlKitab(v)},hdel:v=>{if(!resetArm){resetArm=true;render(true);return}resetArm=false;delete HLIB[v];delete S.hdl[v];idb('readwrite',s=>s.delete('hk-'+v)).catch(()=>{});save();toast('Kitab dihapus dari HP');render(true)},
  kg:v=>{S.kg=v;S.kpage=1;save();render(true)},kmore:()=>{S.kpage++;render(true)},
