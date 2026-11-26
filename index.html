@@ -271,6 +271,7 @@ input,select{font:inherit;font-size:16px}
 .cal .pz::after{content:"";position:absolute;right:5px;top:6px;width:7px;height:7px;border-radius:50%;background:#5cc48a}
 .cal .hd{background:none;min-height:auto;color:#9fb8b2;font-size:12px;text-align:center}.cal .em{background:none}
 details summary::marker{color:#5cc48a}
+.tj{cursor:pointer;border-radius:3px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -493,7 +494,7 @@ function parseQuran(text){
 }
 function mergeQuran(add){const base=QDATA?QDATA.map(s=>s.map(a=>a.slice())):Array.from({length:114},()=>[]);add.forEach((s,i)=>s.forEach((a,k)=>{if(!a)return;const b=base[i][k]||['',''];base[i][k]=[a[0]||b[0],a[1]||b[1]]}));return base}
 function qStats(d){let ar=0,tr=0,bad=0;d.forEach((s,i)=>{if(s.filter(Boolean).length!==SLAT[i].c)bad++;s.forEach(a=>{if(a&&a[0])ar++;if(a&&a[1])tr++})});return{ar,tr,bad}}
-const getSurah=no=>{if(QDATA&&QDATA[no-1]&&QDATA[no-1].some(a=>a&&a[0]))return QDATA[no-1];return QT[no]||null};
+const getSurah=no=>{if(QDATA&&QDATA[no-1]&&QDATA[no-1].some(a=>a&&a[0]))return QDATA[no-1];const ed=S.q.tj&&EDATA.tajweed?'tajweed':S.q.ed;if(ed&&EDATA[ed]&&EDATA[ed][no-1]&&EDATA[ed][no-1].length)return EDATA[ed][no-1].map(t=>[t,'']);return QT[no]||null};
 const ayahAt=idx=>{for(const s of SLAT){if(idx<s.c)return[s.no,idx+1];idx-=s.c}return[1,1]};
 
 /* ============ TIME HELPERS ============ */
@@ -545,7 +546,7 @@ function A(){
 function Today(){
   const np=nextPrayer(),d=dayDate(0),k=dkey(d),pr=prayedOn(k),cnt=P5.filter(p=>pr[p]).length,last=SLAT[S.lastRead-1],kd=S.kid;
   const doa=DOA[d.getUTCDate()%DOA.length];
-  const q=[['all','map','Lainnya'],['kiblat','compass','Kiblat'],['psunnah','spark','Sholat sunnah'],['doa','hands','Doa-doa'],['tasbih','beads','Tasbih'],['amal','sun','Ibadah harian'],['kalender','cal','Kalender'],['khatam','book','Khatam']];
+  const q=[['all','map','Lainnya'],['kiblat','compass','Kiblat'],['psunnah','spark','Panduan sholat'],['puasa','moon','Puasa'],['doa','hands','Doa-doa'],['tasbih','beads','Tasbih'],['amal','sun','Ibadah harian'],['kalender','cal','Kalender'],['khatam','book','Khatam']];
   return `<section class="hero">
    <div class="hrow" style="align-items:flex-start"><h1>Assalamualaikum</h1><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Pengaturan">${ic('sliders',24)}</button></div><div></div>
    <div class="hrow"><div><b style="font-size:18px">${PN[np.p]}</b><div class="big">${hm(np.min)}</div><div class="cd">−<span data-cd="${np.at}">${cdf(np.at-Date.now())}</span></div></div>
@@ -558,6 +559,7 @@ function Today(){
   <section class="card"><h3>Progres belajar anak</h3>${kd.profile?`<div style="display:flex;gap:12px;align-items:center">${nuri('idle',56)}<div style="flex:1"><b>${esc(kd.name||(kd.profile==='adik'?'Adik':'Kakak'))}</b> · Level ${Math.floor(kd.xp/100)+1}<div class="mute">${kd.xp} XP · ${totalStars()} bintang · ${kd.streak} hari beruntun · ${kd.badges.length} lencana</div></div></div>`:'<p class="mute" style="margin:0 0 10px">Belum ada profil anak. Aktifkan Mode Anak untuk mulai belajar sambil bermain.</p>'}
   <button class="btn" style="margin-top:12px;width:100%" data-a="kids">${ic('map',20)} Buka Mode Anak</button></section>
   ${(()=>{const y=dailyAyah();return y?`<section class="card"><h3>Ayat harian</h3><div class="ar" style="font-size:24px;line-height:2;text-align:right">${esc(y.ar)}</div><p style="margin:6px 0 10px;color:#c4d5d1;font-size:15px">${esc(y.tr)}</p><button class="link" data-a="ayah" data-v="${y.s}:${y.a}">${esc(SLAT[y.s-1].n)}, ayat ${y.a} · Buka</button></section>`:''})()}
+  ${(()=>{const u=upcomingFasts(1)[0];return u?`<section class="card"><h3>Puasa sunnah berikutnya</h3><p style="margin:0 0 8px"><b>${u[3]===0?'Hari ini':u[3]===1?'Besok':''}</b> ${fdate(u[0],u[1])}<br><span class="mute">${u[2].join(' · ')}</span></p><button class="link" data-a="sheet" data-v="puasa">Panduan puasa, niat & doa</button></section>`:''})()}
   <section class="card"><h3>Doa hari ini</h3><div class="mute" style="font-weight:700;margin-bottom:4px">${doa.n}</div><div class="ar" style="font-size:24px;line-height:2;text-align:right">${doa.ar}</div><p style="margin:6px 0 0;color:#c4d5d1;font-size:15px"><i>${esc(doa.l)}</i><br>${doa.t}</p></section>`;
 }
 function dailyAyah(){const d=dayDate(0),doy=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,1))/864e5);
@@ -574,7 +576,7 @@ function Prayer(){
   const wk=`<div class="week"><span></span>${days.map(x=>`<span style="text-align:center">${'MSSRKJS'[x.getUTCDay()]}</span>`).join('')}${P5.map(p=>`<span>${PN[p].toUpperCase()}</span>${days.map(x=>`<i class="${(S.prayed[dkey(x)]||{})[p]?'on':''}"></i>`).join('')}`).join('')}</div>`;
   return `<div class="ptop"><div class="hrow" style="align-items:center"><div><h1>Sholat</h1><div style="font-size:14px;opacity:.95">${C().n} • ${METH[C().m].n}</div></div><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Ganti lokasi">${ic('pin',24)}</button></div>
   <div class="dnav"><button class="ibtn" data-a="day" data-v="-1" aria-label="Hari sebelumnya">${ic('left',28)}</button><div><b>${label}${gdate(d)}</b><span style="font-size:15px">${hijri(d)}</span></div><button class="ibtn" data-a="day" data-v="1" aria-label="Hari berikutnya">${ic('right',28)}</button></div></div>
-  <div class="plist"><div style="padding:12px 16px 4px"><div class="seg" style="background:#ffffff26">${[['wajib','Sholat wajib'],['sunnah','Sholat sunnah']].map(([k,l])=>`<button class="${S.ptab===k?'on':''}" data-a="ptab" data-v="${k}">${l}</button>`).join('')}</div></div>${S.ptab==='sunnah'?SunnahList(timesFor(dayDate(0))):rows+`<div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px">${wk}</div><p style="color:#fff;opacity:.85;font-size:12px;margin:10px 2px 0">Waktu dihitung di perangkat (${METH[C().m].n}); bisa selisih 1–2 menit dari jadwal resmi.</p></div>`}</div>`;
+  <div class="plist"><div style="padding:12px 16px 4px"><div class="seg" style="background:#ffffff26">${[['wajib','Jadwal hari ini'],['sunnah','Panduan sholat']].map(([k,l])=>`<button class="${S.ptab===k?'on':''}" data-a="ptab" data-v="${k}">${l}</button>`).join('')}</div></div>${S.ptab==='sunnah'?SunnahList2(timesFor(dayDate(0))):rows+`<div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px">${wk}</div><p style="color:#fff;opacity:.85;font-size:12px;margin:10px 2px 0">Waktu dihitung di perangkat (${METH[C().m].n}); bisa selisih 1–2 menit dari jadwal resmi.</p></div>`}</div>`;
 }
 function importCard(st){
   return `<div class="imp"><b style="font-size:17px;display:flex;gap:8px;align-items:center">${ic('upload',22)} Lengkapi 30 juz (offline)</b>
@@ -609,7 +611,7 @@ function Quran(){
     body=`${y?`<div class="card" style="margin:12px 0"><h3>Ayat harian · ${esc(SLAT[y.s-1].n)} ${y.s}:${y.a}</h3><div class="ar" style="font-size:24px;line-height:2;text-align:right">${esc(y.ar)}</div><p style="margin:6px 0 10px;color:#c4d5d1">${esc(y.tr)}</p><button class="link" data-a="ayah" data-v="${y.s}:${y.a}">Baca selengkapnya</button></div>`:''}
     <h3 style="margin:16px 0 4px">Penanda halaman</h3>${S.q.marks.length?S.q.marks.map(k=>{const[s]=k.split(':');return `<button class="lrow" data-a="ayah" data-v="${k}">${ic('bookmark',22,1)}<span class="t"><b style="font-size:18px">${esc(SLAT[s-1].n)} ${k}</b><small>Juz ${juzOf(+s,+k.split(':')[1])}</small></span></button>`}).join(''):'<p class="mute">Belum ada. Ketuk ikon penanda pada ayat saat membaca.</p>'}`;
   }
-  return `<div class="pad"><div class="hrow" style="align-items:center"><h1 style="font-family:Amiri,serif;font-size:30px;margin:4px 0 12px">Al-Qur'an</h1><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan Al-Qur'an">${ic('sliders',24)}</button></div>
+  return `<div class="pad"><div class="hrow" style="align-items:center"><h1 style="font-family:Amiri,serif;font-size:30px;margin:4px 0 12px">Al-Qur'an</h1><span style="display:flex"><button class="ibtn" data-a="sheet" data-v="qed" aria-label="Versi tulisan">${ic('lang',22)}</button><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan Al-Qur'an">${ic('sliders',24)}</button></span></div>
   <div class="seg" style="margin-bottom:12px">${[['baca','Baca'],['hafalan','Hafalan'],['saya','Untuk Saya']].map(([k,l])=>`<button class="${S.qtab===k?'on':''}" data-a="qtab" data-v="${k}">${l}</button>`).join('')}</div>
   <label class="qsearch">${ic('search',20)}<input id="qq" data-in="qsearch" value="${esc(qquery)}" placeholder="Cari surat, nomor, atau isi terjemahan" aria-label="Cari"></label>
   <div id="qres">${qquery?qResults(qquery):body}</div></div>`;
@@ -617,6 +619,7 @@ function Quran(){
 function qibla(c){const K=[21.4225,39.8262];return{b:fixA(at2(sn(K[1]-c.lng)*cs(K[0]),cs(c.lat)*sn(K[0])-sn(c.lat)*cs(K[0])*cs(K[1]-c.lng))),dist:Math.round(6371*acs(Math.min(1,sn(c.lat)*sn(K[0])+cs(c.lat)*cs(K[0])*cs(K[1]-c.lng)))*D2R)}}
 function Sheet(){
   const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  const _y=Sheet3();if(_y)return _y;
   const _x=Sheet2();if(_x)return _x;
   if(sheet==='qset'){const q=S.q,st=QDATA?qStats(QDATA):null,tg=(k,l,sub)=>`<button class="tgl" data-a="qtog" data-v="${k}"><span>${l}${sub?`<small>${sub}</small>`:''}</span><span class="sw2 ${q[k]?'on':''}"></span></button>`;
     return `<div class="sheet">${hdr('Pengaturan Al-Qur\'an')}<div class="scr pad">
@@ -624,7 +627,7 @@ function Sheet(){
     <div class="fld" style="margin-top:10px">Teks Arab<div class="chips">${['Amiri Quran','Scheherazade New'].map(f=>`<button class="${q.face===f?'on':''}" data-a="qface" data-v="${f}">${f}</button>`).join('')}</div></div>
     <div class="fld">Ukuran huruf Arab: ${q.font}px<div class="chips"><button data-a="qfont" data-v="-2">${ic('minus',18)}</button><button data-a="qfont" data-v="2">${ic('plus',18)}</button></div><div class="ar" style="font-family:'${q.face}',Amiri,serif;font-size:${q.font}px;text-align:right">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div></div>
     <div class="fld">Mode baca<div class="chips">${[['dark','Malam'],['sepia','Sepia'],['light','Terang']].map(([k,l])=>`<button class="${q.theme===k?'on':''}" data-a="qtheme" data-v="${k}">${l}</button>`).join('')}</div></div>
-    ${tg('tr','Terjemahan','Bahasa Indonesia (dari file yang diimpor)')}${tg('prog','Kemajuan membaca','Tampilkan progres khatam di halaman Baca')}
+    <button class="tgl" data-a="sheet" data-v="qed"><span>Versi tulisan Arab<small>${esc((EDS.find(e=>e.id===(q.ed||'base'))||EDS[0]).n)}</small></span>${ic('right',20)}</button>${tg('tj','Warna tajwid',EDATA.tajweed?'Ketuk huruf berwarna untuk melihat hukumnya':'Butuh unduh data tajwid sekali')}<button class="tgl" data-a="sheet" data-v="tajwid"><span>Indeks hukum tajwid<small>17 hukum dengan warna dan penjelasan</small></span>${ic('right',20)}</button>${tg('tr','Terjemahan','Bahasa Indonesia (dari file yang diimpor)')}${tg('prog','Kemajuan membaca','Tampilkan progres khatam di halaman Baca')}
     <h3 style="margin:20px 0 4px">Data Al-Qur'an offline</h3>
     <p class="mute">${st?`${st.ar.toLocaleString('id-ID')} ayat Arab · ${st.tr.toLocaleString('id-ID')} terjemahan tersimpan${st.bad?` · ${st.bad} surat jumlah ayatnya belum cocok`:' · lengkap 114 surat'}`:'Belum ada data lengkap. Teks bawaan: 7 surat pendek.'}</p>
     ${importCard(st)}
@@ -762,7 +765,7 @@ const hparts=d=>{if(!HF)return null;try{const p=HF.formatToParts(d),g=k=>parseIn
 const bacaCard=([t,ar,l,a])=>`<div class="card" style="margin:12px 0"><h3>${esc(t)}</h3><div class="ar" style="font-size:24px;line-height:2.1;text-align:right">${ar}</div><p style="margin:8px 0 0;color:#cfe3dd"><i>${esc(l)}</i></p><p style="margin:6px 0 0;color:#c4d5d1">${esc(a)}</p></div>`;
 const stepList=arr=>`<ol style="margin:6px 0 0;padding-left:22px;line-height:1.6">${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
 function ayahRow(no,i,v){const q=S.q,k=no+':'+(i+1),mk=q.marks.includes(k),hf=q.hafal[k]||0,id=no+'-'+(i+1),jz=JUZ.findIndex(([s,a])=>s===no&&a===i+1);
-  return `${jz>0?`<div class="jdiv">${ic('book',16)} Juz ${jz+1} dimulai</div>`:''}<div class="ayah ${hlKey===id?'hl':''}" id="ay-${id}"><div class="ar" style="font-size:${q.font}px;line-height:2.1;text-align:right">${esc(v[0])} <span style="font-size:${Math.round(q.font*.75)}px;color:#5cc48a">﴿${arNum(i+1)}﴾</span></div>${q.tr&&v[1]?`<p><b>${i+1}.</b> ${esc(v[1])}</p>`:''}
+  return `${jz>0?`<div class="jdiv">${ic('book',16)} Juz ${jz+1} dimulai</div>`:''}<div class="ayah ${hlKey===id?'hl':''}" id="ay-${id}"><div class="ar" style="font-size:${q.font}px;line-height:2.1;text-align:right">${arHTML(no,i,v[0])} <span style="font-size:${Math.round(q.font*.75)}px;color:#5cc48a">﴿${arNum(i+1)}﴾</span></div>${q.tr&&v[1]?`<p><b>${i+1}.</b> ${esc(v[1])}</p>`:''}
   <div class="aact"><button class="${mk?'on':''}" data-a="mark" data-v="${k}" aria-label="Penanda" aria-pressed="${mk}">${ic('bookmark',20,mk)}</button><button class="${hf?'h'+hf:''}" data-a="hafal" data-v="${k}" aria-label="Status hafalan">${ic('brain',20)}</button><button data-a="readto" data-v="${k}" aria-label="Tandai dibaca sampai ayat ini">${ic('check',20)}</button></div></div>`}
 const BISM='<div class="ar" style="font-size:28px;margin-top:10px">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>';
 function juzSegments(n){const[s0,a0]=JUZ[n-1],nx=JUZ[n],seg=[];for(let s=s0;s<=114;s++){if(nx&&s>nx[0])break;const from=s===s0?a0:1,to=nx&&s===nx[0]?nx[1]-1:SLAT[s-1].c;if(to>=from)seg.push([s,from,to])}return seg}
@@ -777,7 +780,7 @@ function SunnahList(t){
   <p style="margin:8px 0 0;font-size:13px;opacity:.85">Sholat yang punya sebab (tahiyatul masjid, jenazah, gerhana) tetap boleh menurut mazhab Syafi'i. Lafaz niat cukup di hati; melafalkannya adalah kebiasaan sebagian ulama.</p></div></div>`}
 function firstUnread(){for(const s of SLAT){const m=S.q.readMax[s.no]||0;if(m<s.c)return[s.no,m+1]}return null}
 const FEAT=[
-['Agama','#d8efe6','#0f2a2b',[['Waktu sholat','moon','tab','prayer'],['Sholat sunnah','spark','psunnah',''],["Al-Qur'an",'book','tab','quran'],['Khatam','check','sheet','khatam'],['Hafalan','brain','qhafal',''],['Tasbih','beads','sheet','tasbih'],['Kiblat','compass','sheet','kiblat'],['Doa-doa','hands','sheet','doa'],['Ibadah harian','sun','sheet','amal'],['Masjid terdekat','pin','masjid',''],['Asmaul Husna','spark','sheet','asma'],['Syahadat','user','sheet','syahadat']]],
+['Agama','#d8efe6','#0f2a2b',[['Waktu sholat','moon','tab','prayer'],['Panduan sholat','spark','psunnah',''],['Puasa','moon','sheet','puasa'],["Al-Qur'an",'book','tab','quran'],['Khatam','check','sheet','khatam'],['Versi mushaf','book','sheet','qed'],['Tajwid','spark','sheet','tajwid'],['Hafalan','brain','qhafal',''],['Tasbih','beads','sheet','tasbih'],['Kiblat','compass','sheet','kiblat'],['Doa-doa','hands','sheet','doa'],['Ibadah harian','sun','sheet','amal'],['Masjid terdekat','pin','masjid',''],['Asmaul Husna','spark','sheet','asma'],['Syahadat','user','sheet','syahadat']]],
 ['Kegunaan','#c6d6dd','#24414f',[['Kalender Hijriah','cal','sheet','kalender'],['Pelacak sholat','check','tab','prayer'],['Zakat','calc','sheet','zakat'],['Panduan halal','check','sheet','halal']]],
 ['Catatan & berbagi','#e6defc','#4a3aa8',[['Jurnal','book','sheet','jurnal'],['Sedekah','gift','sheet','sedekah'],['Kartu ucapan','chat','sheet','kartu'],['Inspirasi','spark','sheet','inspirasi']]],
 ['Haji','#fbf0c4','#4a3b00',[['Haji & Umroh','map','sheet','haji']]],
@@ -786,9 +789,9 @@ const FEAT=[
 function Sheet2(){
   const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
   const wrap=(t,body,extra)=>`<div class="sheet">${hdr(t,extra)}<div class="scr pad" id="rscr">${body}</div></div>`;
-  const q=S.q,rtools=`<button class="ibtn" data-a="qfont" data-v="-2" aria-label="Perkecil huruf">${ic('minus',20)}</button><button class="ibtn" data-a="qfont" data-v="2" aria-label="Perbesar huruf">${ic('plus',20)}</button><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan baca">${ic('sliders',22)}</button>`;
+  const q=S.q,rtools=`<button class="ibtn" data-a="qfont" data-v="-2" aria-label="Perkecil huruf">${ic('minus',20)}</button><button class="ibtn" data-a="qfont" data-v="2" aria-label="Perbesar huruf">${ic('plus',20)}</button><button class="ibtn" data-a="sheet" data-v="qset" aria-label="Pengaturan baca">${ic('sliders',22)}</button>${S.q.tj?`<button class="ibtn" data-a="sheet" data-v="tajwid" aria-label="Indeks tajwid">${ic('spark',20)}</button>`:''}`;
   if(sheet.startsWith('surah:')){const no=+sheet.split(':')[1],s=SLAT[no-1],tx=getSurah(no);
-    return `<div class="sheet reader ${q.theme}" style="--qf:'${q.face}'">${hdr(esc(s.n),rtools)}<div class="scr" id="rscr"><div style="text-align:center;padding:18px"><div class="ar" style="font-size:40px">${s.ar}</div><div class="mute">${s.a} · ${s.c} ayat · Juz ${juzOf(no,1)}${juzOf(no,s.c)!==juzOf(no,1)?'–'+juzOf(no,s.c):''}</div>${no!==1&&no!==9&&tx?BISM:''}</div>
+    return `<div class="sheet reader ${q.theme}" style="--qf:'${qFace()}'">${hdr(esc(s.n),rtools)}<div class="scr" id="rscr"><div style="text-align:center;padding:18px"><div class="ar" style="font-size:40px">${s.ar}</div><div class="mute">${s.a} · ${s.c} ayat · Juz ${juzOf(no,1)}${juzOf(no,s.c)!==juzOf(no,1)?'–'+juzOf(no,s.c):''}</div>${no!==1&&no!==9&&tx?BISM:''}</div>
     ${tx?tx.map((v,i)=>v&&v[0]?ayahRow(no,i,v):'').join('')+`<div class="jend">Akhir Surah ${esc(s.n)} · ${s.c} ayat</div>`:`<div class="card" style="text-align:center"><p>Teks surat ini belum tersimpan di HP.</p>${importCard(QDATA?qStats(QDATA):null)}</div>`}
     <div class="duo" style="padding:8px 14px 24px">${no>1?`<button class="btn" style="background:#24403f" data-a="surah" data-v="${no-1}">${ic('left',18)} ${esc(SLAT[no-2].n)}</button>`:'<span></span>'}${no<114?`<button class="btn" data-a="surah" data-v="${no+1}">${esc(SLAT[no].n)} ${ic('right',18)}</button>`:''}</div></div></div>`}
   if(sheet.startsWith('juz:')){const n=+sheet.split(':')[1],seg=juzSegments(n),missing=seg.some(([s])=>!getSurah(s));
@@ -796,7 +799,7 @@ function Sheet2(){
       return `<div class="shead"><div class="ar" style="font-size:34px">${S1.ar}</div><b>${s}. ${esc(S1.n)}</b><div class="mute">${f===1?`${S1.c} ayat`:`lanjutan · ayat ${f}–${t} dari ${S1.c}`}${f===1&&t<S1.c?` · di juz ini ayat 1–${t}`:''}</div>${f===1&&s!==1&&s!==9&&tx?BISM:''}</div>
       ${tx?tx.slice(f-1,t).map((v,k)=>v&&v[0]?ayahRow(s,f-1+k,v):'').join(''):'<p class="mute" style="text-align:center">Teks surah ini belum tersimpan.</p>'}
       <div class="jend">${t===S1.c?`Akhir Surah ${esc(S1.n)}`:`Surah ${esc(S1.n)} berlanjut di Juz ${n+1} (ayat ${t+1})`}</div>`}).join('');
-    return `<div class="sheet reader ${q.theme}" style="--qf:'${q.face}'">${hdr('Juz '+n,rtools)}<div class="scr" id="rscr">
+    return `<div class="sheet reader ${q.theme}" style="--qf:'${qFace()}'">${hdr('Juz '+n,rtools)}<div class="scr" id="rscr">
     <div class="jdiv" style="margin-top:14px">${ic('book',16)} Juz ${n}: ${esc(SLAT[seg[0][0]-1].n)} ${seg[0][0]}:${seg[0][1]} – ${esc(SLAT[seg[seg.length-1][0]-1].n)} ${seg[seg.length-1][0]}:${seg[seg.length-1][2]}</div>
     ${missing?`<div class="pad">${importCard(QDATA?qStats(QDATA):null)}</div>`:''}${body}
     <div class="card" style="text-align:center;margin:16px"><b style="font-size:18px">Akhir Juz ${n}</b><p class="mute" style="margin:4px 0 12px">Batas juz ini sampai ${esc(SLAT[seg[seg.length-1][0]-1].n)} ayat ${seg[seg.length-1][2]}.</p>
@@ -875,6 +878,232 @@ async function makeCard(){
   x.font='600 30px "Plus Jakarta Sans",sans-serif';x.fillStyle='#ffffffaa';x.fillText('Cahaya · Ibadah & Belajar',W/2,H-60);
   cardURL=c.toDataURL('image/png');render(true)}
 async function shareCard(){try{const b=await (await fetch(cardURL)).blob(),f=new File([b],'kartu-cahaya.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:CARDS[S.card][0]})}else toast('Berbagi tidak didukung di sini. Pakai tombol Simpan.')}catch(e){toast('Berbagi dibatalkan atau tidak didukung di sini')}}
+
+/* ============ v4 DATA: PANDUAN SHOLAT TAMBAHAN ============ */
+const NIAT5=[["Niat Subuh (2 rakaat)","أُصَلِّيْ فَرْضَ الصُّبْحِ رَكْعَتَيْنِ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً لِلّٰهِ تَعَالٰى","Ushallî fardhash-shubhi rak'ataini mustaqbilal-qiblati adâ'an lillâhi ta'âlâ","Aku niat sholat fardhu Subuh dua rakaat menghadap kiblat, tepat waktu, karena Allah Ta'ala."],
+["Niat Zuhur (4 rakaat)","أُصَلِّيْ فَرْضَ الظُّهْرِ أَرْبَعَ رَكَعَاتٍ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri arba'a raka'âtin mustaqbilal-qiblati adâ'an lillâhi ta'âlâ","Aku niat sholat fardhu Zuhur empat rakaat menghadap kiblat, tepat waktu, karena Allah Ta'ala."],
+["Niat Asar (4 rakaat)","أُصَلِّيْ فَرْضَ الْعَصْرِ أَرْبَعَ رَكَعَاتٍ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً لِلّٰهِ تَعَالٰى","Ushallî fardhal-'ashri arba'a raka'âtin mustaqbilal-qiblati adâ'an lillâhi ta'âlâ","Aku niat sholat fardhu Asar empat rakaat menghadap kiblat, tepat waktu, karena Allah Ta'ala."],
+["Niat Magrib (3 rakaat)","أُصَلِّيْ فَرْضَ الْمَغْرِبِ ثَلَاثَ رَكَعَاتٍ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً لِلّٰهِ تَعَالٰى","Ushallî fardhal-maghribi tsalâtsa raka'âtin mustaqbilal-qiblati adâ'an lillâhi ta'âlâ","Aku niat sholat fardhu Magrib tiga rakaat menghadap kiblat, tepat waktu, karena Allah Ta'ala."],
+["Niat Isya (4 rakaat)","أُصَلِّيْ فَرْضَ الْعِشَاءِ أَرْبَعَ رَكَعَاتٍ مُسْتَقْبِلَ الْقِبْلَةِ أَدَاءً لِلّٰهِ تَعَالٰى","Ushallî fardhal-'isyâ'i arba'a raka'âtin mustaqbilal-qiblati adâ'an lillâhi ta'âlâ","Aku niat sholat fardhu Isya empat rakaat menghadap kiblat, tepat waktu, karena Allah Ta'ala."]];
+const BACAAN_SHOLAT=[["Doa iftitah","اَللّٰهُ أَكْبَرُ كَبِيْرًا وَالْحَمْدُ لِلّٰهِ كَثِيْرًا وَسُبْحَانَ اللّٰهِ بُكْرَةً وَأَصِيْلًا، إِنِّيْ وَجَّهْتُ وَجْهِيَ لِلَّذِيْ فَطَرَ السَّمٰوَاتِ وَالْأَرْضَ حَنِيْفًا مُسْلِمًا وَمَا أَنَا مِنَ الْمُشْرِكِيْنَ، إِنَّ صَلَاتِيْ وَنُسُكِيْ وَمَحْيَايَ وَمَمَاتِيْ لِلّٰهِ رَبِّ الْعَالَمِيْنَ، لَا شَرِيْكَ لَهُ وَبِذٰلِكَ أُمِرْتُ وَأَنَا مِنَ الْمُسْلِمِيْنَ","Allâhu akbaru kabîrâ wal-hamdu lillâhi katsîrâ wa subhânallâhi bukratan wa ashîlâ, innî wajjahtu wajhiya lilladzî fatharas-samâwâti wal-ardha hanîfan musliman wa mâ ana minal-musyrikîn, inna shalâtî wa nusukî wa mahyâya wa mamâtî lillâhi rabbil-'âlamîn, lâ syarîka lahû wa bidzâlika umirtu wa ana minal-muslimîn","Allah Mahabesar, segala puji bagi Allah, Mahasuci Allah pagi dan petang. Kuhadapkan wajahku kepada Yang menciptakan langit dan bumi dengan lurus dan berserah diri; aku bukan orang musyrik. Sholatku, ibadahku, hidup dan matiku untuk Allah Tuhan semesta alam, tiada sekutu bagi-Nya; demikianlah aku diperintah dan aku termasuk orang muslim."],
+["Rukuk (3×)","سُبْحَانَ رَبِّيَ الْعَظِيْمِ وَبِحَمْدِهِ","Subhâna rabbiyal-'azhîmi wa bihamdih","Mahasuci Tuhanku Yang Mahaagung dan dengan memuji-Nya."],
+["I'tidal","سَمِعَ اللّٰهُ لِمَنْ حَمِدَهُ، رَبَّنَا لَكَ الْحَمْدُ مِلْءُ السَّمٰوَاتِ وَمِلْءُ الْأَرْضِ وَمِلْءُ مَا شِئْتَ مِنْ شَيْءٍ بَعْدُ","Sami'allâhu liman hamidah, rabbanâ lakal-hamdu mil'us-samâwâti wa mil'ul-ardhi wa mil'u mâ syi'ta min syai'in ba'du","Allah mendengar orang yang memuji-Nya. Wahai Tuhan kami, bagi-Mu segala puji sepenuh langit, sepenuh bumi, dan sepenuh apa saja yang Engkau kehendaki."],
+["Sujud (3×)","سُبْحَانَ رَبِّيَ الْأَعْلٰى وَبِحَمْدِهِ","Subhâna rabbiyal-a'lâ wa bihamdih","Mahasuci Tuhanku Yang Mahatinggi dan dengan memuji-Nya."],
+["Duduk di antara dua sujud","رَبِّ اغْفِرْ لِيْ وَارْحَمْنِيْ وَاجْبُرْنِيْ وَارْفَعْنِيْ وَارْزُقْنِيْ وَاهْدِنِيْ وَعَافِنِيْ وَاعْفُ عَنِّيْ","Rabbighfir lî warhamnî wajburnî warfa'nî warzuqnî wahdinî wa 'âfinî wa'fu 'annî","Ya Tuhanku, ampunilah aku, rahmatilah aku, cukupkanlah aku, angkatlah derajatku, berilah aku rezeki, petunjuk, kesehatan, dan maafkanlah aku."],
+["Tasyahud","اَلتَّحِيَّاتُ الْمُبَارَكَاتُ الصَّلَوَاتُ الطَّيِّبَاتُ لِلّٰهِ، اَلسَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللّٰهِ وَبَرَكَاتُهُ، اَلسَّلَامُ عَلَيْنَا وَعَلٰى عِبَادِ اللّٰهِ الصَّالِحِيْنَ، أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللّٰهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُوْلُ اللّٰهِ","Attahiyyâtul-mubârakâtush-shalawâtuth-thayyibâtu lillâh, assalâmu 'alaika ayyuhan-nabiyyu wa rahmatullâhi wa barakâtuh, assalâmu 'alainâ wa 'alâ 'ibâdillâhish-shâlihîn, asyhadu an lâ ilâha illallâh wa asyhadu anna Muhammadar-rasûlullâh","Segala penghormatan, keberkahan, sholawat, dan kebaikan milik Allah. Salam sejahtera atasmu wahai Nabi, beserta rahmat dan berkah Allah. Salam sejahtera atas kami dan hamba-hamba Allah yang saleh. Aku bersaksi tiada tuhan selain Allah dan Muhammad utusan Allah."],
+SHALAWAT,
+["Salam","اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللّٰهِ","Assalâmu 'alaikum wa rahmatullâh","Semoga keselamatan dan rahmat Allah tercurah kepadamu."]];
+const SHOLAT_CARA=["Niat dalam hati sambil takbiratul ihram (Allahu akbar)","Doa iftitah, lalu Al-Fatihah dan surah (rakaat 1 dan 2)","Rukuk dengan tuma'ninah","I'tidal (berdiri tegak kembali)","Sujud, duduk di antara dua sujud, sujud kedua","Rakaat 2: tasyahud awal (untuk sholat 3–4 rakaat)","Rakaat 3–4: hanya Al-Fatihah tanpa surah","Rakaat terakhir: tasyahud akhir dan shalawat","Salam ke kanan dan ke kiri"];
+const SUNNAH2=[
+{id:"lima",cat:"wajib",n:"Sholat 5 Waktu",rk:"Subuh 2 · Zuhur 4 · Asar 4 · Magrib 3 · Isya 4",hk:"Fardhu 'ain",wk:"lima",niat:NIAT5[0].slice(1),cara:SHOLAT_CARA,baca:NIAT5.slice(1).concat(BACAAN_SHOLAT),
+ ket:"Wajib bagi setiap muslim yang baligh dan berakal. Rukun sholat ada 13, di antaranya niat, takbiratul ihram, berdiri bagi yang mampu, Al-Fatihah, rukuk, i'tidal, sujud, duduk di antara dua sujud, tasyahud akhir, shalawat, salam, dan tertib."},
+{id:"jumat",cat:"wajib",n:"Sholat Jumat",rk:"2 rakaat setelah dua khutbah (pengganti Zuhur)",hk:"Fardhu 'ain bagi laki-laki",wk:"jumat",
+ niat:["أُصَلِّيْ فَرْضَ الْجُمُعَةِ رَكْعَتَيْنِ مَأْمُوْمًا لِلّٰهِ تَعَالٰى","Ushallî fardhal-jum'ati rak'ataini ma'mûman lillâhi ta'âlâ","Aku niat sholat fardhu Jumat dua rakaat sebagai makmum karena Allah Ta'ala."],
+ cara:["Mandi, memakai pakaian terbaik dan wewangian","Datang lebih awal, sholat tahiyatul masjid","Diam dan menyimak khutbah sampai selesai","Sholat Jumat 2 rakaat berjamaah","Perbanyak shalawat dan membaca Al-Kahfi di hari Jumat"],baca:[],
+ ket:"Wajib bagi laki-laki muslim, baligh, berakal, merdeka, sehat, dan bermukim. Perempuan, musafir, dan orang sakit boleh sholat Zuhur sebagai gantinya."},
+{id:"qadha",cat:"wajib",n:"Sholat Qadha (Mengganti)",rk:"Sesuai sholat yang ditinggalkan",hk:"Wajib",wk:"qadha",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ أَرْبَعَ رَكَعَاتٍ قَضَاءً لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri arba'a raka'âtin qadhâ'an lillâhi ta'âlâ","Aku niat mengqadha sholat fardhu Zuhur empat rakaat karena Allah Ta'ala. (Ganti nama sholat dan jumlah rakaatnya)"],
+ cara:["Kerjakan segera setelah ingat atau terbangun","Jumlah rakaat sama dengan sholat yang ditinggalkan","Bila banyak, kerjakan berurutan","Sholat yang tertinggal saat safar boleh di-qashar bila diqadha masih dalam safar"],baca:[],
+ ket:"Untuk sholat yang terlewat karena tertidur atau lupa. Sholat yang ditinggalkan dengan sengaja wajib diqadha dan disertai taubat."},
+{id:"qashar",cat:"safar",n:"Sholat Qashar",rk:"Zuhur, Asar, Isya diringkas jadi 2 rakaat",hk:"Rukhsah (keringanan) bagi musafir",wk:"safar",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ رَكْعَتَيْنِ قَصْرًا لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri rak'ataini qashran lillâhi ta'âlâ","Aku niat sholat fardhu Zuhur dua rakaat diqashar karena Allah Ta'ala. (Asar: al-'ashri, Isya: al-'isyâ'i)"],
+ cara:["Hanya sholat 4 rakaat yang diqashar: Zuhur, Asar, Isya","Subuh tetap 2 rakaat, Magrib tetap 3 rakaat","Syarat (mazhab Syafi'i): jarak perjalanan sekitar 2 marhalah (±82 km), perjalanan bukan untuk maksiat, sudah keluar dari batas kota","Tidak boleh qashar bila bermakmum kepada imam yang sholat 4 rakaat penuh","Keringanan berlaku selama safar; bila berniat menetap 4 hari atau lebih, sholat kembali normal"],baca:[],
+ ket:"Allah memberi keringanan bagi musafir untuk meringkas sholat (QS. An-Nisa: 101)."},
+{id:"jtaqdim",cat:"safar",n:"Jamak Taqdim",rk:"Zuhur+Asar di waktu Zuhur · Magrib+Isya di waktu Magrib",hk:"Rukhsah bagi musafir",wk:"jtaqdim",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ أَرْبَعَ رَكَعَاتٍ مَجْمُوْعًا إِلَيْهِ الْعَصْرُ جَمْعَ تَقْدِيْمٍ لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri arba'a raka'âtin majmû'an ilaihil-'ashru jam'a taqdîmin lillâhi ta'âlâ","Aku niat sholat fardhu Zuhur empat rakaat dijamak dengan Asar, jamak taqdim, karena Allah Ta'ala."],
+ cara:["Kerjakan di waktu sholat pertama (Zuhur atau Magrib)","Dahulukan sholat pertama, lalu langsung sholat kedua (tertib)","Niat jamak dilakukan saat sholat pertama","Jarak antara kedua sholat tidak boleh lama (cukup iqamah)","Lalu niat sholat kedua: \"Ushallî fardhal-'ashri arba'a raka'âtin majmû'an ilazh-zhuhri jam'a taqdîmin lillâhi ta'âlâ\""],baca:[],
+ ket:"Subuh tidak bisa dijamak. Sebagian ulama membolehkan jamak (tanpa qashar) juga saat hujan lebat atau keperluan mendesak."},
+{id:"jtakhir",cat:"safar",n:"Jamak Takhir",rk:"Zuhur+Asar di waktu Asar · Magrib+Isya di waktu Isya",hk:"Rukhsah bagi musafir",wk:"jtakhir",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ أَرْبَعَ رَكَعَاتٍ مَجْمُوْعًا إِلَى الْعَصْرِ جَمْعَ تَأْخِيْرٍ لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri arba'a raka'âtin majmû'an ilal-'ashri jam'a ta'khîrin lillâhi ta'âlâ","Aku niat sholat fardhu Zuhur empat rakaat dijamak dengan Asar, jamak takhir, karena Allah Ta'ala."],
+ cara:["Saat masih di waktu sholat pertama, berniat dalam hati untuk mengakhirkannya","Kerjakan keduanya di waktu sholat kedua (Asar atau Isya)","Boleh mendahulukan sholat yang mana saja, tetapi lebih utama berurutan","Masih dalam keadaan safar sampai sholat selesai"],baca:[],ket:"Cocok bila di waktu Zuhur atau Magrib masih dalam perjalanan."},
+{id:"jqashar",cat:"safar",n:"Jamak Qashar",rk:"Zuhur 2 + Asar 2 · Magrib 3 + Isya 2",hk:"Rukhsah bagi musafir",wk:"safar",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ رَكْعَتَيْنِ قَصْرًا مَجْمُوْعًا إِلَيْهِ الْعَصْرُ جَمْعَ تَقْدِيْمٍ لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri rak'ataini qashran majmû'an ilaihil-'ashru jam'a taqdîmin lillâhi ta'âlâ","Aku niat sholat fardhu Zuhur dua rakaat diqashar dan dijamak dengan Asar, jamak taqdim, karena Allah Ta'ala."],
+ cara:["Gabungan jamak dan qashar: dua sholat dikerjakan dalam satu waktu sekaligus diringkas","Zuhur 2 rakaat lalu Asar 2 rakaat","Magrib tetap 3 rakaat lalu Isya 2 rakaat","Untuk takhir ganti \"ilaihil-'ashru jam'a taqdîmin\" menjadi \"ilal-'ashri jam'a ta'khîrin\""],baca:[],ket:"Keringanan yang paling sering dipakai saat mudik dan perjalanan jauh."},
+{id:"kendaraan",cat:"safar",n:"Sholat di Kendaraan",rk:"Sesuai sholatnya",hk:"Panduan",wk:"safar",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ رَكْعَتَيْنِ قَصْرًا لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri rak'ataini qashran lillâhi ta'âlâ","Niat seperti biasa sesuai sholat yang dikerjakan."],
+ cara:["Usahakan sholat wajib saat kendaraan berhenti atau di tempat transit","Di pesawat/kereta/kapal: berdiri dan menghadap kiblat bila mampu; bila tidak mampu, sholat semampunya (duduk, isyarat rukuk dan sujud)","Bila tidak ada air, bertayammum; bila tidak bisa wudhu maupun tayammum, sholat untuk menghormati waktu","Menurut mazhab Syafi'i, sholat yang tidak memenuhi syarat (tanpa kiblat/bersuci) diulang setelah sampai; sebagian ulama lain tidak mewajibkan","Sholat sunnah boleh di atas kendaraan menghadap arah perjalanan"],
+ baca:[["Doa naik kendaraan","سُبْحَانَ الَّذِيْ سَخَّرَ لَنَا هٰذَا وَمَا كُنَّا لَهُ مُقْرِنِيْنَ، وَإِنَّا إِلٰى رَبِّنَا لَمُنْقَلِبُوْنَ","Subhânalladzî sakhkhara lanâ hâdzâ wa mâ kunnâ lahû muqrinîn, wa innâ ilâ rabbinâ lamunqalibûn","Mahasuci Allah yang menundukkan kendaraan ini untuk kami, padahal kami tidak mampu menguasainya, dan sungguh kami akan kembali kepada Tuhan kami. (QS. Az-Zukhruf: 13–14)"]],
+ ket:"Manfaatkan fitur jamak takhir agar sholat bisa dikerjakan saat sudah turun dari kendaraan."},
+{id:"safar",cat:"safar",n:"Sholat Sunnah Safar",rk:"2 rakaat",hk:"Sunnah",wk:"safar2",
+ niat:["أُصَلِّيْ سُنَّةَ السَّفَرِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatas-safari rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah safar dua rakaat karena Allah Ta'ala."],
+ cara:["Dikerjakan di rumah sebelum berangkat","Saat tiba kembali, dianjurkan sholat 2 rakaat di masjid sebelum masuk rumah"].concat(CARA2),baca:[],ket:"Memohon keselamatan dan kemudahan dalam perjalanan."},
+{id:"khauf",cat:"safar",n:"Sholat Khauf",rk:"Sesuai sholat wajib, berjamaah bergantian",hk:"Rukhsah",wk:"khauf",
+ niat:["أُصَلِّيْ فَرْضَ الظُّهْرِ رَكْعَتَيْنِ مَأْمُوْمًا لِلّٰهِ تَعَالٰى","Ushallî fardhazh-zhuhri rak'ataini ma'mûman lillâhi ta'âlâ","Niat sesuai sholat wajib yang dikerjakan."],
+ cara:["Dilakukan dalam keadaan bahaya (perang atau ancaman)","Jamaah dibagi dua kelompok: satu kelompok sholat bersama imam, kelompok lain berjaga, lalu bergantian","Bila sangat genting, boleh sholat sambil berjalan atau berkendara semampunya"],baca:[],ket:"Dasarnya QS. An-Nisa: 102."},
+{id:"isyraq",cat:"sunnah",n:"Sholat Isyraq",rk:"2 rakaat",hk:"Sunnah",wk:"isyraq",
+ niat:["أُصَلِّيْ سُنَّةَ الْإِشْرَاقِ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-isyrâqi rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Isyraq dua rakaat karena Allah Ta'ala."],
+ cara:["Setelah sholat Subuh berjamaah, tetap duduk berdzikir sampai matahari terbit","Sekitar 15 menit setelah terbit, sholat 2 rakaat"].concat(CARA2.slice(1)),baca:[],
+ ket:"Sebagian ulama menyebutnya sholat Dhuha di awal waktu. Keutamaannya disebut seperti pahala haji dan umrah (HR. Tirmidzi)."},
+{id:"awwabin",cat:"sunnah",n:"Sholat Awwabin",rk:"6 rakaat (salam tiap 2)",hk:"Sunnah (diperselisihkan)",wk:"awwabin",
+ niat:["أُصَلِّيْ سُنَّةَ الْأَوَّابِيْنَ رَكْعَتَيْنِ لِلّٰهِ تَعَالٰى","Ushallî sunnatal-awwâbîna rak'ataini lillâhi ta'âlâ","Aku niat sholat sunnah Awwabin dua rakaat karena Allah Ta'ala."],
+ cara:["Dikerjakan setelah sholat Magrib dan rawatib ba'diyah","Kerjakan 2 rakaat-2 rakaat hingga 6 rakaat"].concat(CARA2.slice(1)),baca:[],ket:"Hadisnya dinilai lemah oleh sebagian ulama; boleh diamalkan sebagai sholat sunnah mutlak di antara Magrib dan Isya."},
+{id:"ghaib",cat:"sunnah",n:"Sholat Ghaib",rk:"4 takbir seperti sholat jenazah",hk:"Sunnah / fardhu kifayah",wk:"jenazah",
+ niat:["أُصَلِّيْ عَلٰى مَيِّتِ فُلَانٍ الْغَائِبِ أَرْبَعَ تَكْبِيْرَاتٍ فَرْضَ كِفَايَةٍ لِلّٰهِ تَعَالٰى","Ushallî 'alâ mayyiti (sebut nama) al-ghâ'ibi arba'a takbîrâtin fardha kifâyatin lillâhi ta'âlâ","Aku niat sholat atas jenazah (nama) yang ghaib empat takbir, fardhu kifayah, karena Allah Ta'ala."],
+ cara:["Untuk jenazah yang berada di tempat lain","Tata cara dan bacaannya sama seperti sholat jenazah"],baca:[],ket:"Nabi ﷺ pernah mensholati Raja Najasyi secara ghaib (HR. Bukhari dan Muslim)."},
+{id:"sahwi",cat:"sujud",n:"Sujud Sahwi",rk:"2 kali sujud sebelum salam",hk:"Sunnah",wk:"sahwi",
+ niat:["","Niat dalam hati untuk sujud sahwi","Tidak ada lafaz khusus; cukup niat di hati."],
+ cara:["Dilakukan bila lupa dalam sholat: menambah atau mengurangi rakaat, lupa tasyahud awal, atau ragu jumlah rakaat (ambil yang paling sedikit)","Setelah tasyahud akhir dan sebelum salam, takbir lalu sujud","Duduk sebentar, takbir, sujud lagi","Lalu salam"],
+ baca:[["Bacaan sujud sahwi (amalan yang masyhur)","سُبْحَانَ مَنْ لَا يَنَامُ وَلَا يَسْهُوْ","Subhâna man lâ yanâmu wa lâ yashû","Mahasuci Dzat yang tidak tidur dan tidak lupa. (Boleh juga membaca bacaan sujud biasa)"]],ket:"Menurut mazhab Syafi'i dilakukan sebelum salam; ulama lain ada yang setelah salam."},
+{id:"tilawah",cat:"sujud",n:"Sujud Tilawah",rk:"1 kali sujud",hk:"Sunnah",wk:"tilawah",
+ niat:["","Niat dalam hati untuk sujud tilawah","Tidak ada lafaz khusus."],
+ cara:["Saat membaca atau mendengar ayat sajdah (ada 15 tempat di Al-Qur'an)","Takbir lalu langsung sujud satu kali","Bangkit dengan takbir; di luar sholat, sebagian ulama menutup dengan salam"],
+ baca:[["Bacaan sujud tilawah (HR. Abu Dawud & Tirmidzi)","سَجَدَ وَجْهِيَ لِلَّذِيْ خَلَقَهُ وَشَقَّ سَمْعَهُ وَبَصَرَهُ بِحَوْلِهِ وَقُوَّتِهِ","Sajada wajhiya lilladzî khalaqahû wa syaqqa sam'ahû wa basharahû bihaulihî wa quwwatih","Wajahku bersujud kepada Dzat yang menciptakannya dan membuka pendengaran serta penglihatannya dengan daya dan kekuatan-Nya."]],ket:"Ayat sajdah ditandai simbol ۩ di mushaf."},
+{id:"syukur",cat:"sujud",n:"Sujud Syukur",rk:"1 kali sujud di luar sholat",hk:"Sunnah",wk:"syukur",
+ niat:["","Niat dalam hati untuk sujud syukur","Tidak ada lafaz khusus."],
+ cara:["Dilakukan saat mendapat nikmat besar atau terhindar dari musibah","Menghadap kiblat, takbir, lalu sujud satu kali","Memuji Allah dan bersyukur, lalu bangkit"],baca:[],ket:"Dikerjakan di luar sholat. Sebagian ulama mensyaratkan suci dari hadas seperti sholat."}];
+SUNNAH.forEach(x=>{if(!x.cat)x.cat=x.id==='jenazah'?'sunnah':'sunnah'});
+SUNNAH.unshift(...SUNNAH2.filter(x=>x.cat==='wajib'||x.cat==='safar'));
+SUNNAH.push(...SUNNAH2.filter(x=>x.cat==='sunnah'||x.cat==='sujud'));
+const SCAT=[['wajib','Sholat wajib'],['safar','Saat perjalanan (safar)'],['sunnah','Sholat sunnah'],['sujud','Sujud di luar sholat biasa']];
+
+/* ============ v4 DATA: PUASA ============ */
+const PUASA=[
+{id:"ramadan",cat:"wajib",n:"Puasa Ramadan",wk:"Sebulan penuh di bulan Ramadan",
+ niat:["نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ فَرْضِ شَهْرِ رَمَضَانَ هٰذِهِ السَّنَةِ لِلّٰهِ تَعَالٰى","Nawaitu shauma ghadin 'an adâ'i fardhi syahri Ramadhâna hâdzihis-sanati lillâhi ta'âlâ","Aku niat berpuasa esok hari untuk menunaikan fardhu bulan Ramadan tahun ini karena Allah Ta'ala."],
+ cara:["Niat di malam hari (setelah Magrib sampai sebelum Subuh), setiap malam","Makan sahur dan mengakhirkannya mendekati imsak","Menahan makan, minum, dan pembatal puasa dari terbit fajar sampai terbenam matahari","Menyegerakan berbuka saat Magrib, membaca doa berbuka","Memperbanyak tilawah, tarawih, sedekah, dan i'tikaf di 10 malam terakhir"],
+ extra:[["Niat puasa sebulan penuh (mazhab Maliki, dibaca malam pertama)","نَوَيْتُ صَوْمَ جَمِيْعِ شَهْرِ رَمَضَانَ هٰذِهِ السَّنَةِ تَقْلِيْدًا لِلْإِمَامِ مَالِكٍ فَرْضًا لِلّٰهِ تَعَالٰى","Nawaitu shauma jamî'i syahri Ramadhâna hâdzihis-sanati taqlîdan lil-imâmi Mâlikin fardhan lillâhi ta'âlâ","Aku niat berpuasa sebulan penuh bulan Ramadan tahun ini mengikuti Imam Malik, fardhu karena Allah Ta'ala. (Untuk berjaga-jaga bila lupa niat di suatu malam; niat harian tetap dianjurkan)"],
+  ["Doa malam Lailatul Qadar (HR. Tirmidzi)","اَللّٰهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّيْ","Allâhumma innaka 'afuwwun tuhibbul-'afwa fa'fu 'annî","Ya Allah, Engkau Maha Pemaaf dan suka memaafkan, maka maafkanlah aku."]],
+ ket:"Wajib bagi muslim yang baligh, berakal, mampu, dan bermukim (QS. Al-Baqarah: 183–185)."},
+{id:"qadha",cat:"wajib",n:"Puasa Qadha Ramadan",wk:"Di luar Ramadan, sebelum Ramadan berikutnya",
+ niat:["نَوَيْتُ صَوْمَ غَدٍ عَنْ قَضَاءِ فَرْضِ شَهْرِ رَمَضَانَ لِلّٰهِ تَعَالٰى","Nawaitu shauma ghadin 'an qadhâ'i fardhi syahri Ramadhâna lillâhi ta'âlâ","Aku niat berpuasa esok hari untuk mengqadha fardhu Ramadan karena Allah Ta'ala."],
+ cara:["Jumlah hari sama dengan hari yang ditinggalkan","Niat wajib di malam hari","Tidak harus berurutan","Sebaiknya didahulukan sebelum puasa sunnah"],extra:[],ket:"Untuk yang tidak berpuasa karena sakit, safar, haid, nifas, hamil, atau menyusui."},
+{id:"nazar",cat:"wajib",n:"Puasa Nazar",wk:"Sesuai yang dinazarkan",
+ niat:["نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ النَّذْرِ لِلّٰهِ تَعَالٰى","Nawaitu shauma ghadin 'an adâ'in-nadzri lillâhi ta'âlâ","Aku niat berpuasa esok hari untuk menunaikan nazar karena Allah Ta'ala."],
+ cara:["Dikerjakan sesuai jumlah dan waktu yang dijanjikan","Niat di malam hari","Bila nazar tidak ditunaikan, wajib membayar kafarat sumpah"],extra:[],ket:"Puasa yang menjadi wajib karena janji (nazar) kepada Allah."},
+{id:"kafarat",cat:"wajib",n:"Puasa Kafarat",wk:"Sesuai jenis pelanggaran",
+ niat:["نَوَيْتُ صَوْمَ غَدٍ عَنْ أَدَاءِ الْكَفَّارَةِ لِلّٰهِ تَعَالٰى","Nawaitu shauma ghadin 'an adâ'il-kaffârati lillâhi ta'âlâ","Aku niat berpuasa esok hari untuk menunaikan kafarat karena Allah Ta'ala."],
+ cara:["Kafarat berhubungan suami istri di siang Ramadan: puasa 2 bulan berturut-turut; bila tidak mampu, memberi makan 60 orang miskin","Kafarat sumpah: memberi makan atau pakaian 10 orang miskin; bila tidak mampu, puasa 3 hari","Kafarat lain mengikuti ketentuan fikih masing-masing"],extra:[],ket:"Tebusan atas pelanggaran tertentu. Untuk kasus khusus, tanyakan kepada ustadz."},
+{id:"seninkamis",cat:"sunnah",n:"Puasa Senin & Kamis",wk:"Setiap Senin dan Kamis",
+ niat:["نَوَيْتُ صَوْمَ يَوْمِ الْاِثْنَيْنِ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma yaumil-itsnaini sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah hari Senin karena Allah Ta'ala. (Kamis: yaumil-khamîsi)"],
+ cara:["Niat sunnah boleh di pagi hari sebelum Zuhur selama belum makan atau minum","Sahur dan berbuka seperti puasa biasa"],extra:[],ket:"Pada hari Senin dan Kamis amal diangkat kepada Allah (HR. Tirmidzi)."},
+{id:"bidh",cat:"sunnah",n:"Puasa Ayyamul Bidh",wk:"Tanggal 13, 14, 15 setiap bulan Hijriah",
+ niat:["نَوَيْتُ صَوْمَ أَيَّامِ الْبِيْضِ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma ayyâmil-bîdhi sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah Ayyamul Bidh karena Allah Ta'ala."],
+ cara:["Tiga hari di pertengahan bulan Hijriah saat bulan purnama","Pada bulan Zulhijah, tanggal 13 adalah hari Tasyrik (dilarang puasa)"],extra:[],ket:"Puasa tiga hari setiap bulan seperti puasa sepanjang tahun (HR. Bukhari)."},
+{id:"arafah",cat:"sunnah",n:"Puasa Arafah",wk:"9 Zulhijah",
+ niat:["نَوَيْتُ صَوْمَ عَرَفَةَ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma 'Arafata sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah Arafah karena Allah Ta'ala."],
+ cara:["Dikerjakan sehari sebelum Idul Adha","Tidak dianjurkan bagi jamaah haji yang sedang wukuf"],extra:[],ket:"Menghapus dosa setahun yang lalu dan setahun yang akan datang (HR. Muslim)."},
+{id:"zulhijah",cat:"sunnah",n:"Puasa Awal Zulhijah & Tarwiyah",wk:"1–8 Zulhijah (8 Zulhijah = Tarwiyah)",
+ niat:["نَوَيْتُ صَوْمَ التَّرْوِيَةِ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shaumat-tarwiyati sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah Tarwiyah karena Allah Ta'ala."],
+ cara:["Sepuluh hari pertama Zulhijah adalah hari terbaik untuk beramal","Puasa dapat dilakukan tanggal 1–9 Zulhijah"],extra:[],ket:"Hadis khusus keutamaan puasa Tarwiyah dinilai lemah, tetapi beramal di 10 hari awal Zulhijah sangat dianjurkan (HR. Bukhari)."},
+{id:"asyura",cat:"sunnah",n:"Puasa Tasu'a & Asyura",wk:"9 dan 10 Muharram",
+ niat:["نَوَيْتُ صَوْمَ عَاشُوْرَاءَ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma 'Âsyûrâ'a sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah Asyura karena Allah Ta'ala. (9 Muharram: shauma Tâsû'â'a)"],
+ cara:["Puasa tanggal 10 Muharram, dianjurkan disertai tanggal 9"],extra:[],ket:"Puasa Asyura menghapus dosa setahun yang lalu (HR. Muslim)."},
+{id:"syawal",cat:"sunnah",n:"Puasa 6 Hari Syawal",wk:"6 hari di bulan Syawal (mulai 2 Syawal)",
+ niat:["نَوَيْتُ صَوْمَ غَدٍ عَنْ سِتَّةٍ مِنْ شَوَّالٍ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma ghadin 'an sittatin min Syawwâlin sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah enam hari bulan Syawal esok hari karena Allah Ta'ala."],
+ cara:["Boleh berurutan atau terpisah selama masih di bulan Syawal","Tanggal 1 Syawal (Idul Fitri) haram berpuasa"],extra:[],ket:"Puasa Ramadan lalu diikuti 6 hari Syawal seperti puasa setahun penuh (HR. Muslim)."},
+{id:"daud",cat:"sunnah",n:"Puasa Daud",wk:"Sehari puasa, sehari tidak",
+ niat:["نَوَيْتُ صَوْمَ دَاوُدَ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma Dâwuda sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah Daud karena Allah Ta'ala."],
+ cara:["Berpuasa selang-seling setiap hari","Tidak berpuasa pada hari-hari yang diharamkan"],extra:[],ket:"Puasa yang paling dicintai Allah (HR. Bukhari dan Muslim)."},
+{id:"syaban",cat:"sunnah",n:"Puasa Sya'ban & Muharram",wk:"Bulan Sya'ban dan Muharram",
+ niat:["نَوَيْتُ صَوْمَ شَعْبَانَ سُنَّةً لِلّٰهِ تَعَالٰى","Nawaitu shauma Sya'bâna sunnatan lillâhi ta'âlâ","Aku niat puasa sunnah bulan Sya'ban karena Allah Ta'ala."],
+ cara:["Perbanyak puasa di bulan Sya'ban","Puasa terbaik setelah Ramadan adalah di bulan Muharram (HR. Muslim)"],extra:[],ket:"Nabi ﷺ paling banyak berpuasa sunnah di bulan Sya'ban (HR. Bukhari dan Muslim)."}];
+const PUASA_DOA=[["Doa berbuka puasa (HR. Abu Dawud)","ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوْقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللّٰهُ","Dzahabazh-zhama'u wabtallatil-'urûqu wa tsabatal-ajru in syâ'allâh","Telah hilang dahaga, urat-urat telah basah, dan pahala telah tetap, insya Allah."],
+["Doa berbuka yang masyhur di Indonesia","اَللّٰهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلٰى رِزْقِكَ أَفْطَرْتُ","Allâhumma laka shumtu wa bika âmantu wa 'alâ rizqika afthartu","Ya Allah, untuk-Mu aku berpuasa, kepada-Mu aku beriman, dan dengan rezeki-Mu aku berbuka."]];
+const PUASA_FIQIH=[["Rukun puasa",["Niat (puasa wajib di malam hari)","Menahan diri dari pembatal sejak terbit fajar sampai terbenam matahari"]],
+["Yang membatalkan puasa",["Makan dan minum dengan sengaja","Muntah dengan sengaja","Berhubungan suami istri di siang hari","Keluar mani dengan sengaja","Haid atau nifas","Hilang akal (gila)","Murtad"]],
+["Sunnah saat puasa",["Makan sahur dan mengakhirkannya","Menyegerakan berbuka, dengan kurma atau air","Membaca doa berbuka","Menjaga lisan dari dusta dan ghibah","Memperbanyak Al-Qur'an, sedekah, dan doa"]],
+["Boleh tidak berpuasa (wajib diganti)",["Musafir dan orang sakit: qadha","Haid dan nifas: wajib tidak puasa, lalu qadha","Hamil dan menyusui: qadha; bila khawatir pada anak, menurut mazhab Syafi'i ditambah fidyah","Lansia dan sakit menahun yang tidak mampu: membayar fidyah"]],
+["Fidyah",["1 mud makanan pokok per hari yang ditinggalkan (sekitar 0,6–0,75 kg beras)","Diberikan kepada fakir miskin","Sebagian ulama membolehkan dalam bentuk makanan siap santap atau uang senilainya"]],
+["Hari dilarang berpuasa",["1 Syawal (Idul Fitri)","10 Zulhijah (Idul Adha)","11, 12, 13 Zulhijah (hari Tasyrik)","Hari syak (30 Sya'ban yang meragukan), menurut mazhab Syafi'i","Makruh berpuasa hanya pada hari Jumat saja tanpa disertai hari sebelum atau sesudahnya"]]];
+
+/* ============ v4 DATA: VERSI TULISAN & TAJWID ============ */
+const EDS=[
+{id:'base',n:'Rasm Utsmani (bawaan)',d:"Teks Utsmani satu paket dengan terjemahan Kemenag. Diunduh lewat tombol \"Unduh otomatis\".",src:'base'},
+{id:'indopak',n:'IndoPak',d:'Gaya harakat Asia Selatan yang tebal dan jelas, mirip banyak mushaf lama di Indonesia.',src:'qc',key:'indopak',font:'Scheherazade New'},
+{id:'simple',n:"Imla'i (tulisan Arab standar)",d:'Ejaan Arab modern, mudah dibaca bagi yang terbiasa dengan teks Arab umum.',src:'aqc',key:'quran-simple'},
+{id:'uthmani',n:'Rasm Utsmani Madinah',d:'Teks Utsmani versi Tanzil, alternatif dari teks bawaan.',src:'aqc',key:'quran-uthmani'},
+{id:'tajweed',n:'Data tajwid berwarna',d:'Teks Utsmani dengan penanda hukum tajwid. Diperlukan untuk fitur warna tajwid.',src:'aqc',key:'quran-tajweed'}];
+const TAJ={h:['Hamzah washal','#AAAAAA','Hamzah yang dibaca bila memulai bacaan, gugur bila disambung dengan kata sebelumnya.'],
+s:['Huruf tidak dibaca','#AAAAAA','Huruf yang tertulis tetapi tidak dilafalkan.'],
+l:['Lam syamsiyah','#AAAAAA','Lam pada "al" yang dilebur ke huruf syamsiyah sesudahnya (ditandai tasydid).'],
+n:["Mad thabi'i",'#537FFF','Mad asli, dibaca panjang 2 harakat.'],
+p:['Mad jaiz munfashil','#4050FF','Mad bertemu hamzah di lain kata, boleh 2, 4, atau 5 harakat.'],
+m:['Mad lazim','#000EBC','Mad bertemu sukun asli atau tasydid, wajib 6 harakat.'],
+q:['Qalqalah','#DD0008','Huruf ق ط ب ج د yang bersukun dibaca memantul.'],
+o:['Mad wajib muttashil','#2144C1','Mad bertemu hamzah dalam satu kata, dibaca 4–5 harakat.'],
+c:['Ikhfa syafawi','#D500B7','Mim sukun bertemu ب, dibaca samar dengan dengung.'],
+f:['Ikhfa haqiqi','#9400A8','Nun sukun/tanwin bertemu 15 huruf ikhfa, dibaca samar dengan dengung.'],
+w:['Idgham mimi','#58B800','Mim sukun bertemu م, dilebur dengan dengung.'],
+i:['Iqlab','#26BFFD','Nun sukun/tanwin bertemu ب, berubah menjadi bunyi mim dengan dengung.'],
+a:['Idgham bighunnah','#169777','Nun sukun/tanwin bertemu ي ن م و, dilebur dengan dengung.'],
+u:['Idgham bilaghunnah','#169200','Nun sukun/tanwin bertemu ل ر, dilebur tanpa dengung.'],
+d:['Idgham mutajanisain','#A1A1A1','Dua huruf yang makhrajnya sama tetapi sifatnya berbeda, dilebur.'],
+b:['Idgham mutaqaribain','#A1A1A1','Dua huruf yang makhraj dan sifatnya berdekatan, dilebur.'],
+g:['Ghunnah','#FF7E1E','Nun atau mim bertasydid, dibaca dengung 2 harakat.']};
+
+/* ============ v4 VIEWS & LOGIC ============ */
+let EDATA={},edBusy=null;
+const edText=(id,no,i)=>{const d=EDATA[id];return d&&d[no-1]&&d[no-1][i]};
+const tjParse=t=>esc(t).replace(/\[([a-z])(?::\d+)?\[([^\]]*)\]/g,(m,c,x)=>TAJ[c]?`<span class="tj" style="color:${TAJ[c][1]}" data-a="tj" data-v="${c}">${x}</span>`:x).replace(/[\[\]]/g,'');
+function arHTML(no,i,base){
+  if(S.q.tj){const t=edText('tajweed',no,i);if(t)return tjParse(t)}
+  if(S.q.ed&&S.q.ed!=='base'){const t=edText(S.q.ed,no,i);if(t)return esc(t)}
+  return S.q.tj&&/\[[a-z]/.test(base)?tjParse(base):esc(base)}
+const qFace=()=>S.q.ed==='indopak'&&!S.q.tj?'Scheherazade New':S.q.face;
+const bplain=w=>w.replace(/\[[a-z](?::\d+)?\[/g,'').replace(/[^ء-ي]/g,'').replace(/[اـ]/g,'');
+function stripBism(t){const w=t.split(' ');if(w.length>4&&['بسم','لله','لرحمن','لرحيم'].every((x,i)=>bplain(w[i])===x))return w.slice(4).join(' ');return t}
+async function dlEdition(id){
+  const e=EDS.find(x=>x.id===id);if(!e)return;if(e.src==='base'){downloadQuran();return}
+  if(edBusy){toast('Tunggu unduhan yang sedang berjalan');return}
+  if(!navigator.onLine){toast('Butuh internet untuk mengunduh sekali');return}
+  edBusy=id;render(true);toast(`Mengunduh ${e.n}…`);
+  try{const out=Array.from({length:114},()=>[]);
+    if(e.src==='aqc'){const r=await fetch('https://api.alquran.cloud/v1/quran/'+e.key);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();
+      j.data.surahs.forEach(s=>s.ayahs.forEach((a,k)=>{out[s.number-1][k]=k===0&&s.number!==1&&s.number!==9?stripBism(a.text):a.text}))}
+    else{let ok=false;
+      try{const r=await fetch('https://api.quran.com/api/v4/quran/verses/'+e.key);if(r.ok){const j=await r.json();(j.verses||[]).forEach(v=>{const[s,a]=v.verse_key.split(':').map(Number);out[s-1][a-1]=v['text_'+e.key]});ok=(j.verses||[]).length>6000}}catch(_){}
+      if(!ok){for(let s=1;s<=114;s++){const r=await fetch(`https://api.quran.com/api/v4/quran/verses/${e.key}?chapter_number=${s}`);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();j.verses.forEach(v=>{const a=+v.verse_key.split(':')[1];out[s-1][a-1]=v['text_'+e.key]});if(s%20===0)toast(`${e.n}: ${s}/114 surat…`)}}}
+    const n=out.reduce((a,s)=>a+s.filter(Boolean).length,0);if(n<6000)throw new Error('data tidak lengkap');
+    EDATA[id]=out;try{await idb('readwrite',st=>st.put(out,'ed-'+id))}catch(_){toast('Tersimpan untuk sesi ini saja')}
+    if(id==='tajweed')S.q.tj=true;else S.q.ed=id;save();toast(`${e.n} tersimpan (${n.toLocaleString('id-ID')} ayat), bisa dipakai offline`)}
+  catch(err){toast('Gagal mengunduh. Pastikan ada internet. Di pratinjau Claude unduhan memang diblokir.')}
+  finally{edBusy=null;render(true)}}
+function upcomingFasts(n=8){const out=[];for(let i=0;i<75&&out.length<n;i++){const d=dayDate(i),h=hparts(d);if(!h)break;const wd=d.getUTCDay(),k=h.m+'-'+h.d;
+  if(k==='10-1'||k==='12-10'||(h.m===12&&h.d>=11&&h.d<=13))continue;const tg=[];
+  if(h.m===9)tg.push('Ramadan (wajib)');if(k==='12-9')tg.push('Arafah');else if(h.m===12&&h.d<=8)tg.push(h.d===8?'Tarwiyah':'Awal Zulhijah');
+  if(k==='1-9')tg.push("Tasu'a");if(k==='1-10')tg.push('Asyura');if(h.m===10&&h.d>=2)tg.push('Syawal');if(h.d>=13&&h.d<=15)tg.push('Ayyamul Bidh');if(wd===1)tg.push('Senin');if(wd===4)tg.push('Kamis');
+  if(tg.length)out.push([d,h,tg,i])}return out}
+const fdate=(d,h)=>`${d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'short',timeZone:'UTC'})} · ${h.d} ${HMONTH[h.m-1]}`;
+function wkText2(k,t){return{lima:`Subuh ${hm(t.fajr)} · Zuhur ${hm(t.dhuhr)} · Asar ${hm(t.asr)} · Magrib ${hm(t.maghrib)} · Isya ${hm(t.isha)}`,jumat:`Hari Jumat, waktu Zuhur (${hm(t.dhuhr)})`,qadha:'Segera setelah ingat',safar:'Saat safar ±82 km atau lebih',
+  jtaqdim:`Di waktu Zuhur (${hm(t.dhuhr)}) atau Magrib (${hm(t.maghrib)})`,jtakhir:`Di waktu Asar (${hm(t.asr)}) atau Isya (${hm(t.isha)})`,safar2:'Sebelum berangkat dan setelah tiba',khauf:'Saat dalam keadaan bahaya',
+  isyraq:`±${hm(t.sunrise+15)}, setelah matahari terbit`,awwabin:`Antara Magrib dan Isya (${hm(t.maghrib)} – ${hm(t.isha)})`,sahwi:'Saat lupa dalam sholat',tilawah:'Saat membaca/mendengar ayat sajdah',syukur:'Saat mendapat nikmat'}[k]||wkText(k,t)}
+function SunnahList2(t){
+  return SCAT.map(([c,label])=>`<div style="padding:14px 16px 4px;color:#fff;font-weight:800;font-size:15px;opacity:.9">${label}</div>`+SUNNAH.filter(x=>x.cat===c).map(x=>`<button class="scard" data-a="sheet" data-v="sunnah:${x.id}"><span style="flex:1"><b style="font-size:18px">${x.n}</b><small style="display:block;opacity:.92">${esc(wkText2(x.wk,t))}</small><small style="display:block;opacity:.75">${esc(x.rk)} · ${x.hk}</small></span>${ic('right',22)}</button>`).join('')).join('')
+  +`<div style="padding:16px"><div style="background:#ffffff1f;border-radius:20px;padding:14px;color:#fff"><b>Waktu terlarang sholat sunnah hari ini</b>${stepList([`Setelah Subuh sampai matahari naik: ${hm(t.fajr)} – ${hm(t.sunrise+15)}`,`Saat matahari tepat di atas: ±${hm(t.dhuhr-5)} – ${hm(t.dhuhr)}`,`Setelah Asar sampai terbenam: ${hm(t.asr)} – ${hm(t.maghrib)}`])}
+  <p style="margin:8px 0 0;font-size:13px;opacity:.85">Sholat yang punya sebab (tahiyatul masjid, jenazah, gerhana) tetap boleh menurut mazhab Syafi'i. Lafaz niat cukup di hati; melafalkannya adalah kebiasaan sebagian ulama.</p></div></div>`}
+function Sheet3(){
+  const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  const wrap=(t,body)=>`<div class="sheet">${hdr(t)}<div class="scr pad" id="rscr">${body}</div></div>`;
+  if(sheet.startsWith('sunnah:')){const x=SUNNAH.find(z=>z.id===sheet.split(':')[1]);if(!x)return '';const t=timesFor(dayDate(0));
+    return wrap(x.n,`<div class="card" style="margin:0"><div class="mute">Waktu</div><b>${esc(wkText2(x.wk,t))}</b><div class="mute" style="margin-top:8px">Jumlah rakaat</div><b>${esc(x.rk)}</b><div class="mute" style="margin-top:8px">Hukum</div><b>${x.hk}</b></div>
+    ${x.niat[0]?bacaCard(['Niat'].concat(x.niat)):`<div class="card" style="margin:12px 0"><h3>Niat</h3><p style="margin:0;color:#c4d5d1">${esc(x.niat[2])}</p></div>`}
+    <div class="card" style="margin:12px 0"><h3>Tata cara</h3>${stepList(x.cara)}</div>${x.baca.map(bacaCard).join('')}
+    <div class="card" style="margin:12px 0"><h3>Keterangan</h3><p style="margin:0;color:#c4d5d1">${esc(x.ket)}</p></div>
+    <p class="mute">Ringkasan ini mengikuti praktik umum mazhab Syafi'i di Indonesia. Untuk perbedaan pendapat, tanyakan kepada ustadz setempat.</p>`)}
+  if(sheet==='puasa'){const t=timesFor(dayDate(0)),up=upcomingFasts(8),btn=p=>`<button class="lrow" data-a="sheet" data-v="puasa:${p.id}"><span class="t"><b style="font-size:18px">${p.n}</b><small>${esc(p.wk)}</small></span>${ic('right',20)}</button>`;
+    return wrap('Puasa',`<div class="card" style="margin:0;display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:6px"><div><div class="mute">Imsak</div><b style="font-size:22px">${hm(t.fajr-10)}</b></div><div><div class="mute">Subuh</div><b style="font-size:22px">${hm(t.fajr)}</b></div><div><div class="mute">Berbuka</div><b style="font-size:22px">${hm(t.maghrib)}</b></div></div>
+    <p class="mute" style="margin:6px 2px 0">${esc(C().n)} · imsak = 10 menit sebelum Subuh (kebiasaan di Indonesia).</p>
+    <h3 style="margin:18px 0 6px">Puasa sunnah terdekat</h3>${up.length?up.map(([d,h,tg,i])=>`<div class="lrow"><span class="t"><b style="font-size:16px;font-family:inherit;font-weight:700">${i===0?'Hari ini · ':i===1?'Besok · ':''}${fdate(d,h)}</b><small>${tg.join(' · ')}</small></span></div>`).join(''):'<p class="mute">Kalender Hijriah tidak tersedia di perangkat ini.</p>'}
+    <h3 style="margin:18px 0 0">Puasa wajib</h3>${PUASA.filter(p=>p.cat==='wajib').map(btn).join('')}
+    <h3 style="margin:18px 0 0">Puasa sunnah</h3>${PUASA.filter(p=>p.cat==='sunnah').map(btn).join('')}
+    <h3 style="margin:18px 0 0">Doa berbuka</h3>${PUASA_DOA.map(bacaCard).join('')}
+    <h3 style="margin:18px 0 6px">Fikih puasa ringkas</h3>${PUASA_FIQIH.map(([n,l])=>`<div class="card" style="margin:0 0 10px"><h3>${n}</h3>${stepList(l)}</div>`).join('')}
+    <p class="mute">Ringkasan mengikuti mazhab Syafi'i. Penetapan awal Ramadan dan hari raya mengikuti keputusan pemerintah.</p>`)}
+  if(sheet.startsWith('puasa:')){const p=PUASA.find(z=>z.id===sheet.split(':')[1]);if(!p)return '';
+    return wrap(p.n,`<div class="card" style="margin:0"><div class="mute">Waktu</div><b>${esc(p.wk)}</b><div class="mute" style="margin-top:8px">Hukum</div><b>${p.cat==='wajib'?'Wajib':'Sunnah'}</b></div>
+    ${bacaCard(['Niat'].concat(p.niat))}<div class="card" style="margin:12px 0"><h3>Tata cara</h3>${stepList(p.cara)}</div>${p.extra.map(bacaCard).join('')}
+    <div class="card" style="margin:12px 0"><h3>Keterangan</h3><p style="margin:0;color:#c4d5d1">${esc(p.ket)}</p></div>${bacaCard(PUASA_DOA[0])}
+    <p class="mute">Niat puasa wajib harus di malam hari. Niat puasa sunnah boleh di pagi hari sebelum Zuhur selama belum makan atau minum.</p>`)}
+  if(sheet==='qed'){const has=id=>id==='base'?!!QDATA:!!EDATA[id],act=S.q.ed||'base';
+    return wrap("Versi tulisan Al-Qur'an",EDS.map(e=>{const ok=has(e.id),on=e.id==='tajweed'?S.q.tj:act===e.id;
+      return `<div class="card" style="margin:0 0 12px;${on?'outline:2px solid #5cc48a':''}"><b style="font-size:17px">${e.n}</b> ${ok?'<span class="tag">tersimpan</span>':''}${on?'<span class="tag" style="background:#c9752f">dipakai</span>':''}
+      <p class="mute" style="margin:6px 0 10px">${esc(e.d)}</p>${edBusy===e.id?'<b>Mengunduh…</b>':`<div class="chips">${ok?(e.id==='tajweed'?`<button class="${S.q.tj?'on':''}" data-a="qtog" data-v="tj">${S.q.tj?'Warna tajwid nyala':'Nyalakan warna tajwid'}</button>`:`<button class="${on?'on':''}" data-a="edset" data-v="${e.id}">${on?'Sedang dipakai':'Pakai versi ini'}</button>`):`<button data-a="eddl" data-v="${e.id}">${ic('upload',16)} Unduh</button>`}${ok&&e.id!=='base'?`<button data-a="eddel" data-v="${e.id}">Hapus</button>`:''}</div>`}</div>`}).join('')
+    +`<p class="mute">Unduh sekali saat ada internet, setelah itu bisa dipakai offline. Terjemahan tetap dari Kemenag. Teks digital resmi Mushaf Standar Indonesia (Kemenag) belum tersedia sebagai data terbuka; versinya bisa dibaca di aplikasi Quran Kemenag.</p>`)}
+  if(sheet==='tajwid')return wrap('Indeks hukum tajwid',`<p class="mute" style="margin-top:0">${S.q.tj?'Warna tajwid sedang menyala. Ketuk huruf berwarna saat membaca untuk melihat nama hukumnya.':'Nyalakan warna tajwid di Pengaturan Al-Qur\'an atau Versi tulisan.'}</p>
+    ${Object.entries(TAJ).map(([k,[n,c,d]])=>`<div class="lrow" id="tj-${k}"><span style="width:18px;height:18px;border-radius:50%;background:${c};flex:none"></span><span class="t"><b style="font-size:17px;font-family:inherit;font-weight:700;color:${c==='#000EBC'?'#7f8cff':c}">${n}</b><small>${d}</small></span></div>`).join('')}
+    <button class="btn" style="width:100%;margin-top:14px" data-a="sheet" data-v="qed">${ic('upload',18)} Versi tulisan & data tajwid</button>`);
+  return '';
+}
 
 /* ============ KIDS VIEWS ============ */
 const totalStars=()=>Object.values(S.kid.stars).reduce((a,b)=>a+b,0);
@@ -1143,7 +1372,10 @@ const ACT={
  qtab:v=>{S.qtab=v;qquery='';save();render(true)},qsub:v=>{S.qsub=v;save();render(true)},
  qfont:v=>{S.q.font=Math.max(20,Math.min(48,S.q.font+ +v));save();render(true)},
  qface:v=>{S.q.face=v;save();render(true)},qtheme:v=>{S.q.theme=v;save();render(true)},
- qtog:v=>{S.q[v]=!S.q[v];save();render(true)},
+ qtog:v=>{if(v==='tj'&&!S.q.tj&&!EDATA.tajweed){toast('Unduh data tajwid dulu (sekali saja)');ACT.sheet('qed');return}S.q[v]=!S.q[v];save();render(true)},
+ eddl:v=>{dlEdition(v)},edset:v=>{S.q.ed=v;S.q.tj=false;save();toast('Versi tulisan diganti');render(true)},
+ eddel:v=>{delete EDATA[v];idb('readwrite',s=>s.delete('ed-'+v)).catch(()=>{});if(S.q.ed===v)S.q.ed='base';if(v==='tajweed')S.q.tj=false;save();toast('Data dihapus dari HP');render(true)},
+ tj:v=>{const r=TAJ[v];if(r)toast(`${r[0]}: ${r[2]}`)},
  qdl:()=>downloadQuran(),
  qwipe:()=>{if(!resetArm){resetArm=true;render(true);return}resetArm=false;QDATA=null;idb('readwrite',s=>s.delete('quran')).catch(()=>{});toast('Data Al-Qur\'an dihapus');render(true)},
  city:v=>{S.city=v;save();render(true)},accent:v=>{S.accent=v;save();render(true);speak('Hello! Let us learn English.')},
@@ -1187,6 +1419,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.in=
 setInterval(()=>{let stale=false;document.querySelectorAll('[data-cd]').forEach(el=>{const ms=+el.dataset.cd-Date.now();if(ms<=0)stale=true;else el.textContent=cdf(ms)});if(stale&&!sheet&&!G)render(true)},1000);
 if('speechSynthesis' in window){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}catch(e){}}
 render();
+Promise.all(EDS.filter(e=>e.src!=='base').map(e=>idb('readonly',s=>s.get('ed-'+e.id)).then(d=>{if(Array.isArray(d)&&d.length===114)EDATA[e.id]=d}).catch(()=>{}))).then(()=>{if(Object.keys(EDATA).length)render(true)});
 idb('readonly',s=>s.get('quran')).then(d=>{if(Array.isArray(d)&&d.length===114){QDATA=d;render(true)}}).catch(()=>{});
 try{if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude|anthropic/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 try{if(S.city==='gps'&&S.loc&&S.loc.n==='Lokasi GPS'&&navigator.permissions)navigator.permissions.query({name:'geolocation'}).then(r=>{if(r.state==='granted')useGPS(true)}).catch(()=>{})}catch(e){}
