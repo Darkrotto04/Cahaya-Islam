@@ -270,6 +270,15 @@ input,select{font:inherit;font-size:16px}
 .cal .ev{background:#8a5426}.cal .td{outline:2px solid #5cc48a}
 .cal .pz::after{content:"";position:absolute;right:5px;top:6px;width:7px;height:7px;border-radius:50%;background:#5cc48a}
 .cal .hd{background:none;min-height:auto;color:#9fb8b2;font-size:12px;text-align:center}.cal .em{background:none}
+.adult .nav{grid-template-columns:repeat(5,1fr)}
+.hbadge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-weight:800;font-size:13px;color:#fff;min-height:30px}
+.hbadge.sm{padding:2px 8px;font-size:11px;min-height:0}
+.hitem{display:flex;gap:12px;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid #ffffff10}
+.hbar{width:5px;border-radius:4px;flex:none}
+.hwarn{border-radius:16px;padding:12px 14px;font-weight:700;margin:0 0 12px}
+.sanad div{position:relative;padding:6px 0 6px 16px;border-left:2px solid #5cc48a66;margin-left:6px}
+.sanad div::before{content:"";position:absolute;left:-7px;top:12px;width:12px;height:12px;border-radius:50%;background:#5cc48a}
+.reader.light .card{background:#f1f5f4;color:#1c2b2a}.reader.light .mute{color:#5b6b6a}.reader.light .seg{background:#dfe9e7}.reader.light .chips button{background:#dfe9e7;color:#1c2b2a}.reader.light .chips button.on{background:#4fa36c;color:#fff}
 details summary::marker{color:#5cc48a}
 .tj{cursor:pointer;border-radius:3px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -316,7 +325,8 @@ minus:'<path d="M5 12h14"/>',plus:'<path d="M5 12h14M12 5v14"/>',
 brain:'<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2ZM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2Z"/>',
 chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
 abc:'<path d="M3 18 7 6l4 12M4.5 14h5M14 6h4a3 3 0 0 1 0 6h-4zM14 12h4.5a3 3 0 0 1 0 6H14z"/>',
-drop:'<path d="M12 2.7s7 7.3 7 12.3a7 7 0 1 1-14 0c0-5 7-12.3 7-12.3z"/>'
+drop:'<path d="M12 2.7s7 7.3 7 12.3a7 7 0 1 1-14 0c0-5 7-12.3 7-12.3z"/>',
+scroll:'<path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/>'
 };
 const ic=(n,s=22,fill)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill?'currentColor':'none'}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -468,7 +478,7 @@ const STICK=['🌙','⭐','🕌','🐫','🌴','📖','🦉','🌈','🎈','🍉
 /* ============ STATE ============ */
 const KEY='cahaya-proto-v1';
 const DEF={mode:'adult',tab:'today',dayOff:0,qtab:'baca',qsub:'surat',city:'madinah',loc:null,accent:'US',rate:0.85,sound:true,lastRead:1,lastAy:1,prayed:{},adzan:{},tasbih:0,tasIdx:0,kv:'map',vcat:'animals',
- ptab:'wajib',amal:{},amalOff:0,journal:[],sedekah:[],khatam:null,calOff:0,card:'fitri',
+ ptab:'wajib',hf:{g:'all',t:'all'},hfav:{Favorit:[]},hdl:{},htab:'matan',hfont:28,hhar:true,hlat:false,hlight:false,harb:false,kg:'all',kpage:1,amal:{},amalOff:0,journal:[],sedekah:[],khatam:null,calOff:0,card:'fitri',
  q:{font:30,face:'Amiri Quran',tr:true,theme:'dark',prog:true,marks:[],hafal:{},readMax:{}},
  kid:{profile:null,name:'',xp:0,stars:{},streak:0,lastDay:'',badges:[],chests:0,stickers:[],sx:{}}};
 let S;
@@ -538,28 +548,29 @@ const starRow=(n,s=18)=>`<span class="stars">${[0,1,2].map(i=>`<span class="${i<
 
 /* ============ ADULT VIEWS ============ */
 function A(){
-  let body=S.tab==='prayer'?Prayer():S.tab==='quran'?Quran():Today();
-  const nav=[['today','cal','Hari ini'],['prayer','moon','Sholat'],['quran','book','Al-Qur\'an'],['kids','smile','Mode Anak']];
+  let body=S.tab==='prayer'?Prayer():S.tab==='quran'?Quran():S.tab==='hadis'?Hadis():Today();
+  const nav=[['today','cal','Hari ini'],['prayer','moon','Sholat'],['quran','book','Al-Qur\'an'],['hadis','scroll','Hadis'],['kids','smile','Anak']];
   return `<div class="scr" id="scr">${body}<div style="height:20px"></div></div>
   <nav class="nav">${nav.map(([k,i,l])=>`<button data-a="${k==='kids'?'kids':'tab'}" data-v="${k}" class="${S.tab===k?'on':''}">${ic(i,24,S.tab===k)}${l}</button>`).join('')}</nav>${sheet?Sheet():''}`;
 }
 function Today(){
   const np=nextPrayer(),d=dayDate(0),k=dkey(d),pr=prayedOn(k),cnt=P5.filter(p=>pr[p]).length,last=SLAT[S.lastRead-1],kd=S.kid;
   const doa=DOA[d.getUTCDate()%DOA.length];
-  const q=[['all','map','Lainnya'],['kiblat','compass','Kiblat'],['psunnah','spark','Panduan sholat'],['puasa','moon','Puasa'],['doa','hands','Doa-doa'],['tasbih','beads','Tasbih'],['amal','sun','Ibadah harian'],['kalender','cal','Kalender'],['khatam','book','Khatam']];
+  const q=[['all','map','Lainnya'],['hadis','scroll','Hadis'],['kiblat','compass','Kiblat'],['psunnah','spark','Panduan sholat'],['puasa','moon','Puasa'],['doa','hands','Doa-doa'],['tasbih','beads','Tasbih'],['amal','sun','Ibadah harian'],['kalender','cal','Kalender'],['khatam','book','Khatam']];
   return `<section class="hero">
    <div class="hrow" style="align-items:flex-start"><h1>Assalamualaikum</h1><button class="ibtn" data-a="sheet" data-v="settings" aria-label="Pengaturan">${ic('sliders',24)}</button></div><div></div>
    <div class="hrow"><div><b style="font-size:18px">${PN[np.p]}</b><div class="big">${hm(np.min)}</div><div class="cd">−<span data-cd="${np.at}">${cdf(np.at-Date.now())}</span></div></div>
    <div style="text-align:right"><div style="font-size:15px">${hijri(d)}</div><b style="font-size:20px;display:inline-flex;gap:6px;align-items:center">${C().n} ${ic('pin',18)}</b></div></div></section>
   <div class="duo"><button class="pill" style="background:linear-gradient(120deg,#e0703e,#c9465a)" data-a="surah" data-v="${S.lastRead}"><small>Lanjutkan membaca</small><b>${esc(last.n)}</b></button>
   <button class="pill" style="background:linear-gradient(120deg,#7b5cf0,#3d2a8a)" data-a="kids"><small>Mode belajar</small><b>Buka Mode Anak</b></button></div>
-  <div class="quick">${q.map(([v,i,l])=>`<button data-a="${v==='psunnah'?'psunnah':'sheet'}" data-v="${v}"><span class="qi">${ic(i,26)}</span>${l}</button>`).join('')}</div>
+  <div class="quick">${q.map(([v,i,l])=>`<button data-a="${v==='psunnah'?'psunnah':v==='hadis'?'tab':'sheet'}" data-v="${v}"><span class="qi">${ic(i,26)}</span>${l}</button>`).join('')}</div>
   <section class="card"><h3>Pelacak sholat hari ini</h3><div class="pchk">${P5.map(p=>`<button data-a="pray" data-v="${k}|${p}" class="${pr[p]?'on':''}" aria-pressed="${!!pr[p]}"><span class="circ">${pr[p]?ic('check',16):''}</span>${PN[p]}</button>`).join('')}</div>
   <p class="mute" style="margin:10px 0 0">${cnt}/5 sholat terpantau hari ini${cnt===5?' · MasyaAllah, lengkap!':''}</p></section>
   <section class="card"><h3>Progres belajar anak</h3>${kd.profile?`<div style="display:flex;gap:12px;align-items:center">${nuri('idle',56)}<div style="flex:1"><b>${esc(kd.name||(kd.profile==='adik'?'Adik':'Kakak'))}</b> · Level ${Math.floor(kd.xp/100)+1}<div class="mute">${kd.xp} XP · ${totalStars()} bintang · ${kd.streak} hari beruntun · ${kd.badges.length} lencana</div></div></div>`:'<p class="mute" style="margin:0 0 10px">Belum ada profil anak. Aktifkan Mode Anak untuk mulai belajar sambil bermain.</p>'}
   <button class="btn" style="margin-top:12px;width:100%" data-a="kids">${ic('map',20)} Buka Mode Anak</button></section>
   ${(()=>{const y=dailyAyah();return y?`<section class="card"><h3>Ayat harian</h3><div class="ar" style="font-size:24px;line-height:2;text-align:right">${esc(y.ar)}</div><p style="margin:6px 0 10px;color:#c4d5d1;font-size:15px">${esc(y.tr)}</p><button class="link" data-a="ayah" data-v="${y.s}:${y.a}">${esc(SLAT[y.s-1].n)}, ayat ${y.a} · Buka</button></section>`:''})()}
   ${(()=>{const u=upcomingFasts(1)[0];return u?`<section class="card"><h3>Puasa sunnah berikutnya</h3><p style="margin:0 0 8px"><b>${u[3]===0?'Hari ini':u[3]===1?'Besok':''}</b> ${fdate(u[0],u[1])}<br><span class="mute">${u[2].join(' · ')}</span></p><button class="link" data-a="sheet" data-v="puasa">Panduan puasa, niat & doa</button></section>`:''})()}
+  ${(()=>{const d=dailyHadis();return d?`<section class="card" style="border-left:5px solid ${HGRADE[d.derajat].c}"><h3>Hadis hari ini</h3><b style="display:block;margin-bottom:4px">${esc(d.judul)}</b><p style="margin:0 0 8px;color:#c4d5d1">${esc(d.id_||d.ringkas)}</p><small class="mute">${esc(d.sumber)} · ${HGRADE[d.derajat].n}</small><br><button class="link" data-a="sheet" data-v="hd:${d.id}">Baca kajian</button></section>`:''})()}
   <section class="card"><h3>Doa hari ini</h3><div class="mute" style="font-weight:700;margin-bottom:4px">${doa.n}</div><div class="ar" style="font-size:24px;line-height:2;text-align:right">${doa.ar}</div><p style="margin:6px 0 0;color:#c4d5d1;font-size:15px"><i>${esc(doa.l)}</i><br>${doa.t}</p></section>`;
 }
 function dailyAyah(){const d=dayDate(0),doy=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,1))/864e5);
@@ -619,6 +630,7 @@ function Quran(){
 function qibla(c){const K=[21.4225,39.8262];return{b:fixA(at2(sn(K[1]-c.lng)*cs(K[0]),cs(c.lat)*sn(K[0])-sn(c.lat)*cs(K[0])*cs(K[1]-c.lng))),dist:Math.round(6371*acs(Math.min(1,sn(c.lat)*sn(K[0])+cs(c.lat)*cs(K[0])*cs(K[1]-c.lng)))*D2R)}}
 function Sheet(){
   const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  const _z=Sheet5();if(_z)return _z;
   const _y=Sheet3();if(_y)return _y;
   const _x=Sheet2();if(_x)return _x;
   if(sheet==='qset'){const q=S.q,st=QDATA?qStats(QDATA):null,tg=(k,l,sub)=>`<button class="tgl" data-a="qtog" data-v="${k}"><span>${l}${sub?`<small>${sub}</small>`:''}</span><span class="sw2 ${q[k]?'on':''}"></span></button>`;
@@ -780,7 +792,7 @@ function SunnahList(t){
   <p style="margin:8px 0 0;font-size:13px;opacity:.85">Sholat yang punya sebab (tahiyatul masjid, jenazah, gerhana) tetap boleh menurut mazhab Syafi'i. Lafaz niat cukup di hati; melafalkannya adalah kebiasaan sebagian ulama.</p></div></div>`}
 function firstUnread(){for(const s of SLAT){const m=S.q.readMax[s.no]||0;if(m<s.c)return[s.no,m+1]}return null}
 const FEAT=[
-['Agama','#d8efe6','#0f2a2b',[['Waktu sholat','moon','tab','prayer'],['Panduan sholat','spark','psunnah',''],['Puasa','moon','sheet','puasa'],["Al-Qur'an",'book','tab','quran'],['Khatam','check','sheet','khatam'],['Versi mushaf','book','sheet','qed'],['Tajwid','spark','sheet','tajwid'],['Hafalan','brain','qhafal',''],['Tasbih','beads','sheet','tasbih'],['Kiblat','compass','sheet','kiblat'],['Doa-doa','hands','sheet','doa'],['Ibadah harian','sun','sheet','amal'],['Masjid terdekat','pin','masjid',''],['Asmaul Husna','spark','sheet','asma'],['Syahadat','user','sheet','syahadat']]],
+['Agama','#d8efe6','#0f2a2b',[['Waktu sholat','moon','tab','prayer'],['Hadis','scroll','tab','hadis'],['Panduan sholat','spark','psunnah',''],['Puasa','moon','sheet','puasa'],["Al-Qur'an",'book','tab','quran'],['Khatam','check','sheet','khatam'],['Versi mushaf','book','sheet','qed'],['Tajwid','spark','sheet','tajwid'],['Hafalan','brain','qhafal',''],['Tasbih','beads','sheet','tasbih'],['Kiblat','compass','sheet','kiblat'],['Doa-doa','hands','sheet','doa'],['Ibadah harian','sun','sheet','amal'],['Masjid terdekat','pin','masjid',''],['Asmaul Husna','spark','sheet','asma'],['Syahadat','user','sheet','syahadat']]],
 ['Kegunaan','#c6d6dd','#24414f',[['Kalender Hijriah','cal','sheet','kalender'],['Pelacak sholat','check','tab','prayer'],['Zakat','calc','sheet','zakat'],['Panduan halal','check','sheet','halal']]],
 ['Catatan & berbagi','#e6defc','#4a3aa8',[['Jurnal','book','sheet','jurnal'],['Sedekah','gift','sheet','sedekah'],['Kartu ucapan','chat','sheet','kartu'],['Inspirasi','spark','sheet','inspirasi']]],
 ['Haji','#fbf0c4','#4a3b00',[['Haji & Umroh','map','sheet','haji']]],
@@ -1105,6 +1117,305 @@ function Sheet3(){
   return '';
 }
 
+/* ============ v5 DATA: HADIS ============
+ Skema entri hadis (dipakai untuk kurasi, Arbain, dan kitab unduhan):
+ interface Hadis {
+   id: string;                 // 'c-niat' | 'a-1' | 'k-bukhari-1'
+   judul: string;              // judul tematik
+   sumber: string;             // 'HR. Bukhari no. 1; Muslim no. 1907'
+   derajat: 'shahih'|'hasan'|'dhaif'|'maudhu'|'none';
+   derajatLabel?: string;      // label khusus: 'Tidak ada asalnya', 'Sangat lemah'
+   muhaqqiq: string[];         // ulama penilai
+   tema: string[];             // akidah | ibadah | akhlak | muamalah | keluarga | ilmu
+   ar: string; latin?: string; id_: string;   // matan Arab, transliterasi, terjemah
+   sanad?: string[];           // jalur ringkas dari Nabi ﷺ ke mukharrij
+   takhrij?: string;           // keterangan takhrij
+   kelemahan?: string;         // khusus dhaif/maudhu: letak cacatnya
+   asbab?: {waktu: string; tempat?: string; kronologi: string; ibtidai?: boolean; catatan?: string} | null;
+   fadhilah?: string; fawaid?: string[]; hukum?: string;     // keutamaan, pelajaran, catatan kehati-hatian
+   koreksi?: {ar?: string; teks: string; sumber: string};   // versi shahih pengganti (untuk hadis palsu)
+ }
+*/
+const HGRADE={
+shahih:{n:'Shahih',c:'#0f9d6e',d:'Sanadnya bersambung, diriwayatkan perawi yang adil dan kuat hafalannya (dhabit), tanpa kejanggalan (syadz) dan cacat tersembunyi (\'illat).',h:'Wajib diterima dan dapat dijadikan dasar akidah, hukum, dan amal.'},
+hasan:{n:'Hasan',c:'#2f7de1',d:'Memenuhi syarat hadis shahih, tetapi hafalan sebagian perawinya sedikit di bawah perawi hadis shahih.',h:'Diterima dan dapat dijadikan hujjah seperti hadis shahih, meski tingkatannya di bawahnya.'},
+dhaif:{n:'Dhaif',c:'#d99a00',d:'Tidak memenuhi syarat shahih atau hasan, misalnya sanad terputus (munqathi\'/mursal), ada perawi lemah atau tidak dikenal (majhul).',h:'Tidak dijadikan dasar akidah dan hukum. Mayoritas ulama membolehkan untuk keutamaan amal dengan tiga syarat (Ibnu Hajar): kelemahannya tidak parah, isinya tercakup dalil lain yang shahih, dan tidak diyakini pasti sebagai sabda Nabi ﷺ.'},
+maudhu:{n:'Palsu',c:'#d93a3a',d:'Maudhu\' (palsu) adalah perkataan yang dibuat-buat lalu disandarkan secara dusta kepada Nabi ﷺ. Termasuk di sini ucapan yang "tidak ada asalnya" (la ashla lahu) sebagai hadis.',h:'Haram disebarkan sebagai hadis kecuali untuk menjelaskan kepalsuannya, dan tidak boleh diamalkan sebagai sunnah.'},
+none:{n:'Belum dinilai',c:'#7d8a88',d:'Dataset ini belum menyertakan penilaian derajat untuk hadis ini.',h:'Rujuk kitab takhrij atau tanyakan kepada ahli hadis sebelum menjadikannya dalil.'}};
+const HTEMA=[['akidah','Akidah'],['ibadah','Ibadah'],['akhlak','Akhlak'],['muamalah','Muamalah'],['keluarga','Keluarga'],['ilmu','Ilmu']];
+const HKURASI=[
+{id:'c-niat',judul:'Amal tergantung niat',sumber:'HR. Bukhari no. 1; Muslim no. 1907',derajat:'shahih',muhaqqiq:['Disepakati Bukhari dan Muslim (muttafaq \'alaih)'],tema:['akidah','ibadah'],
+ ar:'إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى دُنْيَا يُصِيبُهَا، أَوْ إِلَى امْرَأَةٍ يَنْكِحُهَا، فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ',
+ latin:"Innamal-a'mâlu bin-niyyât, wa innamâ likullimri'in mâ nawâ, fa man kânat hijratuhû ilâ dunyâ yushîbuhâ, au ilamra'atin yankihuhâ, fa hijratuhû ilâ mâ hâjara ilaih",
+ id_:'Sesungguhnya amal-amal itu tergantung niatnya, dan setiap orang hanya mendapatkan apa yang ia niatkan. Barang siapa hijrahnya karena dunia yang ingin ia raih atau karena wanita yang ingin ia nikahi, maka hijrahnya kepada apa yang ia tuju.',
+ sanad:['Nabi Muhammad ﷺ','Umar bin Al-Khaththab','Alqamah bin Waqqash Al-Laitsi','Muhammad bin Ibrahim At-Taimi','Yahya bin Sa\'id Al-Anshari','Sufyan bin \'Uyainah','Al-Humaidi','Imam Al-Bukhari'],
+ takhrij:'Diriwayatkan juga oleh Abu Dawud, Tirmidzi, Nasa\'i, dan Ibnu Majah. Hadis ini gharib di tingkat awal sanad (hanya Umar → Alqamah → Muhammad At-Taimi → Yahya), lalu tersebar luas dari Yahya.',
+ asbab:{waktu:'Periode Madinah, berkaitan dengan peristiwa hijrah',tempat:'Madinah',kronologi:'Hadis ini masyhur dikaitkan dengan kisah "Muhajir Ummu Qais": seorang laki-laki ikut hijrah ke Madinah karena ingin menikahi wanita bernama Ummu Qais, sehingga ia dijuluki demikian. Kisah ini diriwayatkan dari Abdullah bin Mas\'ud (riwayat Ath-Thabrani).',catatan:'Ibnu Hajar menilai sanad kisah tersebut shahih, tetapi tidak ada riwayat yang tegas menyebut hadis ini disabdakan karena kisah itu. Jadi kaitannya bersifat penjelasan, bukan sebab yang pasti.'},
+ fadhilah:'Para ulama menyebut hadis ini sepertiga ilmu agama, karena niat menentukan sah dan bernilainya setiap amal. Imam Bukhari membuka kitab Shahih-nya dengan hadis ini.',
+ fawaid:['Luruskan niat sebelum beramal, termasuk bekerja dan belajar','Amal yang sama bisa bernilai ibadah atau tidak, tergantung niatnya','Niat tempatnya di hati','Perbarui niat di tengah amal bila mulai melenceng']},
+{id:'c-lisan',judul:'Muslim sejati menjaga lisan dan tangannya',sumber:'HR. Bukhari no. 10; Muslim no. 40',derajat:'shahih',muhaqqiq:['Disepakati Bukhari dan Muslim'],tema:['akhlak'],
+ ar:'الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ، وَالْمُهَاجِرُ مَنْ هَجَرَ مَا نَهَى اللَّهُ عَنْهُ',
+ latin:"Al-muslimu man salimal-muslimûna min lisânihî wa yadih, wal-muhâjiru man hajara mâ nahallâhu 'anh",
+ id_:'Seorang muslim adalah orang yang kaum muslimin selamat dari gangguan lisan dan tangannya. Dan orang yang berhijrah adalah orang yang meninggalkan apa yang dilarang Allah.',
+ sanad:['Nabi Muhammad ﷺ','Abdullah bin \'Amr bin Al-\'Ash','Asy-Sya\'bi','Abdullah bin Abi As-Safar dan Isma\'il','Syu\'bah','Adam bin Abi Iyas','Imam Al-Bukhari'],
+ takhrij:'Makna serupa diriwayatkan dari Abu Musa Al-Asy\'ari (Bukhari no. 11) dan Jabir (Muslim).',
+ asbab:{waktu:'Tidak disebutkan waktunya secara spesifik',kronologi:'Dalam riwayat Abu Musa Al-Asy\'ari, para sahabat bertanya: "Wahai Rasulullah, Islam (amalan orang Islam) apa yang paling utama?" Beliau menjawab: "Orang yang kaum muslimin selamat dari lisan dan tangannya." (HR. Bukhari no. 11)'},
+ fadhilah:'Menjaga lisan dan tangan disebut sebagai ciri keislaman yang paling utama.',
+ fawaid:['Ukuran kesalehan juga dilihat dari dampak kita pada orang lain','Lisan disebut lebih dahulu karena gangguannya paling sering terjadi, termasuk lewat tulisan di media sosial','Hijrah sejati adalah meninggalkan larangan Allah','Sebelum berkomentar, tanyakan: apakah ini menyakiti orang lain?']},
+{id:'c-marah',judul:'Jangan marah',sumber:'HR. Bukhari no. 6116',derajat:'shahih',muhaqqiq:['Imam Al-Bukhari'],tema:['akhlak'],
+ ar:'أَنَّ رَجُلًا قَالَ لِلنَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ: أَوْصِنِي، قَالَ: «لَا تَغْضَبْ»، فَرَدَّدَ مِرَارًا، قَالَ: «لَا تَغْضَبْ»',
+ latin:"Anna rajulan qâla lin-nabiyyi shallallâhu 'alaihi wa sallam: aushinî, qâla: lâ taghdhab, fa raddada mirâran, qâla: lâ taghdhab",
+ id_:'Seorang laki-laki berkata kepada Nabi ﷺ: "Berilah aku wasiat." Beliau bersabda: "Jangan marah." Orang itu mengulang permintaannya beberapa kali, dan beliau tetap bersabda: "Jangan marah."',
+ sanad:['Nabi Muhammad ﷺ','Abu Hurairah','Abu Shalih','Abu Hashin','Abu Bakr bin \'Ayyasy','Yahya bin Yusuf','Imam Al-Bukhari'],
+ takhrij:'Termasuk hadis ke-16 dalam Arba\'in An-Nawawi.',
+ asbab:{waktu:'Tidak disebutkan waktunya',kronologi:'Sebabnya tercantum dalam hadis itu sendiri: seorang laki-laki meminta wasiat singkat yang mudah diingat, lalu Nabi ﷺ menjawab "jangan marah" dan mengulanginya setiap kali ia meminta lagi.'},
+ fadhilah:'Menahan marah mencegah banyak keburukan. Dalam hadis lain disebutkan bahwa orang kuat adalah yang mampu menguasai dirinya ketika marah (HR. Bukhari dan Muslim).',
+ fawaid:['Nasihat terbaik bisa sangat singkat','Jauhi sebab-sebab marah dan jangan menuruti dorongannya','Saat marah: diam, ubah posisi, berwudhu, dan membaca ta\'awudz','Pengulangan menunjukkan betapa pentingnya pesan ini']},
+{id:'c-safar',judul:'Bukan termasuk kebaikan berpuasa saat safar (yang memberatkan)',sumber:'HR. Bukhari no. 1946; Muslim no. 1115',derajat:'shahih',muhaqqiq:['Disepakati Bukhari dan Muslim'],tema:['ibadah'],
+ ar:'كَانَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ فِي سَفَرٍ، فَرَأَى زِحَامًا وَرَجُلًا قَدْ ظُلِّلَ عَلَيْهِ، فَقَالَ: «مَا هَذَا؟» فَقَالُوا: صَائِمٌ، فَقَالَ: «لَيْسَ مِنَ الْبِرِّ الصَّوْمُ فِي السَّفَرِ»',
+ latin:"Kâna rasûlullâhi shallallâhu 'alaihi wa sallama fî safarin, fa ra'â zihâman wa rajulan qad zhullila 'alaih, fa qâla: mâ hâdzâ? fa qâlû: shâ'im, fa qâla: laisa minal-birrish-shaumu fis-safar",
+ id_:'Rasulullah ﷺ sedang dalam perjalanan, lalu melihat kerumunan dan seorang laki-laki yang sedang dinaungi. Beliau bertanya: "Ada apa ini?" Mereka menjawab: "Ia sedang berpuasa." Beliau bersabda: "Bukan termasuk kebaikan berpuasa dalam perjalanan."',
+ sanad:['Nabi Muhammad ﷺ','Jabir bin Abdullah','Muhammad bin \'Amr bin Al-Hasan','Muhammad bin Abdurrahman Al-Anshari','Syu\'bah','Adam bin Abi Iyas','Imam Al-Bukhari'],
+ takhrij:'Diriwayatkan juga oleh Abu Dawud dan Nasa\'i.',
+ asbab:{waktu:'Saat Nabi ﷺ dalam sebuah perjalanan bersama para sahabat',kronologi:'Nabi ﷺ melihat seorang sahabat yang tetap berpuasa sampai kepayahan sehingga harus dinaungi dan dikerumuni orang. Beliau lalu menjelaskan bahwa memaksakan puasa dalam kondisi seperti itu bukanlah kebaikan.',catatan:'Para ulama menjelaskan hadis ini berlaku bagi musafir yang sangat terbebani. Dalam hadis lain para sahabat ada yang berpuasa dan ada yang tidak saat safar, dan Nabi ﷺ tidak mencela keduanya.'},
+ fadhilah:'Menunjukkan kasih sayang syariat: keringanan (rukhsah) Allah suka untuk diambil.',
+ fawaid:['Musafir boleh tidak berpuasa dan menggantinya di hari lain','Jangan memaksakan ibadah sampai membahayakan diri','Ambil keringanan bila ibadah terasa sangat berat di perjalanan','Kaitkan dengan fitur Puasa dan Sholat Safar di aplikasi ini']},
+{id:'c-ilmu',judul:'Menuntut ilmu wajib bagi setiap muslim',sumber:'HR. Ibnu Majah no. 224',derajat:'shahih',muhaqqiq:['Al-Albani: shahih','Sebagian ulama: hasan karena banyak jalur'],tema:['ilmu'],
+ ar:'طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ',latin:"Thalabul-'ilmi farîdhatun 'alâ kulli muslim",
+ id_:'Menuntut ilmu itu wajib bagi setiap muslim.',
+ sanad:['Nabi Muhammad ﷺ','Anas bin Malik','…','Ibnu Majah'],
+ takhrij:'Diriwayatkan dari banyak sahabat melalui jalur-jalur yang masing-masing ada kelemahan, tetapi saling menguatkan. Tambahan lafaz di riwayat Ibnu Majah tentang "mengalungkan mutiara pada babi" dinilai sangat lemah.',
+ asbab:{ibtidai:true},
+ fadhilah:'Ilmu adalah jalan menuju surga: "Barang siapa menempuh jalan untuk mencari ilmu, Allah mudahkan baginya jalan menuju surga." (HR. Muslim no. 2699)',
+ fawaid:['Ilmu agama yang dibutuhkan untuk ibadah sehari-hari hukumnya fardhu \'ain','Berlaku bagi laki-laki dan perempuan','Ilmu didahulukan sebelum berkata dan beramal','Sisihkan waktu belajar setiap hari, walau sedikit']},
+{id:'c-takwa',judul:'Bertakwalah di mana pun berada',sumber:'HR. Tirmidzi no. 1987',derajat:'hasan',muhaqqiq:['At-Tirmidzi: hasan shahih','Al-Albani: hasan'],tema:['akhlak','akidah'],
+ ar:'اتَّقِ اللَّهِ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ',
+ latin:"Ittaqillâha haitsumâ kunta, wa atbi'is-sayyi'atal-hasanata tamhuhâ, wa khâliqin-nâsa bikhuluqin hasan",
+ id_:'Bertakwalah kepada Allah di mana pun engkau berada, iringilah perbuatan buruk dengan perbuatan baik niscaya kebaikan itu menghapusnya, dan pergaulilah manusia dengan akhlak yang baik.',
+ sanad:['Nabi Muhammad ﷺ','Abu Dzar Al-Ghifari dan Mu\'adz bin Jabal','Maimun bin Abi Syabib','Habib bin Abi Tsabit','Sufyan Ats-Tsauri','…','At-Tirmidzi'],
+ takhrij:'Hadis ke-18 dalam Arba\'in An-Nawawi. Status hasan karena ada pembicaraan ulama tentang ketersambungan riwayat Maimun bin Abi Syabib.',
+ asbab:{waktu:'Tidak ada peristiwa khusus yang disepakati',kronologi:'Disampaikan sebagai wasiat pribadi Nabi ﷺ kepada sahabat (Abu Dzar dan Mu\'adz bin Jabal).'},
+ fadhilah:'Menggabungkan tiga hak: hak Allah (takwa), hak diri (menghapus dosa dengan kebaikan), dan hak sesama (akhlak baik).',
+ fawaid:['Takwa tidak hanya di masjid, tetapi juga saat sendirian dan di dunia maya','Segera iringi kesalahan dengan kebaikan dan istighfar','Akhlak baik kepada manusia bagian dari agama','Tiga kalimat ini bisa dijadikan pegangan harian']},
+{id:'c-tawakal',judul:'Ikatlah untamu lalu bertawakallah',sumber:'HR. Tirmidzi no. 2517',derajat:'hasan',muhaqqiq:['Al-Albani: hasan','At-Tirmidzi: gharib'],tema:['akidah'],
+ ar:'اعْقِلْهَا وَتَوَكَّلْ',latin:"I'qilhâ wa tawakkal",
+ id_:'Seorang laki-laki bertanya: "Wahai Rasulullah, apakah aku ikat untaku lalu bertawakal, atau aku lepaskan lalu bertawakal?" Beliau bersabda: "Ikatlah ia, lalu bertawakallah."',
+ sanad:['Nabi Muhammad ﷺ','Anas bin Malik','…','At-Tirmidzi'],
+ takhrij:'Ada jalur pendukung dari \'Amr bin Umayyah Adh-Dhamri (riwayat Ibnu Hibban).',
+ asbab:{waktu:'Tidak disebutkan',kronologi:'Seorang Arab Badui bertanya apakah tawakal berarti membiarkan untanya lepas tanpa diikat. Nabi ﷺ meluruskan bahwa tawakal harus disertai usaha.'},
+ fadhilah:'Meluruskan pemahaman tawakal yang keliru.',
+ fawaid:['Tawakal bukan berarti meninggalkan usaha','Lakukan ikhtiar terbaik, lalu serahkan hasilnya kepada Allah','Kunci rumah, simpan dokumen, rencanakan keuangan: itu bagian dari ikhtiar']},
+{id:'c-buka',judul:'Doa berbuka "Allahumma laka shumtu"',sumber:'HR. Abu Dawud no. 2358',derajat:'dhaif',muhaqqiq:['Al-Albani: dhaif'],tema:['ibadah'],
+ ar:'اللَّهُمَّ لَكَ صُمْتُ، وَعَلَى رِزْقِكَ أَفْطَرْتُ',latin:"Allâhumma laka shumtu wa 'alâ rizqika afthartu",
+ id_:'Ya Allah, untuk-Mu aku berpuasa dan dengan rezeki-Mu aku berbuka.',
+ sanad:['Nabi Muhammad ﷺ','(terputus)','Mu\'adz bin Zuhrah (tabi\'in)','Hushain','Husyaim','Musaddad','Abu Dawud'],
+ kelemahan:'Mursal: Mu\'adz bin Zuhrah adalah tabi\'in yang langsung menyandarkan kepada Nabi ﷺ tanpa menyebut sahabat, sehingga sanadnya terputus. Mu\'adz sendiri tidak dikenal kekuatan hafalannya. Tambahan "wa bika âmantu" yang populer tidak ada dalam riwayat ini.',
+ asbab:null,
+ hukum:'Boleh dibaca sebagai doa umum karena maknanya baik, tetapi jangan diyakini sebagai sabda Nabi ﷺ. Doa berbuka yang sanadnya lebih kuat: "Dzahabazh-zhama\'u wabtallatil-\'urûqu wa tsabatal-ajru insyâ Allâh" (HR. Abu Dawud, dinilai hasan oleh Al-Albani).',
+ fawaid:['Tidak semua doa yang populer berasal dari hadis shahih','Doa dengan makna baik tetap boleh dipanjatkan tanpa menyandarkannya kepada Nabi ﷺ','Biasakan mengecek derajat hadis sebelum menyebarkan']},
+{id:'c-wathan',judul:'"Cinta tanah air sebagian dari iman"',sumber:'Tidak ditemukan dalam kitab hadis',derajat:'maudhu',derajatLabel:'Palsu / tidak ada asalnya',muhaqqiq:['Ash-Shaghani: maudhu\'','As-Sakhawi: tidak ditemukan sanadnya','Al-Albani: maudhu\''],tema:['akhlak'],populer:true,
+ ar:'حُبُّ الْوَطَنِ مِنَ الْإِيمَانِ',latin:"Hubbul-wathani minal-îmân",id_:'Cinta tanah air sebagian dari iman.',
+ kelemahan:'Ungkapan ini tidak memiliki sanad yang sampai kepada Nabi ﷺ. As-Sakhawi dalam Al-Maqashid Al-Hasanah menyatakan tidak menemukannya, dan Ash-Shaghani memasukkannya ke dalam hadis palsu.',asbab:null,
+ hukum:'Jangan menyebutnya sebagai hadis. Makna cinta tanah air boleh disampaikan sebagai nasihat atau ungkapan ulama, bukan sabda Nabi ﷺ.',
+ koreksi:{teks:'Nabi ﷺ menunjukkan kecintaan kepada Makkah saat hijrah: "Alangkah baiknya engkau sebagai negeri dan betapa aku mencintaimu. Seandainya kaumku tidak mengusirku darimu, aku tidak akan tinggal di selainmu."',sumber:'HR. Tirmidzi, dinilai shahih oleh Al-Albani'},
+ fawaid:['Ungkapan bagus belum tentu hadis','Sebutkan sebagai "ungkapan" atau "kata mutiara", bukan "sabda Nabi"','Cinta tanah air tetap memiliki dasar dalam sirah Nabi ﷺ']},
+{id:'c-cina',judul:'"Tuntutlah ilmu walau sampai ke negeri Cina"',sumber:'Diriwayatkan Ibnu \'Adi dan Al-Baihaqi',derajat:'maudhu',derajatLabel:'Batil / sangat lemah',muhaqqiq:['Ibnul Jauzi: dimasukkan dalam Al-Maudhu\'at','Al-Albani: batil'],tema:['ilmu'],populer:true,
+ ar:'اطْلُبُوا الْعِلْمَ وَلَوْ بِالصِّينِ',latin:"Uthlubul-'ilma walau bish-shîn",id_:'Tuntutlah ilmu walaupun sampai ke negeri Cina.',
+ kelemahan:'Sanadnya melalui Abu \'Atikah Tharif bin Sulaiman yang dinilai sangat lemah (munkarul hadits) oleh para ahli hadis. Ibnul Jauzi memasukkannya ke dalam kitab hadis-hadis palsu.',asbab:null,
+ hukum:'Tidak boleh disandarkan kepada Nabi ﷺ. Semangat menuntut ilmu cukup memakai hadis shahih.',
+ koreksi:{ar:'طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ',teks:'Menuntut ilmu wajib bagi setiap muslim.',sumber:'HR. Ibnu Majah no. 224, dinilai shahih oleh Al-Albani'},
+ fawaid:['Hadis populer bisa sangat lemah','Gunakan dalil shahih yang maknanya sama','Cek derajat sebelum membagikan kutipan']},
+{id:'c-ikhtilaf',judul:'"Perbedaan pendapat umatku adalah rahmat"',sumber:'Tidak ditemukan sanadnya',derajat:'maudhu',derajatLabel:'Tidak ada asalnya',muhaqqiq:['As-Subki: tidak dikenal ahli hadis','Al-Albani: la ashla lahu (tidak ada asalnya)'],tema:['ilmu','akidah'],populer:true,
+ ar:'اخْتِلَافُ أُمَّتِي رَحْمَةٌ',latin:"Ikhtilâfu ummatî rahmah",id_:'Perbedaan pendapat umatku adalah rahmat.',
+ kelemahan:'Para ahli hadis tidak menemukan sanad untuk ucapan ini, baik shahih maupun lemah. Karena itu dinilai "tidak ada asalnya" sebagai hadis.',asbab:null,
+ hukum:'Jangan disebut sebagai hadis. Toleransi terhadap perbedaan pendapat fikih yang dibangun di atas dalil tetap diajarkan para ulama, tetapi tidak dengan menyandarkan ucapan ini kepada Nabi ﷺ.',
+ fawaid:['Bedakan ucapan ulama dengan sabda Nabi ﷺ','Perbedaan fikih yang berdasar dalil disikapi dengan lapang dada','Perpecahan dalam akidah justru dicela dalam Al-Qur\'an']}];
+/* Arba'in An-Nawawi: judul, ringkasan makna (bukan terjemah lengkap), sumber, derajat menurut An-Nawawi, tema, catatan */
+const ARBAIN=[
+['Amal tergantung niat','Setiap amal dinilai berdasarkan niatnya, dan seseorang mendapat sesuai yang ia niatkan.','Bukhari & Muslim','shahih','ibadah'],
+['Islam, Iman, dan Ihsan','Malaikat Jibril datang dalam rupa manusia dan bertanya tentang Islam, iman, ihsan, dan tanda-tanda kiamat.','Muslim','shahih','akidah'],
+['Lima rukun Islam','Islam dibangun di atas syahadat, sholat, zakat, haji, dan puasa Ramadan.','Bukhari & Muslim','shahih','akidah'],
+['Penciptaan manusia dan takdir','Tahapan penciptaan janin, ditiupkan ruh, dan dicatat rezeki, ajal, amal, serta celaka atau bahagianya; amal ditentukan oleh akhirnya.','Bukhari & Muslim','shahih','akidah'],
+['Tertolaknya perkara baru dalam agama','Siapa mengada-adakan dalam urusan agama sesuatu yang bukan darinya, maka tertolak.','Bukhari & Muslim','shahih','akidah'],
+['Halal jelas, haram jelas','Di antara keduanya ada perkara syubhat; menjauhinya menjaga agama dan kehormatan. Di dalam tubuh ada segumpal daging: hati.','Bukhari & Muslim','shahih','muamalah'],
+['Agama adalah nasihat','Nasihat (ketulusan) untuk Allah, kitab-Nya, rasul-Nya, para pemimpin kaum muslimin, dan kaum muslimin umumnya.','Muslim','shahih','akhlak'],
+['Kehormatan darah dan harta muslim','Perintah memerangi hingga manusia bersyahadat, sholat, dan berzakat; setelah itu darah dan harta mereka terjaga.','Bukhari & Muslim','shahih','akidah'],
+['Lakukan perintah semampunya','Apa yang dilarang jauhilah, apa yang diperintahkan kerjakan semampumu; banyak bertanya dan berselisih membinasakan umat terdahulu.','Bukhari & Muslim','shahih','ibadah'],
+['Allah hanya menerima yang baik','Allah Mahabaik dan hanya menerima yang baik; makanan haram menghalangi terkabulnya doa.','Muslim','shahih','muamalah'],
+['Tinggalkan yang meragukan','Tinggalkan apa yang meragukanmu menuju yang tidak meragukanmu.','Tirmidzi & Nasa\'i (hasan shahih)','shahih','akhlak'],
+['Meninggalkan yang tidak bermanfaat','Di antara tanda baiknya Islam seseorang adalah meninggalkan hal yang tidak bermanfaat baginya.','Tirmidzi (hasan)','hasan','akhlak'],
+['Mencintai saudara seperti diri sendiri','Tidak sempurna iman seseorang hingga ia mencintai untuk saudaranya apa yang ia cintai untuk dirinya.','Bukhari & Muslim','shahih','akhlak'],
+['Kehormatan nyawa seorang muslim','Darah seorang muslim tidak halal kecuali karena tiga perkara yang ditetapkan syariat.','Bukhari & Muslim','shahih','muamalah'],
+['Berkata baik atau diam','Siapa beriman kepada Allah dan hari akhir hendaklah berkata baik atau diam, memuliakan tetangga, dan memuliakan tamu.','Bukhari & Muslim','shahih','akhlak'],
+['Jangan marah','Seorang laki-laki meminta wasiat, Nabi ﷺ menjawab "jangan marah" berulang kali.','Bukhari','shahih','akhlak'],
+['Berbuat ihsan dalam segala hal','Allah mewajibkan ihsan (berbuat baik dan sempurna) dalam segala sesuatu, termasuk ketika menyembelih hewan.','Muslim','shahih','akhlak'],
+['Bertakwa di mana pun berada','Bertakwalah di mana saja, iringi keburukan dengan kebaikan, dan bergaullah dengan akhlak baik.','Tirmidzi (hasan)','hasan','akhlak'],
+['Jagalah Allah, Allah menjagamu','Nasihat Nabi ﷺ kepada Ibnu Abbas: jaga perintah Allah, mintalah hanya kepada-Nya, dan ketahuilah semua telah tertulis.','Tirmidzi (hasan shahih)','shahih','akidah'],
+['Malu','Jika engkau tidak malu, berbuatlah sesukamu: malu adalah penjaga dari keburukan.','Bukhari','shahih','akhlak'],
+['Beriman lalu istiqamah','Katakanlah: aku beriman kepada Allah, kemudian istiqamahlah.','Muslim','shahih','akidah'],
+['Masuk surga dengan yang wajib','Seseorang bertanya: jika aku sholat wajib, puasa Ramadan, menghalalkan yang halal dan mengharamkan yang haram, apakah aku masuk surga? Beliau menjawab ya.','Muslim','shahih','ibadah'],
+['Bersuci separuh iman','Bersuci separuh iman; tahmid, tasbih, sholat, sedekah, sabar, dan Al-Qur\'an memiliki keutamaan besar.','Muslim','shahih','ibadah'],
+['Allah mengharamkan kezaliman (hadis qudsi)','Allah mengharamkan kezaliman atas diri-Nya dan di antara hamba-Nya; mintalah petunjuk, makan, pakaian, dan ampunan kepada-Nya.','Muslim','shahih','akidah'],
+['Sedekah tidak hanya dengan harta','Setiap tasbih, takbir, tahmid, tahlil, amar ma\'ruf nahi munkar adalah sedekah.','Muslim','shahih','ibadah'],
+['Setiap persendian wajib bersedekah','Setiap hari, setiap persendian manusia wajib bersedekah: mendamaikan, membantu, berkata baik, menyingkirkan gangguan dari jalan.','Bukhari & Muslim','shahih','akhlak'],
+['Kebajikan dan dosa','Kebajikan adalah akhlak yang baik; dosa adalah yang meresahkan hati dan engkau tidak suka orang lain mengetahuinya.','Muslim','shahih','akhlak'],
+['Berpegang pada sunnah','Wasiat untuk bertakwa, taat kepada pemimpin, berpegang pada sunnah Nabi dan khulafaur rasyidin, serta menjauhi perkara baru.','Abu Dawud & Tirmidzi (hasan shahih)','shahih','akidah'],
+['Amalan yang memasukkan ke surga','Mu\'adz bertanya amalan penghantar surga; Nabi ﷺ menyebut rukun Islam, pintu-pintu kebaikan, dan pentingnya menjaga lisan.','Tirmidzi (hasan shahih)','shahih','ibadah'],
+['Batasan-batasan Allah','Allah menetapkan kewajiban, batasan, dan larangan; ada hal yang Allah diamkan sebagai rahmat, jangan dicari-cari.','Ad-Daruquthni (hasan)','hasan','ibadah','Sebagian ulama, seperti Al-Albani, menilai sanadnya dhaif.'],
+['Zuhud terhadap dunia','Zuhudlah terhadap dunia niscaya Allah mencintaimu, dan zuhudlah terhadap milik manusia niscaya mereka mencintaimu.','Ibnu Majah (hasan)','hasan','akhlak'],
+['Tidak boleh membahayakan','Tidak boleh membahayakan diri sendiri maupun orang lain.','Ibnu Majah & Ad-Daruquthni (hasan)','hasan','muamalah'],
+['Bukti dan sumpah','Bukti wajib bagi penuduh, sumpah bagi yang mengingkari.','Al-Baihaqi (hasan), asalnya di Bukhari & Muslim','hasan','muamalah'],
+['Mengubah kemungkaran','Siapa melihat kemungkaran hendaklah mengubah dengan tangan, lisan, atau hati; dan itu selemah-lemah iman.','Muslim','shahih','akhlak'],
+['Persaudaraan sesama muslim','Jangan saling dengki, menipu, membenci, membelakangi; jadilah hamba Allah yang bersaudara.','Muslim','shahih','akhlak'],
+['Meringankan kesulitan orang lain','Siapa melepaskan kesusahan mukmin, Allah melepaskan kesusahannya pada hari kiamat; Allah menolong hamba selama ia menolong saudaranya.','Muslim','shahih','akhlak'],
+['Allah mencatat kebaikan dan keburukan','Niat berbuat baik sudah dicatat satu kebaikan; dikerjakan dicatat sepuluh hingga berlipat; niat buruk yang ditinggalkan dicatat kebaikan.','Bukhari & Muslim','shahih','akidah'],
+['Wali-wali Allah (hadis qudsi)','Siapa memusuhi wali-Ku, Aku umumkan perang kepadanya; hamba terus mendekat dengan amalan sunnah hingga Allah mencintainya.','Bukhari','shahih','akidah'],
+['Dimaafkan karena keliru, lupa, dan terpaksa','Allah memaafkan umatku dari kesalahan karena keliru, lupa, dan dipaksa.','Ibnu Majah & Al-Baihaqi (hasan)','hasan','ibadah'],
+['Jadilah di dunia seperti orang asing','Jadilah di dunia seakan orang asing atau musafir; manfaatkan sehat sebelum sakit dan hidup sebelum mati.','Bukhari','shahih','akhlak'],
+['Hawa nafsu mengikuti ajaran Nabi','Tidak sempurna iman seseorang hingga hawa nafsunya mengikuti ajaran yang dibawa Nabi ﷺ.','Diriwayatkan dalam Kitab Al-Hujjah (An-Nawawi: hasan shahih)','hasan','akidah','Ibnu Rajab dan Al-Albani menilai sanadnya dhaif.'],
+['Luasnya ampunan Allah (hadis qudsi)','Wahai anak Adam, selama engkau berdoa dan berharap, Aku ampuni; sekalipun dosamu setinggi langit lalu engkau beristighfar.','Tirmidzi (hasan)','hasan','akidah']
+].map((a,i)=>({id:'a-'+(i+1),no:i+1,judul:a[0],ringkas:a[1],sumber:a[2],derajat:a[3],tema:[a[4]],catatan:a[5]||''}));
+/* Perpustakaan kitab (diunduh sekali, disimpan offline). Data: hadith-api (fawazahmed0) */
+const HKITAB=[
+{id:'bukhari',n:'Shahih Bukhari',ar:'صحيح البخاري',sahih:true},
+{id:'muslim',n:'Shahih Muslim',ar:'صحيح مسلم',sahih:true},
+{id:'abudawud',n:'Sunan Abu Dawud',ar:'سنن أبي داود'},
+{id:'tirmidhi',n:'Jami\' At-Tirmidzi',ar:'جامع الترمذي'},
+{id:'nasai',n:'Sunan An-Nasa\'i',ar:'سنن النسائي'},
+{id:'ibnmajah',n:'Sunan Ibnu Majah',ar:'سنن ابن ماجه'},
+{id:'malik',n:'Muwaththa\' Malik',ar:'موطأ مالك'},
+{id:'nawawi',n:'Teks Arab Arba\'in Nawawi',ar:'الأربعون النووية',arOnly:true}];
+const HDATA_BASE='https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/';
+
+/* ============ v5 HADIS: LOGIC & VIEWS ============ */
+let HLIB={},hLoading={},hquery='',kquery='',hcardURL='',hcardFor='';
+const stripHar=s=>String(s||'').replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g,'');
+function mapGrade(s){s=String(s||'').toLowerCase();if(/maud|mawd|fabricat|ba+til/.test(s))return 'maudhu';if(/da.?if|da.?eef|munkar|shadh|weak|munqat/.test(s))return 'dhaif';if(/sahih|saheeh/.test(s))return 'shahih';if(/hasan/.test(s))return 'hasan';return 'none'}
+const kShort={bukhari:'Bukhari',muslim:'Muslim',abudawud:'Abu Dawud',tirmidhi:'Tirmidzi',nasai:"Nasa'i",ibnmajah:'Ibnu Majah',malik:'Malik',nawawi:'Arba\'in Nawawi'};
+function kEntry(book,row){const k=HKITAB.find(x=>x.id===book),[n,ar,idt,gr]=row;let g='none',m=[];
+  if(k&&k.sahih){g='shahih';m=['Shahih: seluruh hadis bersanad dalam kitab ini disepakati keshahihannya oleh mayoritas ulama']}
+  else if(gr&&gr.length){const pick=gr.find(x=>/alban/i.test(x[0]))||gr[0];g=mapGrade(pick[1]);m=gr.map(x=>`${x[0]}: ${x[1]}`)}
+  return{id:`k-${book}-${n}`,judul:`${k?k.n:book} no. ${n}`,sumber:`HR. ${kShort[book]||book} no. ${n}`,derajat:g,muhaqqiq:m,tema:[],ar,id_:idt||'',book,no:n}}
+function ensureKitab(book){if(HLIB[book])return HLIB[book];if(!hLoading[book]&&S.hdl[book]){hLoading[book]=1;idb('readonly',s=>s.get('hk-'+book)).then(d=>{if(d&&d.h){HLIB[book]=d}else{delete S.hdl[book];save()}}).catch(()=>{}).finally(()=>{delete hLoading[book];render(true)})}return null}
+function getHadis(id){
+  if(id.startsWith('c-'))return HKURASI.find(x=>x.id===id)||null;
+  if(id.startsWith('a-')){const a=ARBAIN[+id.slice(2)-1];if(!a)return null;const L=ensureKitab('nawawi');const row=L&&L.h.find(r=>+r[0]===a.no);return Object.assign({},a,{ar:row?row[1]:'',id_:'',muhaqqiq:['Imam An-Nawawi (Al-Arba\'in An-Nawawiyyah)'].concat(a.catatan?[a.catatan]:[]),sumber:'Arba\'in Nawawi no. '+a.no+' · '+a.sumber})}
+  if(id.startsWith('k-')){const[,book,n]=id.split('-');const L=ensureKitab(book);if(!L)return null;const row=L.h.find(r=>String(r[0])===n);return row?kEntry(book,row):null}
+  return null}
+const hAll=()=>HKURASI.concat(ARBAIN);
+const gBadge=(g,label)=>{const G=HGRADE[g]||HGRADE.none;return `<button class="hbadge" style="background:${G.c}" data-a="sheet" data-v="hgrade:${g}" aria-label="Arti derajat ${G.n}">${G.n}${label?' · '+esc(label):''}</button>`};
+function hItem(e){const G=HGRADE[e.derajat]||HGRADE.none,snip=e.id_||e.ringkas||stripHar(e.ar).slice(0,90);
+  return `<button class="hitem" data-a="sheet" data-v="hd:${e.id}"><span class="hbar" style="background:${G.c}"></span><span style="flex:1;min-width:0"><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="hbadge sm" style="background:${G.c}">${G.n}</span><small class="mute">${esc(e.sumber)}</small></span><b style="display:block;font-size:16px;margin-top:3px">${esc(e.judul)}</b><small class="mute" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(snip)}</small></span></button>`}
+function hMatch(e,q){if(!q)return true;const ql=q.toLowerCase().trim(),n=+ql;
+  if(n&&(e.no===n||new RegExp('no\\. '+n+'\\b').test(e.sumber)))return true;
+  if([e.judul,e.id_,e.ringkas,e.sumber,(e.asbab&&e.asbab.kronologi)||'',(e.tema||[]).join(' ')].join(' ').toLowerCase().includes(ql))return true;
+  return /[؀-ۿ]/.test(q)&&stripHar(e.ar).includes(stripHar(q.trim()))}
+function hFilter(e){const f=S.hf;return(f.g==='all'||e.derajat===f.g)&&(f.t==='all'||(e.tema||[]).includes(f.t))}
+function hResults(){const q=hquery.trim();let res=hAll().filter(e=>hFilter(e)&&hMatch(e,q));
+  if(q.length>=2&&S.hf.t==='all'){for(const b in HLIB){for(const row of HLIB[b].h){if(res.length>=60)break;const e=kEntry(b,row);if(hFilter(e)&&hMatch(e,q))res.push(e)}}}
+  const notLoaded=Object.keys(S.hdl).filter(b=>!HLIB[b]&&b!=='nawawi');
+  return `<p class="mute" style="margin:6px 0">${res.length>=60?'60+':res.length} hasil${notLoaded.length&&q?` · kitab yang belum dibuka (${notLoaded.map(b=>kShort[b]).join(', ')}) belum ikut dicari`:''}</p>${res.slice(0,60).map(hItem).join('')||'<p class="mute">Tidak ditemukan.</p>'}`}
+function dailyHadis(){const pool=hAll().filter(e=>e.derajat==='shahih'||e.derajat==='hasan'),d=dayDate(0),doy=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,1))/864e5);return pool[doy%pool.length]}
+function Hadis(){const f=S.hf,filtering=hquery.trim()||f.g!=='all'||f.t!=='all';
+  const chips=(arr,key,cur)=>`<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px">${arr.map(([k,l])=>`<button class="${cur===k?'on':''}" data-a="hf" data-v="${key}|${k}" style="flex:none">${l}</button>`).join('')}</div>`;
+  let body;
+  if(filtering)body=hResults();
+  else{const dh=dailyHadis(),cur=HKURASI.filter(e=>!e.populer&&(e.derajat==='shahih'||e.derajat==='hasan')),waspada=HKURASI.filter(e=>e.populer||e.derajat==='dhaif'||e.derajat==='maudhu');
+    body=`${dh?`<div class="card" style="margin:6px 0 14px;border-left:5px solid ${HGRADE[dh.derajat].c}"><div class="mute">Hadis hari ini</div><b style="font-size:18px;display:block;margin:4px 0">${esc(dh.judul)}</b><p style="margin:0 0 10px;color:#c4d5d1">${esc(dh.id_||dh.ringkas)}</p><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${gBadge(dh.derajat)}<button class="link" data-a="sheet" data-v="hd:${dh.id}">Baca kajian</button></div></div>`:''}
+    <h3 style="margin:16px 0 0">Kajian lengkap</h3><p class="mute" style="margin:2px 0 4px">Matan, asbabul wurud, keutamaan, fawaid, dan sanad.</p>${cur.map(hItem).join('')}
+    <h3 style="margin:20px 0 0;color:#ffb4a8">Waspada: populer tapi lemah atau palsu</h3><p class="mute" style="margin:2px 0 4px">Sering beredar di media sosial. Kenali statusnya sebelum membagikan.</p>${waspada.map(hItem).join('')}
+    <h3 style="margin:20px 0 0">Arba'in Nawawi (42 hadis)</h3><p class="mute" style="margin:2px 0 4px">Ringkasan makna dan derajat. Teks Arab lengkap: unduh "Teks Arab Arba'in Nawawi" di perpustakaan.</p>${(S.harb?ARBAIN:ARBAIN.slice(0,6)).map(hItem).join('')}<button class="btn" style="width:100%;margin-top:10px;background:#24403f" data-a="harb">${S.harb?'Tampilkan lebih sedikit':'Lihat semua 42 hadis'}</button>
+    <h3 style="margin:20px 0 0">Perpustakaan kitab</h3><p class="mute" style="margin:2px 0 4px">Unduh sekali, baca offline. Derajat dari penilaian ulama yang tersedia di data.</p>
+    ${HKITAB.map(k=>`<button class="lrow" data-a="sheet" data-v="kitab:${k.id}"><span class="t"><b style="font-size:18px">${k.n}</b><small>${S.hdl[k.id]?`${(+S.hdl[k.id]).toLocaleString('id-ID')} hadis tersimpan`:'Belum diunduh'}${k.arOnly?' · teks Arab saja':''}</small></span><span class="ar" style="font-size:20px;font-family:Amiri,serif">${k.ar}</span></button>`).join('')}
+    <h3 style="margin:20px 0 6px">Koleksi saya</h3>${Object.entries(S.hfav).map(([n,ids])=>`<button class="lrow" data-a="sheet" data-v="hfolder:${esc(n)}">${ic('bookmark',22,1)}<span class="t"><b style="font-size:17px;font-family:inherit;font-weight:700">${esc(n)}</b><small>${ids.length} hadis</small></span>${ic('right',20)}</button>`).join('')}
+    <button class="btn" style="width:100%;margin-top:14px;background:#24403f" data-a="sheet" data-v="hgrade:all">Panduan derajat hadis</button>`}
+  return `<div class="pad"><div class="hrow" style="align-items:center"><h1 style="font-family:Amiri,serif;font-size:30px;margin:4px 0 12px">Hadis</h1><button class="ibtn" data-a="sheet" data-v="hgrade:all" aria-label="Panduan derajat">${ic('spark',22)}</button></div>
+  <label class="qsearch">${ic('search',20)}<input id="hq" data-in="hsearch" value="${esc(hquery)}" placeholder="Cari kata, teks Arab, nomor, atau topik" aria-label="Cari hadis"></label>
+  ${chips([['all','Semua'],['shahih','Shahih'],['hasan','Hasan'],['dhaif','Dhaif'],['maudhu','Waspada palsu']],'g',f.g)}${chips([['all','Semua tema']].concat(HTEMA),'t',f.t)}
+  <div id="hres">${body}</div></div>`}
+async function dlKitab(id){const k=HKITAB.find(x=>x.id===id);if(!k)return;if(hLoading['dl-'+id])return;
+  if(!navigator.onLine){toast('Butuh internet untuk mengunduh sekali');return}
+  hLoading['dl-'+id]=1;render(true);toast(`Mengunduh ${k.n}…`);
+  try{const get=async ed=>{const r=await fetch(HDATA_BASE+ed+'.min.json');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()};
+    const ara=await get('ara-'+id),ind=k.arOnly?null:await get('ind-'+id),im={};
+    if(ind)ind.hadiths.forEach(h=>{im[h.hadithnumber]=h});
+    const rows=ara.hadiths.map(h=>{const t=im[h.hadithnumber]||{},gr=(t.grades&&t.grades.length?t.grades:h.grades)||[];return[h.hadithnumber,h.text||'',t.text||'',gr.map(x=>[x.name,x.grade])]}).filter(r=>r[1]||r[2]);
+    const meta=(ind||ara).metadata||{},sec=Object.entries(meta.section_detail||{}).map(([s,d])=>[d.hadithnumber_first,d.hadithnumber_last,(meta.section||{})[s]||'']).filter(x=>x[2]);
+    const data={h:rows,sec};HLIB[id]=data;try{await idb('readwrite',s=>s.put(data,'hk-'+id))}catch(_){toast('Tersimpan untuk sesi ini saja')}
+    S.hdl[id]=rows.length;save();toast(`${k.n}: ${rows.length.toLocaleString('id-ID')} hadis tersimpan, bisa dibaca offline`)}
+  catch(err){toast('Gagal mengunduh. Pastikan ada internet. Di pratinjau Claude unduhan memang diblokir.')}
+  finally{delete hLoading['dl-'+id];render(true)}}
+function kitabList(book){const L=HLIB[book],q=kquery.trim(),g=S.kg||'all';let rows=L.h,out=[];
+  for(const r of rows){if(out.length>=S.kpage*30)break;const e=kEntry(book,r);if((g==='all'||e.derajat===g)&&(!q||hMatch(e,q)))out.push(e)}
+  const secOf=n=>{const s=L.sec.find(([a,b])=>n>=a&&n<=b);return s?s[2]:''};
+  return out.map(e=>hItem(Object.assign(e,{sumber:e.sumber+(secOf(e.no)?' · '+secOf(e.no):'')}))).join('')+(out.length>=S.kpage*30?`<button class="btn" style="width:100%;margin-top:12px;background:#24403f" data-a="kmore">Muat lagi</button>`:'')+(!out.length?'<p class="mute">Tidak ditemukan.</p>':'')}
+function hText(e){const G=HGRADE[e.derajat]||HGRADE.none;return `${e.judul}\n\n${e.ar?e.ar+'\n\n':''}${e.id_||e.ringkas||''}\n\n${e.sumber}\nDerajat: ${G.n}${e.derajatLabel?' ('+e.derajatLabel+')':''}${e.derajat==='maudhu'?'\nPERINGATAN: bukan sabda Nabi ﷺ, jangan disebarkan sebagai hadis.':e.derajat==='dhaif'?'\nCatatan: hadis lemah, tidak dijadikan dasar hukum.':''}\n— Cahaya Islami`}
+async function makeHCard(e){const G=HGRADE[e.derajat]||HGRADE.none,W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  try{await document.fonts.load('800 60px "Plus Jakarta Sans"');await document.fonts.load('48px Amiri')}catch(_){}
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#173b3a');g.addColorStop(1,'#0b1f1f');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle=G.c;x.fillRect(0,0,W,150);x.fillStyle='#fff';x.textAlign='center';x.font='800 46px "Plus Jakarta Sans",sans-serif';
+  const top=e.derajat==='maudhu'?'PALSU · BUKAN SABDA NABI ﷺ':e.derajat==='dhaif'?'DHAIF · BUKAN DASAR HUKUM':G.n.toUpperCase();x.fillText(top,W/2,95);
+  const wrapL=(t,y,font,lh,max,lines=99,rtl=false)=>{x.font=font;x.direction=rtl?'rtl':'ltr';const ws=String(t).split(/\s+/);let line='',yy=y,n=0;for(const w of ws){const tt=line?line+' '+w:w;if(x.measureText(tt).width>max&&line){if(++n>=lines){x.fillText(line+' …',W/2,yy);return yy+lh}x.fillText(line,W/2,yy);line=w;yy+=lh}else line=tt}if(line)x.fillText(line,W/2,yy);x.direction='ltr';return yy+lh};
+  let y=wrapL(e.judul,240,'800 52px "Plus Jakarta Sans",sans-serif',66,900,3);
+  if(e.ar&&e.ar.length<=260){x.fillStyle='#ffe9a8';y=wrapL(e.ar,y+40,'54px Amiri, serif',92,920,5,true)}
+  x.fillStyle='#eef4f2';y=wrapL(e.id_||e.ringkas||'',y+30,'500 38px "Plus Jakarta Sans",sans-serif',54,900,9);
+  x.fillStyle='#9fd8b6';x.font='700 34px "Plus Jakarta Sans",sans-serif';x.fillText(e.sumber.length>60?e.sumber.slice(0,58)+'…':e.sumber,W/2,Math.min(y+40,H-170));
+  x.fillStyle=G.c;x.fillRect(0,H-120,W,120);x.fillStyle='#fff';x.font='800 34px "Plus Jakarta Sans",sans-serif';x.fillText(`Derajat: ${G.n}${e.derajatLabel?' ('+e.derajatLabel+')':''}`,W/2,H-68);
+  x.font='600 26px "Plus Jakarta Sans",sans-serif';x.fillStyle='#ffffffcc';x.fillText('Cahaya Islami',W/2,H-28);
+  hcardURL=c.toDataURL('image/png');hcardFor=e.id;render(true)}
+function Sheet5(){
+  const hdr=(t,extra='')=>`<div class="shd"><button class="ibtn" data-a="close" aria-label="Kembali">${ic('left',26)}</button><h2>${t}</h2>${extra}</div>`;
+  const wrap=(t,body,cls='')=>`<div class="sheet ${cls}">${hdr(t)}<div class="scr pad" id="rscr">${body}</div></div>`;
+  if(sheet.startsWith('hgrade:')){const g=sheet.split(':')[1],list=g==='all'?Object.keys(HGRADE):[g];
+    return wrap('Derajat hadis',list.map(k=>{const G=HGRADE[k];return `<div class="card" style="margin:0 0 12px;border-left:6px solid ${G.c}"><span class="hbadge" style="background:${G.c}">${G.n}</span><p style="margin:10px 0 6px">${esc(G.d)}</p><p class="mute" style="margin:0"><b>Sikap:</b> ${esc(G.h)}</p></div>`}).join('')+(g!=='all'?'<button class="btn" style="width:100%;background:#24403f" data-a="sheet" data-v="hgrade:all">Lihat semua derajat</button>':''))}
+  if(sheet.startsWith('hd:')){const id=sheet.slice(3),e=getHadis(id);
+    if(!e)return wrap('Hadis',id.startsWith('k-')&&!S.hdl[id.split('-')[1]]?'<p>Kitab ini belum diunduh.</p>':'<p class="mute">Memuat…</p>');
+    const G=HGRADE[e.derajat]||HGRADE.none,tab=S.htab||'matan',ar=S.hhar===false?stripHar(e.ar):e.ar,inFav=Object.values(S.hfav).some(a=>a.includes(e.id));
+    const warn=e.derajat==='maudhu'?`<div class="hwarn" style="background:#d93a3a26;color:#ffb4a8;border:1px solid #d93a3a">Hadis ini palsu atau tidak ada asalnya. Jangan disandarkan kepada Nabi ﷺ.</div>`:e.derajat==='dhaif'?`<div class="hwarn" style="background:#d99a0026;color:#ffd68a;border:1px solid #d99a00">Hadis lemah: tidak dijadikan dasar akidah dan hukum.</div>`:'';
+    let body='';
+    if(tab==='matan')body=`<div class="chips" style="margin:4px 0 10px"><button data-a="hfont" data-v="-2" aria-label="Perkecil">${ic('minus',16)}</button><button data-a="hfont" data-v="2" aria-label="Perbesar">${ic('plus',16)}</button><button class="${S.hhar!==false?'on':''}" data-a="hhar">Harakat</button>${e.latin?`<button class="${S.hlat?'on':''}" data-a="hlat">Latin</button>`:''}<button class="${S.hlight?'on':''}" data-a="hlight">Mode terang</button></div>
+      ${e.ar?`<div class="ar" style="font-size:${S.hfont}px;line-height:2;text-align:right;font-family:Amiri,serif">${esc(ar)}</div>`:(id.startsWith('a-')?`<div class="imp" style="margin:0 0 12px">Teks Arab hadis ini tersedia setelah mengunduh "Teks Arab Arba'in Nawawi".<br><button class="btn" style="margin-top:10px" data-a="sheet" data-v="kitab:nawawi">${ic('upload',16)} Buka & unduh</button></div>`:'')}
+      ${S.hlat&&e.latin?`<p style="font-style:italic;color:#9fd8b6;margin:12px 0 0">${esc(e.latin)}</p>`:''}
+      ${e.id_?`<p style="font-size:17px;line-height:1.6;margin:14px 0 0">${esc(e.id_)}</p>`:''}${e.ringkas?`<div class="card" style="margin:12px 0 0"><div class="mute">Ringkasan makna</div><p style="margin:4px 0 0">${esc(e.ringkas)}</p></div>`:''}
+      ${e.koreksi?`<div class="card" style="margin:14px 0 0;border-left:5px solid #0f9d6e"><div class="mute">Gunakan dalil yang shahih</div>${e.koreksi.ar?`<div class="ar" style="font-size:24px;text-align:right;font-family:Amiri,serif;margin-top:6px">${esc(e.koreksi.ar)}</div>`:''}<p style="margin:6px 0">${esc(e.koreksi.teks)}</p><small class="mute">${esc(e.koreksi.sumber)}</small></div>`:''}
+      ${e.book?'<p class="mute" style="margin-top:12px">Teks Arab dan terjemahan dari dataset hadith-api (terjemahan Indonesia dari sumber dataset, bukan terbitan Kemenag).</p>':''}`;
+    else if(tab==='asbab'){const a=e.asbab;
+      body=e.derajat==='maudhu'?'<p>Tidak dibahas: ucapan ini tidak sah disandarkan kepada Nabi ﷺ, sehingga tidak memiliki asbabul wurud.</p>'
+      :a&&a.ibtidai?'<div class="card" style="margin:0"><p style="margin:0">Hadis ini disampaikan secara langsung (ibtidai) oleh Rasulullah ﷺ sebagai pedoman umum tanpa didahului peristiwa khusus yang diketahui.</p></div>'
+      :a?`<div class="card" style="margin:0 0 12px"><div class="mute">Kapan</div><b>${esc(a.waktu)}</b>${a.tempat?`<div class="mute" style="margin-top:8px">Di mana</div><b>${esc(a.tempat)}</b>`:''}</div><div class="card" style="margin:0 0 12px"><div class="mute">Mengapa (latar belakang)</div><p style="margin:4px 0 0">${esc(a.kronologi)}</p></div>${a.catatan?`<div class="card" style="margin:0;border-left:5px solid #d99a00"><div class="mute">Catatan ulama</div><p style="margin:4px 0 0">${esc(a.catatan)}</p></div>`:''}`
+      :'<div class="card" style="margin:0"><p style="margin:0">Data asbabul wurud untuk hadis ini belum tersedia di aplikasi.</p><p class="mute" style="margin:8px 0 0">Banyak hadis tidak memiliki sebab khusus yang diketahui. Aplikasi ini sengaja tidak mengarang kisah sebab; rujuk kitab seperti Al-Bayan wat Ta\'rif fi Asbab Wurud Al-Hadits.</p></div>'}
+    else if(tab==='fadhilah')body=`${e.fadhilah?`<div class="card" style="margin:0 0 12px"><h3>Keutamaan</h3><p style="margin:0">${esc(e.fadhilah)}</p></div>`:''}${e.fawaid?`<div class="card" style="margin:0 0 12px"><h3>Fawaid (pelajaran)</h3>${stepList(e.fawaid)}</div>`:''}
+      ${e.derajat==='dhaif'||e.derajat==='maudhu'?`<div class="card" style="margin:0 0 12px;border-left:5px solid ${G.c}"><h3>Catatan hukum & kehati-hatian</h3><p style="margin:0">${esc(e.hukum||G.h)}</p></div>`:''}
+      ${!e.fadhilah&&!e.fawaid&&e.derajat!=='dhaif'&&e.derajat!=='maudhu'?'<p class="mute">Kajian keutamaan dan fawaid untuk hadis ini belum tersedia. Hadis dengan kajian lengkap ada di bagian "Kajian lengkap".</p>':''}`;
+    else body=`<div class="card" style="margin:0 0 12px"><h3>Penilaian ulama (tahqiq)</h3>${stepList(e.muhaqqiq&&e.muhaqqiq.length?e.muhaqqiq:['Belum ada data penilaian'])}</div>
+      ${e.sanad?`<div class="card" style="margin:0 0 12px"><h3>Jalur sanad ringkas</h3><div class="sanad">${e.sanad.map(s=>`<div>${esc(s)}</div>`).join('')}</div></div>`:''}
+      ${e.kelemahan?`<div class="card" style="margin:0 0 12px;border-left:5px solid ${G.c}"><h3>Letak kelemahan</h3><p style="margin:0">${esc(e.kelemahan)}</p></div>`:''}
+      ${e.takhrij?`<div class="card" style="margin:0 0 12px"><h3>Takhrij</h3><p style="margin:0">${esc(e.takhrij)}</p></div>`:''}${e.book&&!e.sanad?'<p class="mute">Sanad lengkap tercantum di awal teks Arab hadis.</p>':''}`;
+    return `<div class="sheet ${S.hlight?'reader light':''}">${hdr('Hadis')}<div class="scr pad" id="rscr">
+      <div class="card" style="margin:0 0 12px;border-top:6px solid ${G.c}"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${gBadge(e.derajat,e.derajatLabel)}${(e.tema||[]).map(t=>`<span class="tag" style="background:#3a5a58">${(HTEMA.find(x=>x[0]===t)||[0,t])[1]}</span>`).join('')}</div>
+      <b style="display:block;font-size:20px;margin:10px 0 4px">${esc(e.judul)}</b><small class="mute">${esc(e.sumber)}</small>${e.muhaqqiq&&e.muhaqqiq[0]?`<small class="mute" style="display:block;margin-top:4px">Pentahqiq: ${esc(e.muhaqqiq[0])}</small>`:''}</div>${warn}
+      <div class="seg" style="margin:0 0 14px">${[['matan','Matan'],['asbab','Asbabul wurud'],['fadhilah','Keutamaan'],['sanad','Sanad']].map(([k,l])=>`<button class="${tab===k?'on':''}" data-a="htab" data-v="${k}" style="font-size:13px">${l}</button>`).join('')}</div>${body}
+      <div class="duo" style="padding:16px 0 4px;grid-template-columns:repeat(3,1fr)"><button class="btn" style="background:#24403f;padding:0 8px" data-a="sheet" data-v="hbm:${e.id}">${ic('bookmark',16,inFav)} Simpan</button><button class="btn" style="background:#24403f;padding:0 8px" data-a="hcopy" data-v="${e.id}">Salin</button><button class="btn" style="padding:0 8px" data-a="hshare" data-v="${e.id}">Kartu</button></div>
+      ${hcardURL&&hcardFor===e.id?`<img src="${hcardURL}" alt="Kartu hadis" style="width:100%;border-radius:18px;margin:12px 0"><div class="duo" style="padding:0"><button class="btn" data-a="hcardshare">Bagikan</button><a class="btn" style="text-decoration:none;background:#24403f" href="${hcardURL}" download="hadis-cahaya.png">Simpan gambar</a></div>`:''}
+    </div></div>`}
+  if(sheet.startsWith('kitab:')){const k=HKITAB.find(x=>x.id===sheet.split(':')[1]);if(!k)return '';const L=ensureKitab(k.id),dl=hLoading['dl-'+k.id];
+    if(!S.hdl[k.id]||dl)return wrap(k.n,`<div class="card" style="margin:0;text-align:center"><div class="ar" style="font-size:34px;font-family:Amiri,serif">${k.ar}</div><p>${dl?'<b>Mengunduh… jangan tutup aplikasi.</b>':`Kitab ini belum tersimpan di HP. Unduh sekali (butuh internet, beberapa MB), lalu bisa dibaca offline.`}</p>${dl?'':`<button class="btn" data-a="hdl" data-v="${k.id}">${ic('upload',18)} Unduh ${k.n}</button>`}</div>
+      <p class="mute">Sumber data: hadith-api (fawazahmed0) — teks Arab${k.arOnly?'':', terjemahan Indonesia,'} dan penilaian derajat dari ulama seperti Al-Albani, Ahmad Syakir, dan Zubair Ali Zai bila tersedia.${k.sahih?' Seluruh hadis bersanad dalam kitab ini disepakati shahih.':''}</p>`);
+    if(!L)return wrap(k.n,'<p class="mute">Memuat kitab…</p>');
+    return wrap(k.n,`<p class="mute" style="margin:0 0 8px">${L.h.length.toLocaleString('id-ID')} hadis tersimpan offline</p>
+      <label class="qsearch">${ic('search',20)}<input id="kq" data-in="ksearch" value="${esc(kquery)}" placeholder="Cari kata, teks Arab, atau nomor" aria-label="Cari di kitab"></label>
+      ${k.sahih?'':`<div class="chips" style="margin-bottom:8px">${[['all','Semua'],['shahih','Shahih'],['hasan','Hasan'],['dhaif','Dhaif'],['maudhu','Palsu']].map(([g,l])=>`<button class="${(S.kg||'all')===g?'on':''}" data-a="kg" data-v="${g}">${l}</button>`).join('')}</div>`}
+      <div id="kres">${kitabList(k.id)}</div>
+      <button class="btn" style="width:100%;margin-top:18px;background:#5b2a33" data-a="hdel" data-v="${k.id}">${resetArm?'Ketuk lagi untuk menghapus dari HP':'Hapus kitab dari HP'}</button>`)}
+  if(sheet.startsWith('hbm:')){const id=sheet.slice(4);
+    return wrap('Simpan ke koleksi',Object.entries(S.hfav).map(([n,ids])=>`<button class="tgl" data-a="hfold" data-v="${esc(n)}|${id}"><span>${esc(n)}<small>${ids.length} hadis</small></span><span class="sw2 ${ids.includes(id)?'on':''}"></span></button>`).join('')
+    +`<div class="coord" style="grid-template-columns:1fr auto;margin-top:14px"><input id="hfn" maxlength="30" placeholder="Nama folder baru" aria-label="Nama folder baru"><button class="btn" data-a="hfnew" data-v="${id}">Buat</button></div>`)}
+  if(sheet.startsWith('hfolder:')){const n=sheet.slice(8),ids=S.hfav[n]||[];
+    return wrap(esc(n),ids.map(id=>{const e=getHadis(id);return e?hItem(e):`<button class="hitem" data-a="sheet" data-v="hd:${id}"><span class="hbar" style="background:#7d8a88"></span><span><b>${esc(id.replace(/^k-/,'').replace('-',' no. '))}</b><small class="mute" style="display:block">Ketuk untuk memuat</small></span></button>`}).join('')||'<p class="mute">Belum ada hadis di folder ini. Buka hadis lalu ketuk "Simpan".</p>'
+    +(n!=='Favorit'?`<button class="btn" style="width:100%;margin-top:16px;background:#5b2a33" data-a="hfdel" data-v="${esc(n)}">${resetArm?'Ketuk lagi untuk menghapus folder':'Hapus folder'}</button>`:''))}
+  return '';
+}
+
 /* ============ KIDS VIEWS ============ */
 const totalStars=()=>Object.values(S.kid.stars).reduce((a,b)=>a+b,0);
 const level=()=>Math.floor(S.kid.xp/100)+1;
@@ -1349,8 +1660,19 @@ async function importQuran(file){
   catch(e){toast('Gagal membaca file: '+(e.message||'format salah'))}}
 const ACT={
  tab:v=>{S.tab=v;sheet=null;sheetStack=[];S.dayOff=0;save();render()},
- ptab:v=>{S.ptab=v;save();render(true)},psunnah:()=>{S.tab='prayer';S.ptab='sunnah';sheet=null;sheetStack=[];save();render()},qhafal:()=>{S.tab='quran';S.qtab='hafalan';sheet=null;sheetStack=[];save();render()},
- sheet:v=>{if(sheet&&sheet!==v)sheetStack.push(sheet);if(sheet!==v)resetR=true;sheet=v;resetArm=false;render(true)},
+ ptab:v=>{S.ptab=v;save();render(true)},
+ hf:v=>{const[k,x]=v.split('|');S.hf[k]=x;save();render(true)},harb:()=>{S.harb=!S.harb;save();render(true)},
+ htab:v=>{S.htab=v;render(true)},hfont:v=>{S.hfont=Math.max(18,Math.min(44,S.hfont+ +v));save();render(true)},
+ hhar:()=>{S.hhar=S.hhar===false;save();render(true)},hlat:()=>{S.hlat=!S.hlat;save();render(true)},hlight:()=>{S.hlight=!S.hlight;save();render(true)},
+ hdl:v=>{dlKitab(v)},hdel:v=>{if(!resetArm){resetArm=true;render(true);return}resetArm=false;delete HLIB[v];delete S.hdl[v];idb('readwrite',s=>s.delete('hk-'+v)).catch(()=>{});save();toast('Kitab dihapus dari HP');render(true)},
+ kg:v=>{S.kg=v;S.kpage=1;save();render(true)},kmore:()=>{S.kpage++;render(true)},
+ hfold:v=>{const i=v.indexOf('|'),n=v.slice(0,i),id=v.slice(i+1),a=S.hfav[n]||(S.hfav[n]=[]),j=a.indexOf(id);if(j>=0)a.splice(j,1);else{a.push(id);toast('Disimpan ke '+n)}save();render(true)},
+ hfnew:v=>{const n=((($('#hfn')||{}).value)||'').trim().slice(0,30);if(!n){toast('Tulis nama folder');return}if(!S.hfav[n])S.hfav[n]=[];if(!S.hfav[n].includes(v))S.hfav[n].push(v);save();toast('Folder "'+n+'" dibuat');render(true)},
+ hfdel:v=>{if(!resetArm){resetArm=true;render(true);return}resetArm=false;delete S.hfav[v];save();ACT.close()},
+ hcopy:v=>{const e=getHadis(v);if(!e)return;try{navigator.clipboard.writeText(hText(e)).then(()=>toast('Teks hadis + derajat disalin'),()=>toast('Tidak bisa menyalin di sini'))}catch(_){toast('Tidak bisa menyalin di sini')}},
+ hshare:v=>{const e=getHadis(v);if(e)makeHCard(e)},
+ hcardshare:async()=>{try{const b=await (await fetch(hcardURL)).blob(),f=new File([b],'hadis-cahaya.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:'Hadis'});else toast('Berbagi tidak didukung di sini. Pakai Simpan gambar.')}catch(_){toast('Berbagi dibatalkan atau tidak didukung')}},psunnah:()=>{S.tab='prayer';S.ptab='sunnah';sheet=null;sheetStack=[];save();render()},qhafal:()=>{S.tab='quran';S.qtab='hafalan';sheet=null;sheetStack=[];save();render()},
+ sheet:v=>{if(v.startsWith('hd:')&&sheet!==v){S.htab='matan';hcardURL=''}if(v.startsWith('kitab:')&&sheet!==v){kquery='';S.kpage=1}if(sheet&&sheet!==v)sheetStack.push(sheet);if(sheet!==v)resetR=true;sheet=v;resetArm=false;render(true)},
  close:()=>{sheet=sheetStack.pop()||null;resetArm=false;resetR=true;render(true)},
  day:v=>{S.dayOff=Math.max(-30,Math.min(30,S.dayOff+ +v));render(true)},
  pray:v=>{const[k,p]=v.split('|'),o=prayedOn(k);o[p]=!o[p];if(o[p])sfx('tap');save();render(true)},
@@ -1411,6 +1733,8 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!
 document.addEventListener('change',e=>{if(e.target.dataset.in==='qfile'){importQuran(e.target.files&&e.target.files[0]);e.target.value=''}});
 document.addEventListener('input',e=>{const k=e.target.dataset.in;
   if(k==='kname'){S.kid.name=e.target.value.slice(0,16);save()}
+  if(k==='hsearch'){hquery=e.target.value;const r=$('#hres');if(hquery.trim()){if(r)r.innerHTML=hResults()}else{render(true);const i=$('#hq');if(i)i.focus()}}
+  if(k==='ksearch'){kquery=e.target.value;S.kpage=1;const r=$('#kres'),b=(sheet||'').split(':')[1];if(r&&HLIB[b])r.innerHTML=kitabList(b)}
   if(k==='qsearch'){qquery=e.target.value;const r=$('#qres');if(qquery.trim()){if(r)r.innerHTML=qResults(qquery)}else{render(true);const i=$('#qq');if(i){i.focus()}}}
   if(k==='zakat'){const s=+($('#zs').value.replace(/\D/g,'')),g=+($('#zg').value.replace(/\D/g,'')),r=$('#zres'),f=n=>'Rp '+Math.round(n).toLocaleString('id-ID');
     if(!s||!g){r.innerHTML='<p class="mute" style="margin:0">Isi kedua kolom untuk melihat hasil.</p>';return}
