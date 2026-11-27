@@ -1640,7 +1640,10 @@ async function dlLang(id){if(!navigator.onLine){toast('Butuh internet untuk meng
 /* ---- navigasi & tombol kembali HP ---- */
 let guarded=false,ignorePop=false;
 const atRoot=()=>!gate&&!G&&!sheet&&S.mode!=='kids'&&S.tab==='today';
-function syncNav(){if(exitAsk)return;if(exitArmed){exitArmed=false;return}try{if(!guarded){history.pushState({cahaya:1},'');guarded=true}}catch(e){}}
+function syncNav(){if(exitAsk||exitArmed)return;if(navigator.userActivation&&!navigator.userActivation.isActive)return;try{if(!guarded){history.pushState({cahaya:1},'');guarded=true}}catch(e){}}
+/* Chrome melewati entri riwayat yang dibuat tanpa sentuhan pengguna, jadi penjaga tombol back dipasang saat layar disentuh. */
+function armGuard(e){if(document.getElementById('exitov'))return;if(exitArmed){exitArmed=false}if(exitAsk)return;try{if(!guarded){history.pushState({cahaya:1},'');guarded=true}}catch(_){}}
+['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,armGuard,{capture:true,passive:true}));
 function backAction(){
   if(gate)gate=null;else if(G)G=null;else if(sheet){sheet=sheetStack.pop()||null;resetArm=false;resetR=true;if(!sheet)stopCompass()}
   else if(S.mode==='kids'){if(S.kv!=='home'&&S.kid.profile)S.kv=(S.kv.startsWith('lesson:')||S.kv.startsWith('mod:'))?'map':'home';else gate={a:3+(Math.random()*7|0),b:4+(Math.random()*6|0)}}
@@ -2272,10 +2275,10 @@ const KAMUS_X=[['اللّٰهُ','Allâh','Allah','God (Allah)'],['رَسُول�
 /* ---- dialog keluar aplikasi ---- */
 let exitAsk=false,exitArmed=false;
 function showExit(){exitAsk=true;let o=document.getElementById('exitov');if(o)o.remove();o=document.createElement('div');o.id='exitov';o.className='ovl';
-  o.innerHTML=`<div class="ovbox" role="dialog" aria-modal="true" aria-labelledby="exh"><img src="icon-192.png" alt="" width="64" height="64" style="border-radius:16px"><h3 id="exh">Keluar dari Cahaya?</h3><p>Pengingat adzan hanya berbunyi selama aplikasi masih terbuka atau berjalan di latar.</p><div class="ovbtns"><button class="btn" style="background:var(--c2,#24403f);color:inherit" data-x="no">Tidak</button><button class="btn" data-x="yes">Ya, keluar</button></div></div>`;
+  o.innerHTML=`<div class="ovbox" role="dialog" aria-modal="true" aria-labelledby="exh"><img src="icon-192.png" alt="" width="64" height="64" style="border-radius:16px"><h3 id="exh">Keluar dari Cahaya?</h3><p>Pengingat adzan hanya berbunyi selama aplikasi masih terbuka atau berjalan di latar.</p><p class="mute" style="font-size:12.5px">Tip: usap kembali sekali lagi juga langsung keluar.</p><div class="ovbtns"><button class="btn" style="background:var(--c2,#24403f);color:inherit" data-x="no">Tidak</button><button class="btn" data-x="yes">Ya, keluar</button></div></div>`;
   o.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b&&e.target!==o)return;const yes=b&&b.dataset.x==='yes';o.remove();exitAsk=false;
-    if(yes){exitArmed=true;try{window.close()}catch(_){}setTimeout(()=>{try{history.back()}catch(_){}},30);setTimeout(()=>toast('Usap/tekan kembali sekali lagi untuk keluar'),400)}
-    else{exitArmed=false;syncNav()}});
+    if(yes){exitArmed=true;try{window.close()}catch(_){}setTimeout(()=>toast('Usap/tekan kembali sekali lagi untuk menutup aplikasi'),150)}
+    else{exitArmed=false;guarded=false;armGuard()}});
   document.body.appendChild(o)}
 /* ---- pengingat sholat & adzan ---- */
 let ADZ=null,adzObj=null,alTimer=null;
