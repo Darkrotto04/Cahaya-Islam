@@ -1638,12 +1638,13 @@ async function dlLang(id){if(!navigator.onLine){toast('Butuh internet untuk meng
   try{const r=await fetch('lang-'+id+'.json',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();await idb('readwrite',st=>st.put(j,'lang-'+id));S.langdl[id]=1;save();toast('Paket bahasa tersimpan. Ketuk "Terapkan".');render(true)}
   catch(e){toast('Gagal mengunduh paket bahasa. Pastikan file lang-'+id+'.json sudah diunggah ke GitHub.')}}
 /* ---- navigasi & tombol kembali HP ---- */
-let guarded=false,ignorePop=false;
+let guarded=false,guardTrusted=false,ignorePop=false;
 const atRoot=()=>!gate&&!G&&!sheet&&S.mode!=='kids'&&S.tab==='today';
-function syncNav(){if(exitAsk||exitArmed)return;if(navigator.userActivation&&!navigator.userActivation.isActive)return;try{if(!guarded){history.pushState({cahaya:1},'');guarded=true}}catch(e){}}
+function syncNav(){if(exitAsk||exitArmed)return;if(navigator.userActivation&&!navigator.userActivation.isActive)return;try{if(!guarded){history.pushState({cahaya:1},'');guarded=true;guardTrusted=true}}catch(e){}}
 /* Chrome melewati entri riwayat yang dibuat tanpa sentuhan pengguna, jadi penjaga tombol back dipasang saat layar disentuh. */
-function armGuard(e){if(document.getElementById('exitov'))return;if(exitArmed){exitArmed=false}if(exitAsk)return;try{if(!guarded){history.pushState({cahaya:1},'');guarded=true}}catch(_){}}
-['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,armGuard,{capture:true,passive:true}));
+function armGuard(e){if(document.getElementById('exitov'))return;if(e&&e.type==='pointerup'&&e.pointerType==='mouse')return;if(exitArmed){exitArmed=false}if(exitAsk)return;const ua=navigator.userActivation;try{if(!guarded||!guardTrusted){history.pushState({cahaya:1},'');guarded=true;guardTrusted=ua?(ua.isActive||ua.hasBeenActive):true}}catch(_){}}
+/* Hanya event yang memberi "user activation" di Chrome: sentuhan dihitung saat jari diangkat (touchend/pointerup), bukan saat menyentuh. */
+['touchend','pointerup','mousedown','click','keydown'].forEach(ev=>document.addEventListener(ev,armGuard,{capture:true,passive:true}));
 function backAction(){
   if(gate)gate=null;else if(G)G=null;else if(sheet){sheet=sheetStack.pop()||null;resetArm=false;resetR=true;if(!sheet)stopCompass()}
   else if(S.mode==='kids'){if(S.kv!=='home'&&S.kid.profile)S.kv=(S.kv.startsWith('lesson:')||S.kv.startsWith('mod:'))?'map':'home';else gate={a:3+(Math.random()*7|0),b:4+(Math.random()*6|0)}}
@@ -1774,7 +1775,7 @@ function Sheet7(){
     <a class="btn" style="width:100%;text-decoration:none;margin-bottom:8px" href="data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({app:'cahaya',v:7,t:Date.now(),S}))}" download="cahaya-cadangan.json">${ic('upload',18)} Simpan file cadangan</a>
     <label class="btn" style="width:100%;background:var(--c2);cursor:pointer">Pulihkan dari file<input type="file" accept=".json,application/json" data-in="bkfile" style="display:none"></label></div>
     <div class="card" style="margin:0"><h3>Google Drive</h3><p class="mute" style="margin:0 0 10px">${S.guser?'Masuk sebagai '+esc(S.guser.email):'Masuk dengan Google dulu.'}</p><button class="btn" style="width:100%" data-a="sheet" data-v="set-akun">Buka akun</button></div>`);
-  if(sheet==='set-tentang')return wrap(tl('Tentang Cahaya'),`<div style="text-align:center;padding:10px 0"><img src="icon-192.png" alt="" width="96" height="96" style="border-radius:24px"><h2 style="margin:10px 0 0">Cahaya Islami</h2><p class="mute">Ibadah & belajar untuk keluarga · v10</p></div>
+  if(sheet==='set-tentang')return wrap(tl('Tentang Cahaya'),`<div style="text-align:center;padding:10px 0"><img src="icon-192.png" alt="" width="96" height="96" style="border-radius:24px"><h2 style="margin:10px 0 0">Cahaya Islami</h2><p class="mute">Ibadah & belajar untuk keluarga · v12</p></div>
     <div class="card" style="margin:0 0 12px"><h3>Sumber data</h3>${stepList(["Teks Al-Qur'an & terjemahan Kemenag: Noble Qur'an Encyclopedia (quran-json)",'Versi tulisan & tajwid: alquran.cloud dan quran.com','Audio murattal: CDN Islamic Network (alquran.cloud)','Hadis kitab: hadith-api (fawazahmed0)','Ensiklopedia hadis: HadeethEnc','Waktu sholat dihitung di HP'])}</div><p class="mute">Konten kajian disusun ringkas; untuk perbedaan pendapat, rujuk ustadz setempat.</p>`);
   if(sheet==='set-privasi')return wrap(tl('Kebijakan privasi'),`<div class="card" style="margin:0">${stepList(['Cahaya tidak memiliki server dan tidak mengumpulkan data pribadi','Progres, catatan, dan pengaturan disimpan hanya di HP ini','Lokasi GPS dipakai di HP untuk waktu sholat dan kiblat, tidak dikirim ke mana pun','Jika memakai Google, cadangan disimpan di Google Drive milikmu sendiri','Unduhan Al-Qur\'an, audio, dan hadis diambil langsung dari penyedia data terbuka'])}</div>`);
   if(sheet==='qaudio'){const cur=S.qari||'ar.alafasy',s=S.lastRead,k=cur+':'+s,juz30=[...Array(37)].map((_,i)=>78+i),dl=Object.keys(S.audl);

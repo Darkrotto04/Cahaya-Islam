@@ -1,5 +1,5 @@
 // Cahaya service worker: app shell + fonts cached so the app opens offline.
-const VERSION = 'cahaya-v11';
+const VERSION = 'cahaya-v12';
 const KEEP = ['cahaya-audio', 'cahaya-adzan'];
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
 const AUDIO_HOSTS = ['cdn.islamic.network', 'download.quranicaudio.com', 'everyayah.com', 'www.islamcan.com'];
